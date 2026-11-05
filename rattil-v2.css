@@ -131,3 +131,61 @@ body[data-theme="light"] .adhkar-card{background:#fff;color:#302b22}
 @media(prefers-reduced-motion:reduce){
  *,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
 }
+
+/* Recitation focus mode: readable on iPhone, with clear recognition feedback. */
+#reciteView.recite-workspace{padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 112px);}
+.rattil-location-tools{display:flex;align-items:center;gap:6px}
+.rattil-location-tools button,.prayer-location-actions button{min-height:36px;padding:6px 9px;border:1px solid #dfc58c44;border-radius:10px;background:#ffffff0d;color:#f5ead7;font:inherit;font-size:10px;touch-action:manipulation}
+.prayer-location-editor[hidden]{display:none!important}
+.prayer-location-editor{display:grid;gap:9px;margin-top:12px;padding:12px;border:1px solid #dfc58c33;border-radius:14px;background:#07171588;text-align:right}
+.prayer-location-editor label{display:grid;gap:5px;color:#e8dcc4;font-size:11px}
+.prayer-location-editor input,.prayer-location-editor select{width:100%;min-height:40px;padding:7px 9px;border:1px solid #dfc58c44;border-radius:9px;background:#0b211d;color:#fff8ed;font:inherit;font-size:13px}
+.prayer-coordinates{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.prayer-location-actions{display:flex;gap:8px}
+.prayer-location-editor small{color:#cfc7b9;line-height:1.7;font-size:10px}
+.recite-heading{align-items:center;margin-bottom:14px}
+.recite-heading h2{font-size:30px;letter-spacing:.01em}
+.recite-heading p{max-width:36ch;line-height:1.8;color:#e7dfcf}
+.recite-live-indicator{padding:7px 10px;border:1px solid #d9bd8240;border-radius:999px;background:#101f1d88;font-variant-numeric:tabular-nums}
+.recite-engine-status{padding:10px 12px;border:1px solid #d9bd8230;border-radius:12px;background:#08181655;line-height:1.8}
+.asr-download-notice{margin:0 2px 12px;color:#d9d2c3;font-size:11px;line-height:1.8}
+.recite-engine-actions button,.recite-reader-top button{min-height:44px}
+.recite-index-panel,.recite-reader-panel{border-radius:20px;background:rgba(7,21,21,.62);border-color:#d9bd8240;box-shadow:inset 0 1px #ffffff0a}
+.recite-search{min-height:46px}
+.recite-surah-index-list{gap:8px;padding:3px}
+.recite-surah-index-item{min-height:55px}
+.recite-reader-top{position:sticky;top:0;z-index:2;padding:4px 0 8px;background:linear-gradient(rgba(7,21,21,.98),rgba(7,21,21,.9));}
+.recite-reader-top button{max-width:122px}
+.live-recitation-text{max-height:min(55dvh,540px);padding:12px 8px 18px;border-radius:14px;background:#06151255;line-height:2.4;text-align:justify;text-align-last:right;overflow-wrap:anywhere}
+.recite-ayah{padding:9px 7px 13px;scroll-margin:72px}
+.recite-ayah-number{width:30px;height:30px;background:#15251d;color:#efd99c;vertical-align:middle;margin-inline:5px}
+.recite-word{padding:1px 2px;border-radius:5px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.live-recitation-text.is-hidden .recite-word:not(.revealed){text-shadow:none;background:#d9bd820b;user-select:none}
+.recite-legend{display:flex;flex-wrap:wrap;gap:8px 16px;padding:8px 4px 2px;color:#d9d2c3;font-size:11px}
+.recite-legend span{display:inline-flex;align-items:center;gap:6px}
+.recite-legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.recite-legend-match{background:#72dfa0;box-shadow:0 0 9px #72dfa060}
+.recite-legend-review{background:#ff7777;box-shadow:0 0 9px #ff777760}
+.recite-correction-panel[hidden]{display:none!important}
+.recite-correction-panel{margin-top:10px;padding:13px;border:1px solid #ff777765;border-radius:14px;background:#541f2440;color:#fff2e8}
+.recite-correction-panel strong{font:700 15px Amiri,serif;color:#ff9999}
+.recite-correction-panel p{margin:5px 0 10px;font-size:12px;line-height:1.8}
+.recite-correction-panel>div{display:flex;flex-wrap:wrap;gap:7px}
+.recite-correction-panel button{min-height:42px;padding:8px 11px;border:1px solid #ffaaa955;border-radius:10px;background:#ffffff0b;color:#fff2e8;font:inherit;font-size:11px;touch-action:manipulation}
+.recite-result{line-height:1.8}
+.recite-bottom-bar{padding-bottom:max(10px,env(safe-area-inset-bottom))}
+.recite-mic-button,.recite-stop-button{min-width:48px;min-height:48px;touch-action:manipulation}
+.recite-privacy,.recite-license{line-height:1.8}
+@media(max-width:390px){
+ .recite-heading h2{font-size:27px}
+ .recite-index-panel,.recite-reader-panel{padding:10px}
+ .recite-surah-index-list{grid-template-columns:1fr}
+ .live-recitation-text{font-size:24px;line-height:2.25;padding-inline:5px}
+ .recite-reader-top{grid-template-columns:minmax(78px,auto) 1fr minmax(92px,auto);gap:5px}
+ .recite-reader-top button{font-size:11px;padding:7px 8px;white-space:normal}
+}
+@media(orientation:landscape) and (max-height:520px){
+ .live-recitation-text{max-height:42dvh}
+ .recite-surah-index-list{max-height:34dvh}
+ .recite-bottom-bar{position:sticky;bottom:0}
+}
