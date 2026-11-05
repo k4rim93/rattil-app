@@ -1,0 +1,221 @@
+/* Rattil visual redesign v1 — presentation layer only */
+:root{
+ --gold:#d9bd82;--cream:#f6f0e4;--ink:#f8f4eb;--muted:#c8c3b8;
+ --glass:rgba(17,34,35,.40);--line:rgba(238,224,194,.20);
+ --surface:rgba(12,28,29,.68);--shadow:0 22px 60px rgba(3,13,15,.28);
+}
+*{-webkit-tap-highlight-color:transparent}
+body{
+ color:var(--ink);
+ font-family:"IBM Plex Sans Arabic",sans-serif;
+ background:#172e30;
+ background-image:linear-gradient(180deg,#162e36 0%,#29464a 44%,#987e67 100%);
+}
+.sky{background:linear-gradient(180deg,#152c38 0%,#31505a 42%,#b58d6c 100%);transition:filter 2s ease}
+.sky:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,20,28,.18),transparent 45%,rgba(11,25,27,.24));pointer-events:none}
+.stars{opacity:.25}
+.moon{opacity:.62;width:52px;height:52px;top:10%;left:12%;box-shadow:-10px 3px 0 0 #f4e7c8;filter:drop-shadow(0 0 24px #f8e4bd55)}
+.cloud{filter:blur(22px);opacity:.30}
+.horizon{height:23%;opacity:.46;background:linear-gradient(transparent,#102326 90%)}
+body.sky-dawn .sky{filter:hue-rotate(-8deg) saturate(.92)}
+body.sky-day .sky{filter:hue-rotate(18deg) brightness(1.14) saturate(.82)}
+body.sky-sunset .sky{filter:hue-rotate(-18deg) saturate(1.2) brightness(.94)}
+body.sky-night .sky{filter:hue-rotate(8deg) brightness(.72) saturate(.82)}
+.app{width:min(100%,600px);padding:calc(env(safe-area-inset-top) + 18px) 19px calc(env(safe-area-inset-bottom) + 34px)}
+.rattil-topbar{margin:0 0 22px;min-height:58px}
+.rattil-brand{gap:2px}
+.rattil-brand strong{font:700 36px/1.05 Amiri,serif;letter-spacing:.2px;color:#f3dfb4;text-shadow:0 5px 24px #d6b77940}
+.rattil-brand small{font-size:10px;letter-spacing:1.4px;color:#e4d9c2}
+.rattil-brand-icon{color:#d9bd82;font-size:17px;opacity:.85}
+.rattil-round{width:43px;height:43px;border-radius:16px;border:1px solid #f2e5c52b;background:rgba(12,29,32,.28);color:#f3e9d4;backdrop-filter:blur(14px);box-shadow:0 6px 18px #07171920}
+.rattil-greeting{display:flex;flex-direction:column;gap:5px;margin:0 4px 17px}
+.rattil-greeting span{font:22px/1.6 Amiri,serif;color:#fff8e9}
+.rattil-greeting small{font-size:11px;color:#e0d8c9;opacity:.82}
+.glass,.rattil-prayer,.rattil-resume,.rattil-feature,.view{
+ background:linear-gradient(145deg,rgba(248,240,220,.105),rgba(14,32,34,.36));
+ border:1px solid rgba(241,224,190,.20);
+ box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.13);
+ backdrop-filter:blur(24px) saturate(120%);-webkit-backdrop-filter:blur(24px) saturate(120%);
+ border-radius:25px;
+}
+.rattil-prayer{padding:19px 16px 13px;position:relative;overflow:hidden}
+.rattil-prayer:before{content:"";position:absolute;inset:0 0 auto;height:1px;background:linear-gradient(90deg,transparent,#e8d4a077,transparent)}
+.rattil-prayer-head{font-size:13px;color:#f5ead6;font-weight:600}
+.rattil-city{font-size:11px;color:#e3c994}
+.rattil-next{margin:17px 0 13px;display:flex;flex-direction:column;gap:3px;text-align:center;color:#e9d8b7;font-size:12px}
+.rattil-next strong{font:500 clamp(35px,10vw,47px)/1.2 "IBM Plex Sans Arabic",sans-serif;letter-spacing:1px;color:#fff8e9;text-shadow:0 5px 24px #08171955;font-variant-numeric:tabular-nums}
+.rattil-times{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;padding-top:11px;border-top:1px solid #f2e8d31c}
+.rattil-time{padding:9px 2px 8px;border-radius:14px;transition:background .2s,transform .2s}
+.rattil-time.active{background:rgba(231,205,151,.16);box-shadow:inset 0 0 0 1px #e3c99544}
+.rattil-prayer-icon{height:28px;display:grid;place-items:center;color:#e3c995;margin-bottom:5px}
+.rattil-prayer-icon svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round;opacity:.92}
+.rattil-time small{font-size:10px;color:#e4dfd5}
+.rattil-time b{font-size:12px;color:#fff8ed;font-weight:600}
+.rattil-prayer-foot{margin-top:11px;padding-top:9px;border-top:1px solid #f2e8d31c;color:#d7d0c2;font-size:10px}
+.rattil-prayer-foot button{width:27px;height:27px;border-radius:9px;border:1px solid #f2e5c52c;background:#ffffff0c;color:#f5e6c8}
+.rattil-section-title{margin:24px 4px 12px;font-size:13px;font-weight:600;color:#f0e5d1;display:flex;align-items:center;gap:10px}
+.rattil-section-title:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,transparent,#ead9b34a)}
+.rattil-feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.rattil-feature{
+ min-height:132px;padding:16px 14px;display:flex;align-items:flex-start;justify-content:center;gap:7px;
+ text-align:right;color:#f8f1e5;position:relative;overflow:hidden;transition:transform .18s ease,border-color .18s ease,background .18s ease;
+}
+.rattil-feature:after{content:"";position:absolute;width:120px;height:120px;left:-50px;bottom:-72px;border:1px solid #e1c58b22;border-radius:50%;box-shadow:0 0 0 12px #e1c58b08,0 0 0 25px #e1c58b05;pointer-events:none}
+.rattil-feature:active{transform:scale(.975);background:rgba(226,203,157,.16)}
+.rattil-feature-icon{width:48px;height:48px;display:grid;place-items:center;color:#e4c991;filter:none}
+.rattil-feature-icon svg{width:42px;height:42px;stroke-width:1.35;opacity:.95}
+.rattil-feature strong{font-size:14px;font-weight:600;color:#fff7e9}
+.rattil-feature small{font-size:10px;color:#d5ccbb;opacity:.9}
+.rattil-resume{margin-top:12px;padding:15px 14px;border-radius:19px}
+.rattil-resume div span{font-size:10px;color:#e6c990}
+.rattil-resume div strong{font-size:13px;color:#fff7e9}
+.rattil-resume div small{font-size:10px;color:#d3cbbb}
+.rattil-resume button{border:1px solid #e3c68c55;background:#e3c68c16;color:#f7e8c8;border-radius:12px;padding:10px 11px;font-size:11px;transition:background .2s}
+.rattil-home-footer{font:15px Amiri,serif;color:#e8dcc4;opacity:.85;margin-top:22px}
+.view{padding:20px 17px 26px;margin-top:14px;background:rgba(12,28,30,.70)}
+.view h2,.panel h2{font:700 27px Amiri,serif;color:#e6cd9d;margin:14px 0}
+.bottomBack{border-radius:12px!important}
+.action,.controls button,.controls select,.controls input,.theme-settings button{
+ border:1px solid #dfc58c44!important;border-radius:12px!important;background:rgba(223,197,140,.10)!important;color:#f7eddb!important;padding:10px 12px!important;font:inherit!important;font-size:12px!important
+}
+.controls{gap:8px}
+.controls select,.controls input{min-width:0}
+.muted,.status{color:#cfc7b9}
+.ayah{border-color:#dfc58c33;background:#ffffff08;border-radius:15px;padding:14px;margin:10px 0}
+.ayahText{font:24px/2 Amiri,serif;color:#fff5e4}
+.ayahActions button{border:1px solid #dfc58c44;background:#dfc58c12;color:#ead8b4;border-radius:9px;padding:8px 10px}
+.saved-bookmarks{border-color:#dfc58c30;background:#ffffff08;border-radius:15px;padding:13px}
+.recite-index-panel,.recite-reader-panel{background:rgba(5,17,18,.35);border-color:#e1c78e35}
+.recite-index-heading h3,.recite-heading h2{color:#e6cd9d}
+.recite-search{border-color:#dfc58c55;background:#ffffff0b;color:#fff7e9}
+.recite-surah-index-item{border-color:#ffffff18!important;background:#ffffff08!important;color:#f7eddf!important;border-radius:11px!important}
+.recite-bottom-bar{background:rgba(9,23,25,.88)!important;border:1px solid #e0c48c36!important;backdrop-filter:blur(18px)}
+.qibla-ring{border-color:#e0c58d88;background:radial-gradient(circle,#e0c58d12,transparent 68%),repeating-conic-gradient(from 0deg,#ffffff28 0 1deg,transparent 1deg 15deg)}
+.qibla-needle{color:#e4c991}
+.adhkar-card{background:#ffffff08;border-color:#dfc58c45}
+.adhkar-card>strong{color:#fff4df}
+.adhkar-counter{border-color:#e0c58d;color:#f6e5c2;background:#e0c58d12}
+.adhkar-tabs button,.adhkar-actions button{border-color:#dfc58c44;background:#ffffff0b;color:#f5ead7}
+.adhkar-tabs button.selected{background:#d9bd82;color:#172522}
+#settingsView .saved-bookmarks{background:#ffffff08}
+#settingsView .theme-settings button.selected{background:#d9bd82!important;color:#172522!important}
+body[data-theme="light"]{--cream:#292820;--ink:#292820;--muted:#6f6a5e;background:#eee7d9;color:#292820}
+body[data-theme="light"] .sky{filter:brightness(1.12) saturate(.78)}
+body[data-theme="light"] .rattil-greeting span,body[data-theme="light"] .rattil-feature strong,body[data-theme="light"] .rattil-next strong{color:#fffaf0}
+body[data-theme="light"] .glass,body[data-theme="light"] .rattil-prayer,body[data-theme="light"] .rattil-resume,body[data-theme="light"] .rattil-feature{background:rgba(255,252,243,.83);border-color:#b49b6d55;color:#332f27}
+body[data-theme="light"] .rattil-feature strong,body[data-theme="light"] .rattil-resume div strong{color:#302d25}
+body[data-theme="light"] .rattil-feature small,body[data-theme="light"] .rattil-resume div small,body[data-theme="light"] .rattil-time small,body[data-theme="light"] .rattil-prayer-foot{color:#716a5d}
+body[data-theme="light"] .rattil-time b{color:#383329}
+body[data-theme="light"] .rattil-prayer-head{color:#413b30}
+body[data-theme="light"] .rattil-next{color:#655b49}
+body[data-theme="light"] .view{background:#fffdf6;color:#302c24;border-color:#c4b38e}
+body[data-theme="light"] .view h2,body[data-theme="light"] .recite-heading h2{color:#80683d}
+body[data-theme="light"] .muted,body[data-theme="light"] .status{color:#6e675a}
+body[data-theme="light"] .ayahText{color:#302b22}
+body[data-theme="light"] .recite-index-panel,body[data-theme="light"] .recite-reader-panel{background:#f8f3e8}
+body[data-theme="light"] .recite-surah-index-item{color:#302b22!important;background:#fff!important}
+body[data-theme="light"] .recite-search{color:#302b22;background:#fff}
+body[data-theme="light"] .adhkar-card{background:#fff;color:#302b22}
+@media(max-width:390px){
+ .app{padding-left:14px;padding-right:14px}
+ .rattil-prayer{padding:16px 10px 11px}
+ .rattil-time{padding-left:0;padding-right:0}
+ .rattil-time small{font-size:9px}
+ .rattil-time b{font-size:10px}
+ .rattil-feature{min-height:124px;padding:14px 11px}
+ .rattil-feature-icon{width:43px;height:43px}
+ .rattil-feature-icon svg{width:38px;height:38px}
+ .rattil-resume{align-items:flex-start}
+ .rattil-resume button{font-size:10px;padding:9px}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}
+
+/* Recitation focus mode: readable on iPhone, with clear recognition feedback. */
+#reciteView.recite-workspace{padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 112px);}
+.rattil-location-tools{display:flex;align-items:center;gap:6px}
+.rattil-location-tools button,.prayer-location-actions button{min-height:36px;padding:6px 9px;border:1px solid #dfc58c44;border-radius:10px;background:#ffffff0d;color:#f5ead7;font:inherit;font-size:10px;touch-action:manipulation}
+.prayer-location-editor[hidden]{display:none!important}
+.prayer-location-editor{display:grid;gap:9px;margin-top:12px;padding:12px;border:1px solid #dfc58c33;border-radius:14px;background:#07171588;text-align:right}
+.prayer-location-editor label{display:grid;gap:5px;color:#e8dcc4;font-size:11px}
+.prayer-location-editor input,.prayer-location-editor select{width:100%;min-height:40px;padding:7px 9px;border:1px solid #dfc58c44;border-radius:9px;background:#0b211d;color:#fff8ed;font:inherit;font-size:13px}
+.prayer-coordinates{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.prayer-location-actions{display:flex;gap:8px}
+.prayer-location-editor small{color:#cfc7b9;line-height:1.7;font-size:10px}
+.recite-heading{align-items:center;margin-bottom:14px}
+.recite-heading h2{font-size:30px;letter-spacing:.01em}
+.recite-heading p{max-width:36ch;line-height:1.8;color:#e7dfcf}
+.recite-live-indicator{padding:7px 10px;border:1px solid #d9bd8240;border-radius:999px;background:#101f1d88;font-variant-numeric:tabular-nums}
+.recite-engine-status{padding:10px 12px;border:1px solid #d9bd8230;border-radius:12px;background:#08181655;line-height:1.8}
+.asr-download-notice{margin:0 2px 12px;color:#d9d2c3;font-size:11px;line-height:1.8}
+.recite-engine-actions button,.recite-reader-top button{min-height:44px}
+.recite-index-panel,.recite-reader-panel{border-radius:20px;background:rgba(7,21,21,.62);border-color:#d9bd8240;box-shadow:inset 0 1px #ffffff0a}
+.recite-search{min-height:46px}
+.recite-surah-index-list{gap:8px;padding:3px}
+.recite-surah-index-item{min-height:55px}
+.recite-reader-top{position:sticky;top:0;z-index:2;padding:4px 0 8px;background:linear-gradient(rgba(7,21,21,.98),rgba(7,21,21,.9));}
+.recite-reader-top button{max-width:122px}
+.live-recitation-text{max-height:min(55dvh,540px);padding:12px 8px 18px;border-radius:14px;background:#06151255;line-height:2.4;text-align:justify;text-align-last:right;overflow-wrap:anywhere}
+.recite-ayah{padding:9px 7px 13px;scroll-margin:72px}
+.recite-ayah-number{width:30px;height:30px;background:#15251d;color:#efd99c;vertical-align:middle;margin-inline:5px}
+.recite-word{padding:1px 2px;border-radius:5px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.live-recitation-text.is-hidden .recite-word:not(.revealed){text-shadow:none;background:#d9bd820b;user-select:none}
+.recite-legend{display:flex;flex-wrap:wrap;gap:8px 16px;padding:8px 4px 2px;color:#d9d2c3;font-size:11px}
+.recite-legend span{display:inline-flex;align-items:center;gap:6px}
+.recite-legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.recite-legend-match{background:#72dfa0;box-shadow:0 0 9px #72dfa060}
+.recite-legend-review{background:#ff7777;box-shadow:0 0 9px #ff777760}
+.recite-correction-panel[hidden]{display:none!important}
+.recite-correction-panel{margin-top:10px;padding:13px;border:1px solid #ff777765;border-radius:14px;background:#541f2440;color:#fff2e8}
+.recite-correction-panel strong{font:700 15px Amiri,serif;color:#ff9999}
+.recite-correction-panel p{margin:5px 0 10px;font-size:12px;line-height:1.8}
+.recite-correction-panel>div{display:flex;flex-wrap:wrap;gap:7px}
+.recite-correction-panel button{min-height:42px;padding:8px 11px;border:1px solid #ffaaa955;border-radius:10px;background:#ffffff0b;color:#fff2e8;font:inherit;font-size:11px;touch-action:manipulation}
+.recite-result{line-height:1.8}
+.recite-bottom-bar{padding-bottom:max(10px,env(safe-area-inset-bottom))}
+.recite-mic-button,.recite-stop-button{min-width:48px;min-height:48px;touch-action:manipulation}
+.recite-privacy,.recite-license{line-height:1.8}
+@media(max-width:390px){
+ .recite-heading h2{font-size:27px}
+ .recite-index-panel,.recite-reader-panel{padding:10px}
+ .recite-surah-index-list{grid-template-columns:1fr}
+ .live-recitation-text{font-size:24px;line-height:2.25;padding-inline:5px}
+ .recite-reader-top{grid-template-columns:minmax(78px,auto) 1fr minmax(92px,auto);gap:5px}
+ .recite-reader-top button{font-size:11px;padding:7px 8px;white-space:normal}
+}
+@media(orientation:landscape) and (max-height:520px){
+ .live-recitation-text{max-height:42dvh}
+ .recite-surah-index-list{max-height:34dvh}
+ .recite-bottom-bar{position:sticky;bottom:0}
+}
+
+/* Dedicated service navigation and a readable, full-screen Mushaf page */
+.rattil-home{padding-bottom:calc(env(safe-area-inset-bottom) + 100px)}
+.rattil-prayer-details{margin-top:8px;border-top:1px solid #f2e8d31c;padding-top:6px}
+.rattil-prayer-details summary{cursor:pointer;list-style:none;color:#e5cf9e;font-size:11px;text-align:center;padding:4px;touch-action:manipulation}
+.rattil-prayer-details summary::-webkit-details-marker{display:none}
+.rattil-prayer-details summary:after{content:"⌄";display:inline-block;margin-right:6px;transition:transform .2s}
+.rattil-prayer-details[open] summary:after{transform:rotate(180deg)}
+.rattil-bottom-nav{position:fixed;z-index:30;inset:auto 0 0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:7px 8px calc(env(safe-area-inset-bottom) + 7px);border-top:1px solid #e1c78e33;background:rgba(9,24,22,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.rattil-bottom-nav button{min-width:0;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;border-radius:12px;background:transparent;color:#bcb5a5;font:inherit;touch-action:manipulation}
+.rattil-bottom-nav button span{font-size:22px;line-height:1.1}
+.rattil-bottom-nav button small{font-size:10px;white-space:nowrap}
+.rattil-bottom-nav button.active{background:#e1c78e18;color:#edcf8e}
+.rattil-bottom-nav button:focus-visible,.rattil-prayer-details summary:focus-visible{outline:2px solid #e2c68d;outline-offset:2px}
+body.reader-open .rattil-bottom-nav{display:none}
+body[data-theme="light"] .rattil-bottom-nav{background:rgba(255,252,243,.96);border-color:#b49b6d55}
+body[data-theme="light"] .rattil-bottom-nav button{color:#726954}
+body[data-theme="light"] .rattil-bottom-nav button.active{background:#d7bd831c;color:#725c34}
+body[data-theme="light"] .rattil-prayer-details summary{color:#75623e}
+.reader-topbar{grid-template-columns:42px minmax(0,1fr) 42px 42px;gap:4px}
+.reader-topbar #toggleMushafZoom{font:700 13px Georgia,serif}
+#mushafReader #readerAyahs{overflow:auto;align-items:flex-start;justify-content:center;overscroll-behavior:contain}
+#mushafReader #readerAyahs svg{flex:0 0 auto;height:auto!important}
+body.mushaf-zoom #mushafReader #readerAyahs{display:block;padding:8px 4px}
+body.mushaf-zoom #mushafReader #readerAyahs svg{width:100%;height:auto!important;max-height:none}
+body:not(.mushaf-zoom) #mushafReader #readerAyahs{display:flex;overflow:hidden;align-items:stretch}
+body:not(.mushaf-zoom) #mushafReader #readerAyahs svg{height:100%!important;object-fit:contain}
+#mushafReader .selected-ayah-panel{font-size:17px;line-height:1.7;max-height:20vh}
+body[data-theme="light"] .rattil-bottom-nav{color:#302d25}
+@media(max-width:380px){.rattil-bottom-nav{padding-inline:4px}.rattil-bottom-nav button small{font-size:9px}.reader-topbar{grid-template-columns:38px minmax(0,1fr) 38px 38px;gap:2px}}

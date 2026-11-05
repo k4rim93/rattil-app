@@ -1,0 +1,7 @@
+node_modules/
+dist/
+public/models/
+public/ort/
+public/quran.json
+public/zipformer_quran.json
+pnpm-workspace.yaml

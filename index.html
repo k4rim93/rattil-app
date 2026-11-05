@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#101b49"><meta name="description" content="رَتِّل — رحلتك مع القرآن، آيةً آية"><link rel="manifest" href="manifest.webmanifest"><title>رَتِّل</title>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#102824"><meta name="description" content="رَتِّل — رحلتك مع القرآن، آيةً آية"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/svg+xml" href="/rattil-app/rattil-icon.svg"><link rel="apple-touch-icon" href="/rattil-app/rattil-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="رَتِّل"><title>رَتِّل</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap');
 :root{--gold:#e6c47d;--cream:#fff9eb;--glass:rgba(226,236,255,.13);--line:rgba(255,255,255,.35)}*{box-sizing:border-box}html{min-height:100%;background:#101b49}body{margin:0;min-height:100vh;color:var(--cream);font-family:'IBM Plex Sans Arabic',sans-serif;background:linear-gradient(180deg,#09142f 0%,#142a57 38%,#385b83 68%,#e7a46e 100%);background-attachment:fixed;overflow-x:hidden}
@@ -84,7 +84,7 @@ body[data-theme="dark"]{--mushaf-page:#050b08;--mushaf-ink:#f7f0df}
 .live-recitation-text .error{color:#d52d36;background:#d52d3618}
 .live-recitation-text .uncertain{color:#b47a13;background:#b47a1318}
 .live-recitation-text .unattempted{color:inherit}
-.live-recitation-text.is-hidden .rec-word{color:transparent!important;text-shadow:0 0 9px var(--text,#ddd);background:transparent!important;user-select:none}
+.live-recitation-text.is-hidden .rec-word:not(.revealed){color:transparent!important;text-shadow:0 0 9px var(--text,#ddd);background:transparent!important;user-select:none}
 </style><style>
 /* Rattil recitation workspace — Mushaf-first layout */
 #reciteView.recite-workspace{padding:16px 14px 110px;min-height:calc(100dvh - 24px);position:relative}
@@ -123,8 +123,10 @@ body[data-theme="dark"]{--mushaf-page:#050b08;--mushaf-ink:#f7f0df}
 .recite-word.correct{color:#55d38a;background:#16834a20}
 .recite-word.error{color:#ff7777;background:#d52d3620}
 .recite-word.uncertain{color:#e8c36b;background:#b47a1320}
-.live-recitation-text.is-hidden .recite-ayah:not(.revealed) .recite-ayah-text{color:transparent!important;text-shadow:none;user-select:none}
-.live-recitation-text.is-hidden .recite-ayah:not(.revealed) .recite-ayah-text .recite-word{color:transparent!important}
+.live-recitation-text.is-hidden .recite-word:not(.revealed){color:transparent!important;text-shadow:none;user-select:none}
+.live-recitation-text.is-hidden .recite-word.revealed.correct{color:#72dfa0!important}
+.live-recitation-text.is-hidden .recite-word.revealed.error{color:#ff7777!important}
+.live-recitation-text.is-hidden .recite-word.revealed.uncertain{color:#f0ce75!important}
 .live-recitation-text.is-hidden .recite-ayah-number{visibility:visible!important}
 .recite-reader-empty{text-align:center;padding:32px 8px;color:#d8c99e;font:19px Amiri,serif}
 .recite-result{font-size:12px;margin:8px 0 0}
@@ -265,7 +267,8 @@ body.sky-night .moon{opacity:.85}
 .adhkar-actions{display:flex;justify-content:center;gap:8px;margin-top:16px}
 @media(max-width:370px){.rattil-feature{min-height:105px}.rattil-time small{font-size:9px}.rattil-time b{font-size:11px}.rattil-next strong{font-size:18px}}
 @media(prefers-reduced-motion:reduce){.cloud,.stars{animation:none!important}.rattil-time,.rattil-feature{transition:none}}
-</style></head><body>
+</style><link rel="stylesheet" href="./rattil-v2.css?v=1">
+</head><body>
 <div class="sky" aria-hidden="true"><div class="stars"></div><div class="moon"></div><div class="cloud one"></div><div class="cloud two"></div><div class="cloud three"></div><div class="horizon"></div></div>
 <main class="app"><section id="homeView" class="home-view rattil-home">
   <header class="rattil-topbar">
@@ -275,9 +278,16 @@ body.sky-night .moon{opacity:.85}
   </header>
   <div class="rattil-greeting"><span>السلام عليكم ورحمة الله وبركاته</span><small id="rattilGreetingDate">أهلاً بك في رَتِّل</small></div>
   <section class="rattil-prayer glass">
-    <div class="rattil-prayer-head"><span>مواقيت الصلاة</span><span class="rattil-city">⌖ القاهرة</span></div>
+    <div class="rattil-prayer-head"><span>مواقيت الصلاة</span><div class="rattil-location-tools"><span class="rattil-city" id="prayerLocationName">القاهرة</span><button id="usePrayerLocation" type="button">موقعي الحالي</button><button id="editPrayerLocation" type="button" aria-expanded="false">تعديل</button></div></div>
+    <form id="prayerLocationEditor" class="prayer-location-editor" hidden>
+      <label>اسم المكان<input id="prayerLocationLabel" type="text" maxlength="40" value="القاهرة" autocomplete="address-level2"></label>
+      <div class="prayer-coordinates"><label>خط العرض<input id="prayerLatitude" type="number" inputmode="decimal" min="-90" max="90" step="any" value="30.0444" dir="ltr" required></label><label>خط الطول<input id="prayerLongitude" type="number" inputmode="decimal" min="-180" max="180" step="any" value="31.2357" dir="ltr" required></label></div>
+      <label>طريقة الحساب<select id="prayerMethod"><option value="5">الهيئة المصرية العامة للمساحة</option><option value="3">رابطة العالم الإسلامي</option><option value="4">أم القرى — مكة</option><option value="1">جامعة العلوم الإسلامية — كراتشي</option><option value="2">الجمعية الإسلامية لأمريكا الشمالية</option></select></label>
+      <div class="prayer-location-actions"><button type="submit">حفظ</button><button id="cancelPrayerLocation" type="button">إلغاء</button></div>
+      <small>أوقات الحساب قد تختلف عن توقيت المسجد المحلي. اختر الطريقة المناسبة لمكانك.</small>
+    </form>
     <div class="rattil-next"><span id="nextPrayer">جارٍ تحميل مواقيت الصلاة</span><strong id="prayerCountdown">--:--:--</strong></div>
-    <div class="rattil-times" id="prayerTimes" dir="rtl">
+    <details class="rattil-prayer-details"><summary>عرض مواقيت الصلاة كاملة</summary><div class="rattil-times" id="prayerTimes" dir="rtl">
       <div class="rattil-time time"><span class="rattil-prayer-icon"><svg viewBox="0 0 32 32"><path d="M4 25h24M16 4v8M7 10l5 5M25 10l-5 5M3 17h6M23 17h6"/></svg></span><small>الفجر</small><b id="prayer-Fajr">—:—</b></div>
       <div class="rattil-time time"><span class="rattil-prayer-icon"><svg viewBox="0 0 32 32"><path d="M4 25h24M8 25a8 8 0 0 1 16 0M16 13V3m-4 4 4-4 4 4M5 18h3m16 0h3"/></svg></span><small>الشروق</small><b id="prayer-Sunrise">—:—</b></div>
       <div class="rattil-time time"><span class="rattil-prayer-icon"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="6"/><path d="M16 2v4m0 20v4M2 16h4m20 0h4M6 6l3 3m14 14 3 3M26 6l-3 3M9 23l-3 3"/></svg></span><small>الظهر</small><b id="prayer-Dhuhr">—:—</b></div>
@@ -285,7 +295,7 @@ body.sky-night .moon{opacity:.85}
       <div class="rattil-time time"><span class="rattil-prayer-icon"><svg viewBox="0 0 32 32"><path d="M3 25h26M8 25a8 8 0 0 1 16 0M16 4v7m-4-3 4 3 4-3M5 29h22"/></svg></span><small>المغرب</small><b id="prayer-Maghrib">—:—</b></div>
       <div class="rattil-time time"><span class="rattil-prayer-icon"><svg viewBox="0 0 32 32"><path d="M23 21A11 11 0 0 1 10 5a12 12 0 1 0 13 16Z"/><path d="m23 4 1.2 3.2L27 8l-2.8 1.2L23 12l-1.2-2.8L19 8l2.8-.8L23 4Z"/></svg></span><small>العشاء</small><b id="prayer-Isha">—:—</b></div>
     </div>
-    <div class="rattil-prayer-foot"><span hidden id="previousPrayer"></span><span hidden id="upcomingPrayer"></span><button id="previousDate" type="button" aria-label="اليوم السابق">‹</button><span id="date">جارٍ تحديد التاريخ</span><span id="prayerSource">المواقيت حسب القاهرة</span><button id="nextDate" type="button" aria-label="اليوم التالي">›</button></div>
+    <div class="rattil-prayer-foot"><span hidden id="previousPrayer"></span><span hidden id="upcomingPrayer"></span><button id="previousDate" type="button" aria-label="اليوم السابق">‹</button><span id="date">جارٍ تحديد التاريخ</span><span id="prayerSource">المواقيت حسب القاهرة</span><button id="nextDate" type="button" aria-label="اليوم التالي">›</button></div></details>
   </section>
   <div class="rattil-section-title">خدمات رَتِّل</div>
   <section class="rattil-feature-grid" aria-label="خدمات رتل">
@@ -299,7 +309,7 @@ body.sky-night .moon{opacity:.85}
 </section>
 <section id="mushafView" class="view glass panel">
 <button class="action bottomBack" data-home>← الرئيسية</button><h2>المصحف الشريف</h2>
-<div class="controls"><button id="openSurahIndex" type="button">فهرس السور</button><select id="surahSelect" aria-label="اختر السورة"><option>جارٍ تحميل السور…</option></select><button id="loadSurah">عرض السورة</button></div>
+<div class="controls"><button id="openSurahIndex" type="button">فهرس السور</button><select id="surahSelect" aria-label="اختر السورة"><option>جارٍ تحميل السور…</option></select><button id="loadSurah">فتح المصحف</button><button id="loadSurahText" type="button">النص والتفسير</button></div>
 <div id="mushafListView"><div class="muted" id="surahMeta">النص القرآني بالرسم العثماني</div><div class="saved-bookmarks"><h3>علاماتي المحفوظة</h3><div id="bookmarkList" class="bookmark-list">لا توجد علامات محفوظة بعد.</div></div><div id="quranContent" class="empty">اختر سورة لبدء القراءة</div>
 </div><div class="muted" style="margin-top:14px">مصدر النص: AlQuran Cloud API. يُعرض النص كما ورد من المصدر دون تعديل.</div>
 </section>
@@ -309,15 +319,18 @@ body.sky-night .moon{opacity:.85}
 <header class="recite-heading"><div><h2>التسميع</h2><p>اختر سورة، ثم ابدأ التلاوة. تتم المعالجة محليًا على جهازك.</p></div><span class="recite-live-indicator" id="reciteLiveIndicator">● جاهز</span></header>
 <div id="asrStatus" class="status recite-engine-status" aria-live="polite">محرك التسميع لم يتم تحميله بعد.</div>
 <div class="recite-engine-actions"><button id="loadAsr" class="action">تحميل محرك التسميع</button><button id="clearAsrCache" class="action" disabled>حذف النموذج المحفوظ</button></div>
+<p class="asr-download-notice">أول تحميل يحتاج نحو 66 ميغابايت، ثم يُحفظ المحرك على هذا الجهاز ليعمل دون اتصال. لا يُرسل التطبيق صوتك إلى خادم.</p>
 <section id="reciteIndexPanel" class="recite-index-panel">
 <div class="recite-index-heading"><div><h3>فهرس السور</h3><small>اختر السورة التي تريد تسميعها</small></div><span>١١٤ سورة</span></div>
 <input id="reciteSurahSearchInput" class="recite-search" type="search" placeholder="ابحث باسم السورة أو رقمها" aria-label="البحث في فهرس السور">
 <div id="reciteSurahIndexList" class="recite-surah-index-list"><div class="muted">جارٍ تحميل فهرس السور…</div></div>
 </section>
 <section id="reciteReaderPanel" class="recite-reader-panel" hidden>
-<div class="recite-reader-top"><button id="reciteBackToIndex" class="action">‹ الفهرس</button><div><strong id="reciteCurrentSurahName">سورة الفاتحة</strong><small id="reciteCurrentSurahMeta">٧ آيات</small></div><button id="toggleReciteText" class="action" type="button" aria-pressed="false">إخفاء الآيات</button></div>
+<div class="recite-reader-top"><button id="reciteBackToIndex" class="action">‹ الفهرس</button><div><strong id="reciteCurrentSurahName">سورة الفاتحة</strong><small id="reciteCurrentSurahMeta">٧ آيات</small></div><button id="toggleReciteText" class="action" type="button" aria-pressed="false">إخفاء الكلمات</button></div>
 <div id="liveRecitationText" class="live-recitation-text" aria-live="polite"><div class="recite-reader-empty">اختر سورة من الفهرس لعرض آياتها.</div></div>
 <div id="asrResult" class="status recite-result" aria-live="polite">سيتم تمييز موضع التلاوة تلقائيًا عند التعرف عليه.</div>
+<div class="recite-legend" aria-label="دليل ألوان التسميع"><span><i class="recite-legend-match"></i> تعرّف عليه المحرك</span><span><i class="recite-legend-review"></i> لم يتعرّف عليه؛ راجعه</span></div>
+<section id="reciteCorrectionPanel" class="recite-correction-panel" hidden aria-live="assertive"><strong id="reciteCorrectionTitle">مراجعة موضع</strong><p id="reciteCorrectionText"></p><div><button type="button" data-correction-action="retry">أعد قراءة الموضع</button><button type="button" data-correction-action="continue">تجاوز وأكمل</button><button type="button" data-correction-action="review_later">مراجعته لاحقًا</button><button type="button" data-correction-action="stop_retry" hidden>إنهاء إعادة القراءة</button></div></section>
 </section>
 <div class="recite-bottom-bar"><div class="recite-bottom-status" id="reciteBottomStatus">حمّل محرك التسميع أول مرة لاستخدام الميكروفون.</div><button id="startRec" class="recite-mic-button" disabled aria-label="ابدأ التسميع">🎙</button><button id="stopRec" class="recite-stop-button" disabled>إيقاف</button></div>
 <div class="muted recite-privacy">الصوت لا يُرفع إلى خادم. لا يدّعي هذا الإصدار تقييم أحكام التجويد.</div>
@@ -340,5 +353,12 @@ body.sky-night .moon{opacity:.85}
 <div class="status" id="adhkarStatus">ابدأ ذكرك، وسيتم حفظ تقدمك تلقائيًا.</div>
 </section>
 </main>
-<section id="mushafReader" hidden aria-label="قارئ المصحف"><div class="reader-topbar"><button id="closeMushafReader" aria-label="إغلاق المصحف">×</button><span id="readerSurah">المصحف الشريف</span><button id="readerOpenIndex" aria-label="فهرس السور">☷</button></div><div class="reader-page-shell"><div class="mushaf-paper" id="mushafPaper"><header><span id="readerJuz">الجزء —</span><span id="readerSurahName">المصحف</span><span id="readerHizb">الحزب —</span></header><div id="readerAyahs" class="mushaf-svg-page" aria-label="صفحة المصحف"></div><footer><button id="previousMushafPage" aria-label="الصفحة السابقة">‹</button><b id="readerPageNumber">—</b><button id="nextMushafPage" aria-label="الصفحة التالية">›</button></footer></div></div><div id="selectedAyahPanel" class="selected-ayah-panel" hidden></div><div id="readerIndexPanel" class="reader-index-panel" hidden><div class="reader-index-head"><button id="closeReaderIndex">×</button><strong>فهرس السور</strong><span>114 سورة</span></div><input id="readerSurahSearch" type="search" placeholder="ابحث باسم السورة أو رقمها"><div id="readerSurahList" class="reader-surah-list"></div></div></section>
+<nav class="rattil-bottom-nav" aria-label="التنقل الرئيسي">
+  <button type="button" data-home-screen aria-current="page"><span aria-hidden="true">⌂</span><small>الرئيسية</small></button>
+  <button type="button" data-navigate="mushaf"><span aria-hidden="true">▤</span><small>المصحف</small></button>
+  <button type="button" data-navigate="recite"><span aria-hidden="true">◉</span><small>التسميع</small></button>
+  <button type="button" data-navigate="adhkar"><span aria-hidden="true">۞</span><small>الأذكار</small></button>
+  <button type="button" data-navigate="qibla"><span aria-hidden="true">⌖</span><small>القبلة</small></button>
+</nav>
+<section id="mushafReader" hidden aria-label="قارئ المصحف"><div class="reader-topbar"><button id="closeMushafReader" aria-label="إغلاق المصحف">×</button><span id="readerSurah">المصحف الشريف</span><button id="toggleMushafZoom" aria-label="تكبير أو تصغير صفحة المصحف" aria-pressed="true">Aa</button><button id="readerOpenIndex" aria-label="فهرس السور">☷</button></div><div class="reader-page-shell"><div class="mushaf-paper" id="mushafPaper"><header><span id="readerJuz">الجزء —</span><span id="readerSurahName">المصحف</span><span id="readerHizb">الحزب —</span></header><div id="readerAyahs" class="mushaf-svg-page" aria-label="صفحة المصحف"></div><footer><button id="previousMushafPage" aria-label="الصفحة السابقة">‹</button><b id="readerPageNumber">—</b><button id="nextMushafPage" aria-label="الصفحة التالية">›</button></footer></div></div><div id="selectedAyahPanel" class="selected-ayah-panel" hidden></div><div id="readerIndexPanel" class="reader-index-panel" hidden><div class="reader-index-head"><button id="closeReaderIndex">×</button><strong>فهرس السور</strong><span>114 سورة</span></div><input id="readerSurahSearch" type="search" placeholder="ابحث باسم السورة أو رقمها"><div id="readerSurahList" class="reader-surah-list"></div></div></section>
 <script>document.getElementById('date').textContent=new Intl.DateTimeFormat('ar-EG',{weekday:'long',day:'numeric',month:'long'}).format(new Date());</script></body></html>

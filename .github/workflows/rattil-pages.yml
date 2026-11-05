@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - feature/rattil-v2-foundation
+      - feature/rattil-visual-redesign-v1
       - fix/rattil-pages-configure-step
   workflow_dispatch:
 permissions:
