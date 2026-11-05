@@ -287,7 +287,7 @@ body.sky-night .moon{opacity:.85}
       <small>أوقات الحساب قد تختلف عن توقيت المسجد المحلي. اختر الطريقة المناسبة لمكانك.</small>
     </form>
     <div class="rattil-next"><span id="nextPrayer">جارٍ تحميل مواقيت الصلاة</span><strong id="prayerCountdown">--:--:--</strong></div>
-    <div class="rattil-times" id="prayerTimes" dir="rtl">
+    <details class="rattil-prayer-details"><summary>عرض مواقيت الصلاة كاملة</summary><div class="rattil-times" id="prayerTimes" dir="rtl">
       <div class="rattil-time time"><span class="rattil-prayer-icon"><svg viewBox="0 0 32 32"><path d="M4 25h24M16 4v8M7 10l5 5M25 10l-5 5M3 17h6M23 17h6"/></svg></span><small>الفجر</small><b id="prayer-Fajr">—:—</b></div>
       <div class="rattil-time time"><span class="rattil-prayer-icon"><svg viewBox="0 0 32 32"><path d="M4 25h24M8 25a8 8 0 0 1 16 0M16 13V3m-4 4 4-4 4 4M5 18h3m16 0h3"/></svg></span><small>الشروق</small><b id="prayer-Sunrise">—:—</b></div>
       <div class="rattil-time time"><span class="rattil-prayer-icon"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="6"/><path d="M16 2v4m0 20v4M2 16h4m20 0h4M6 6l3 3m14 14 3 3M26 6l-3 3M9 23l-3 3"/></svg></span><small>الظهر</small><b id="prayer-Dhuhr">—:—</b></div>
@@ -295,7 +295,7 @@ body.sky-night .moon{opacity:.85}
       <div class="rattil-time time"><span class="rattil-prayer-icon"><svg viewBox="0 0 32 32"><path d="M3 25h26M8 25a8 8 0 0 1 16 0M16 4v7m-4-3 4 3 4-3M5 29h22"/></svg></span><small>المغرب</small><b id="prayer-Maghrib">—:—</b></div>
       <div class="rattil-time time"><span class="rattil-prayer-icon"><svg viewBox="0 0 32 32"><path d="M23 21A11 11 0 0 1 10 5a12 12 0 1 0 13 16Z"/><path d="m23 4 1.2 3.2L27 8l-2.8 1.2L23 12l-1.2-2.8L19 8l2.8-.8L23 4Z"/></svg></span><small>العشاء</small><b id="prayer-Isha">—:—</b></div>
     </div>
-    <div class="rattil-prayer-foot"><span hidden id="previousPrayer"></span><span hidden id="upcomingPrayer"></span><button id="previousDate" type="button" aria-label="اليوم السابق">‹</button><span id="date">جارٍ تحديد التاريخ</span><span id="prayerSource">المواقيت حسب القاهرة</span><button id="nextDate" type="button" aria-label="اليوم التالي">›</button></div>
+    <div class="rattil-prayer-foot"><span hidden id="previousPrayer"></span><span hidden id="upcomingPrayer"></span><button id="previousDate" type="button" aria-label="اليوم السابق">‹</button><span id="date">جارٍ تحديد التاريخ</span><span id="prayerSource">المواقيت حسب القاهرة</span><button id="nextDate" type="button" aria-label="اليوم التالي">›</button></div></details>
   </section>
   <div class="rattil-section-title">خدمات رَتِّل</div>
   <section class="rattil-feature-grid" aria-label="خدمات رتل">
@@ -353,5 +353,12 @@ body.sky-night .moon{opacity:.85}
 <div class="status" id="adhkarStatus">ابدأ ذكرك، وسيتم حفظ تقدمك تلقائيًا.</div>
 </section>
 </main>
-<section id="mushafReader" hidden aria-label="قارئ المصحف"><div class="reader-topbar"><button id="closeMushafReader" aria-label="إغلاق المصحف">×</button><span id="readerSurah">المصحف الشريف</span><button id="readerOpenIndex" aria-label="فهرس السور">☷</button></div><div class="reader-page-shell"><div class="mushaf-paper" id="mushafPaper"><header><span id="readerJuz">الجزء —</span><span id="readerSurahName">المصحف</span><span id="readerHizb">الحزب —</span></header><div id="readerAyahs" class="mushaf-svg-page" aria-label="صفحة المصحف"></div><footer><button id="previousMushafPage" aria-label="الصفحة السابقة">‹</button><b id="readerPageNumber">—</b><button id="nextMushafPage" aria-label="الصفحة التالية">›</button></footer></div></div><div id="selectedAyahPanel" class="selected-ayah-panel" hidden></div><div id="readerIndexPanel" class="reader-index-panel" hidden><div class="reader-index-head"><button id="closeReaderIndex">×</button><strong>فهرس السور</strong><span>114 سورة</span></div><input id="readerSurahSearch" type="search" placeholder="ابحث باسم السورة أو رقمها"><div id="readerSurahList" class="reader-surah-list"></div></div></section>
+<nav class="rattil-bottom-nav" aria-label="التنقل الرئيسي">
+  <button type="button" data-home-screen aria-current="page"><span aria-hidden="true">⌂</span><small>الرئيسية</small></button>
+  <button type="button" data-navigate="mushaf"><span aria-hidden="true">▤</span><small>المصحف</small></button>
+  <button type="button" data-navigate="recite"><span aria-hidden="true">◉</span><small>التسميع</small></button>
+  <button type="button" data-navigate="adhkar"><span aria-hidden="true">۞</span><small>الأذكار</small></button>
+  <button type="button" data-navigate="qibla"><span aria-hidden="true">⌖</span><small>القبلة</small></button>
+</nav>
+<section id="mushafReader" hidden aria-label="قارئ المصحف"><div class="reader-topbar"><button id="closeMushafReader" aria-label="إغلاق المصحف">×</button><span id="readerSurah">المصحف الشريف</span><button id="toggleMushafZoom" aria-label="تكبير أو تصغير صفحة المصحف" aria-pressed="true">Aa</button><button id="readerOpenIndex" aria-label="فهرس السور">☷</button></div><div class="reader-page-shell"><div class="mushaf-paper" id="mushafPaper"><header><span id="readerJuz">الجزء —</span><span id="readerSurahName">المصحف</span><span id="readerHizb">الحزب —</span></header><div id="readerAyahs" class="mushaf-svg-page" aria-label="صفحة المصحف"></div><footer><button id="previousMushafPage" aria-label="الصفحة السابقة">‹</button><b id="readerPageNumber">—</b><button id="nextMushafPage" aria-label="الصفحة التالية">›</button></footer></div></div><div id="selectedAyahPanel" class="selected-ayah-panel" hidden></div><div id="readerIndexPanel" class="reader-index-panel" hidden><div class="reader-index-head"><button id="closeReaderIndex">×</button><strong>فهرس السور</strong><span>114 سورة</span></div><input id="readerSurahSearch" type="search" placeholder="ابحث باسم السورة أو رقمها"><div id="readerSurahList" class="reader-surah-list"></div></div></section>
 <script>document.getElementById('date').textContent=new Intl.DateTimeFormat('ar-EG',{weekday:'long',day:'numeric',month:'long'}).format(new Date());</script></body></html>

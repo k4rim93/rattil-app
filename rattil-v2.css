@@ -189,3 +189,33 @@ body[data-theme="light"] .adhkar-card{background:#fff;color:#302b22}
  .recite-surah-index-list{max-height:34dvh}
  .recite-bottom-bar{position:sticky;bottom:0}
 }
+
+/* Dedicated service navigation and a readable, full-screen Mushaf page */
+.rattil-home{padding-bottom:calc(env(safe-area-inset-bottom) + 100px)}
+.rattil-prayer-details{margin-top:8px;border-top:1px solid #f2e8d31c;padding-top:6px}
+.rattil-prayer-details summary{cursor:pointer;list-style:none;color:#e5cf9e;font-size:11px;text-align:center;padding:4px;touch-action:manipulation}
+.rattil-prayer-details summary::-webkit-details-marker{display:none}
+.rattil-prayer-details summary:after{content:"⌄";display:inline-block;margin-right:6px;transition:transform .2s}
+.rattil-prayer-details[open] summary:after{transform:rotate(180deg)}
+.rattil-bottom-nav{position:fixed;z-index:30;inset:auto 0 0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:7px 8px calc(env(safe-area-inset-bottom) + 7px);border-top:1px solid #e1c78e33;background:rgba(9,24,22,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.rattil-bottom-nav button{min-width:0;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;border-radius:12px;background:transparent;color:#bcb5a5;font:inherit;touch-action:manipulation}
+.rattil-bottom-nav button span{font-size:22px;line-height:1.1}
+.rattil-bottom-nav button small{font-size:10px;white-space:nowrap}
+.rattil-bottom-nav button.active{background:#e1c78e18;color:#edcf8e}
+.rattil-bottom-nav button:focus-visible,.rattil-prayer-details summary:focus-visible{outline:2px solid #e2c68d;outline-offset:2px}
+body.reader-open .rattil-bottom-nav{display:none}
+body[data-theme="light"] .rattil-bottom-nav{background:rgba(255,252,243,.96);border-color:#b49b6d55}
+body[data-theme="light"] .rattil-bottom-nav button{color:#726954}
+body[data-theme="light"] .rattil-bottom-nav button.active{background:#d7bd831c;color:#725c34}
+body[data-theme="light"] .rattil-prayer-details summary{color:#75623e}
+.reader-topbar{grid-template-columns:42px minmax(0,1fr) 42px 42px;gap:4px}
+.reader-topbar #toggleMushafZoom{font:700 13px Georgia,serif}
+#mushafReader #readerAyahs{overflow:auto;align-items:flex-start;justify-content:center;overscroll-behavior:contain}
+#mushafReader #readerAyahs svg{flex:0 0 auto;height:auto!important}
+body.mushaf-zoom #mushafReader #readerAyahs{display:block;padding:8px 4px}
+body.mushaf-zoom #mushafReader #readerAyahs svg{width:100%;height:auto!important;max-height:none}
+body:not(.mushaf-zoom) #mushafReader #readerAyahs{display:flex;overflow:hidden;align-items:stretch}
+body:not(.mushaf-zoom) #mushafReader #readerAyahs svg{height:100%!important;object-fit:contain}
+#mushafReader .selected-ayah-panel{font-size:17px;line-height:1.7;max-height:20vh}
+body[data-theme="light"] .rattil-bottom-nav{color:#302d25}
+@media(max-width:380px){.rattil-bottom-nav{padding-inline:4px}.rattil-bottom-nav button small{font-size:9px}.reader-topbar{grid-template-columns:38px minmax(0,1fr) 38px 38px;gap:2px}}
