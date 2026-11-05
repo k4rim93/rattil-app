@@ -1,5 +1,24 @@
-# Rattil
+# رَتِّل | Rattil 2.0
 
-A fresh home for the Rattil Quran reading and recitation app.
+المستودع النظيف: https://github.com/k4rim93/rattil-app
 
-Development happens on feature branches. The original `k4rim93/rattil` repository remains untouched as an archive/reference.
+نسخة التطوير الأولى المنقولة من المستودع السابق. مسار GitHub Pages: `/rattil-app/`.
+
+
+تطبيق لحفظ القرآن الكريم ومراجعته والتسميع.
+
+## محرك التسميع
+
+- يعتمد على Zipformer2-CTC Streaming عبر `@tilawa/core` 0.4.0 وONNX Runtime Web 1.24.2.
+- تتم معالجة الصوت محليًا داخل Web Worker؛ لا يتم رفع صوت الميكروفون إلى خادم.
+- أول تشغيل يحتاج تنزيل النموذج (حوالي 66 MB) وملف المعجم الصوتي؛ تُحفظ الأصول في IndexedDB.
+- يتم إرسال الصوت في مقاطع قصيرة إلى جلسة Streaming بدل إعادة تحليل نافذة صوتية كاملة كل عدة ثوانٍ.
+- ملفات المحرك وملفات CDN تُخزّن تدريجيًا بواسطة Service Worker لتسهيل التشغيل دون اتصال بعد تحميلها بنجاح.
+
+## الترخيص
+
+راجع `ASR-LICENSE-NOTICE.md` وملف `NPL-1.2.txt` قبل إعادة توزيع التطبيق أو أصول المحرك. نموذج Zipformer ومعجم النطق يخضعان لترخيص NPL-1.2 غير التجاري ذي شرط المشاركة بالمثل؛ لا يجوز فرض رسوم أو إعلانات على ميزة التسميع أو وضعها خلف اشتراك/دفع.
+
+المراجع:
+- https://github.com/yazinsai/tilawa
+- https://github.com/yazinsai/tilawa/releases/tag/zipformer-a0w-ep1-a0.5

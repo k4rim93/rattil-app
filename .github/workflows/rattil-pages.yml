@@ -1,0 +1,60 @@
+name: Rattil build, smoke test and Pages deploy
+on:
+  push:
+    branches:
+      - feature/rattil-v2-foundation
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: rattil-pages
+  cancel-in-progress: true
+jobs:
+  build-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      pages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - name: Build production bundle
+        run: npm run build
+      - name: Verify deployable files
+        run: |
+          test -s dist/index.html
+          test -n "$(find dist/assets -maxdepth 1 -name '*.js' -print -quit)"
+          test -s dist/ort/ort-wasm-simd-threaded.wasm
+          test -s dist/ort/ort-wasm-simd-threaded.mjs
+          test -s dist/models/zipformer_a0w_ep1_a05.int8.onnx
+          test -s dist/models/zipformer_a0w_ep1_a05.io.json
+          test -s dist/zipformer_quran.json
+          test -s dist/quran.json
+          grep -q '/rattil-app/' dist/index.html
+          manifest_file="$(find dist -type f -name 'manifest-*.webmanifest' -print -quit)"
+          test -n "$manifest_file"
+          grep -q '"/rattil-app/"' "$manifest_file"
+          ! grep -R "cdn.jsdelivr.net/npm/onnxruntime-web\\|cdn.jsdelivr.net/npm/@tilawa/core" dist
+      - name: Install Chromium for browser smoke test
+        run: npx playwright install --with-deps chromium
+      - name: Test app and ASR under GitHub Pages subpath
+        run: node scripts/smoke-asr.mjs
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+  deploy:
+    needs: build-test
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,36 @@
+import { chromium } from "playwright";
+import { createServer } from "node:http";
+import { readFile, stat } from "node:fs/promises";
+import { resolve, sep, extname } from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
+const root=resolve("dist"),types={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".css":"text/css; charset=utf-8",".json":"application/json; charset=utf-8",".webmanifest":"application/manifest+json",".wasm":"application/wasm",".mjs":"text/javascript; charset=utf-8",".svg":"image/svg+xml",".png":"image/png"};
+const server=createServer(async(req,res)=>{try{const u=new URL(req.url,"http://localhost");if(u.pathname==="/"){res.writeHead(302,{Location:"/rattil-app/"});return res.end();}if(u.pathname==="/rattil") {res.writeHead(301,{Location:"/rattil-app/"});return res.end();}if(!u.pathname.startsWith("/rattil-app/")){res.writeHead(404);return res.end("Not found");}let rel=decodeURIComponent(u.pathname.slice("/rattil-app/".length));if(!rel)rel="index.html";let file=resolve(root,rel);if(file!==root&&!file.startsWith(root+sep)){res.writeHead(403);return res.end("Forbidden");}try{const s=await stat(file);if(s.isDirectory())file=resolve(file,"index.html");}catch{}let body;try{body=await readFile(file);}catch{if(!extname(rel)){file=resolve(root,"index.html");body=await readFile(file);}else{res.writeHead(404);return res.end("Not found");}}res.writeHead(200,{"Content-Type":types[extname(file)]||"application/octet-stream","Cache-Control":"no-store"});res.end(body);}catch(e){res.writeHead(500);res.end(String(e));}});
+await new Promise((ok,no)=>{server.once("error",no);server.listen(4173,"127.0.0.1",ok);});
+let browser;
+try{
+ browser=await chromium.launch({headless:true,args:["--no-sandbox","--use-fake-device-for-media-stream","--use-fake-ui-for-media-stream"]});
+ const context=await browser.newContext({permissions:["microphone"]});const page=await context.newPage();
+ page.on("pageerror",e=>console.error("PAGE ERROR",e));page.on("console",m=>{if(m.type()==="error")console.error("BROWSER",m.text());});
+ const failed=[];page.on("response",r=>{if(r.url().includes("/rattil-app/")&&r.status()>=400)failed.push({status:r.status(),url:r.url()});});
+ await page.goto("http://127.0.0.1:4173/rattil-app/",{waitUntil:"networkidle"});
+ if(!(await page.locator("title").innerText()).includes("رَتِّل"))throw Error("Rattil page title missing at /rattil-app/");
+ await page.locator('#homeView').waitFor({state:"visible"});
+ if(!(await page.locator('.rattil-feature').count()===4))throw Error("Home feature tiles missing");
+ await page.locator('[data-navigate="qibla"]').click();
+ if(!(await page.locator('#qiblaView').isVisible()))throw Error("Qibla screen did not open");
+ await page.locator('#qiblaView [data-home]').click();
+ await page.locator('[data-navigate="adhkar"]').click();
+ if(!(await page.locator('#adhkarView').isVisible()))throw Error("Adhkar screen did not open");
+ await page.locator('#adhkarCounter').click();
+ if((await page.locator('#adhkarCount').innerText())!=="1")throw Error("Adhkar counter did not increment");
+ await page.locator('#adhkarView [data-home]').click();
+ await page.locator('[data-navigate="recite"]').click();await page.locator(".recite-surah-index-item").first().click();
+ await page.waitForSelector("#liveRecitationText .recite-ayah",{timeout:30000});
+ await page.locator("#loadAsr").click();
+ await page.waitForFunction(()=>{const s=document.querySelector("#asrStatus")?.textContent||"";return s.includes("جاهز")||s.includes("تعذر")||s.includes("حدث خطأ");},null,{timeout:300000});
+ const status=await page.locator("#asrStatus").innerText();console.log("ASR INIT STATUS:",status);if(!status.includes("جاهز"))throw Error("ASR initialization failed: "+status);
+ await page.locator("#startRec").click();await page.waitForFunction(()=>document.querySelector("#stopRec")?.disabled===false,null,{timeout:15000});await page.waitForTimeout(2500);await page.locator("#stopRec").click();
+ await page.waitForFunction(()=>document.querySelector("#asrStatus")?.textContent.includes("تم إيقاف التسميع"),null,{timeout:15000});
+ if(failed.length)throw Error("HTTP failures: "+JSON.stringify(failed));
+ console.log("PASS: GitHub Pages /rattil-app/ path, local ASR assets, model/session init, microphone audio feed and stop.");
+}finally{if(browser)await browser.close();await new Promise(ok=>server.close(ok));}

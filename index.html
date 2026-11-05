@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#101b49"><meta name="description" content="رَتِّل — رحلتك مع القرآن، آيةً آية"><link rel="manifest" href="manifest.webmanifest"><title>رَتِّل</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap');
+:root{--gold:#e6c47d;--cream:#fff9eb;--glass:rgba(226,236,255,.13);--line:rgba(255,255,255,.35)}*{box-sizing:border-box}html{min-height:100%;background:#101b49}body{margin:0;min-height:100vh;color:var(--cream);font-family:'IBM Plex Sans Arabic',sans-serif;background:linear-gradient(180deg,#09142f 0%,#142a57 38%,#385b83 68%,#e7a46e 100%);background-attachment:fixed;overflow-x:hidden}
+.sky{position:fixed;inset:0;z-index:-2;overflow:hidden;background:radial-gradient(ellipse at 78% 62%,#f6b77b55 0,transparent 28%),radial-gradient(ellipse at 15% 22%,#758bb944 0,transparent 35%),linear-gradient(180deg,#09132e 0%,#142650 44%,#385a80 75%,#d28c68 100%)}
+.stars{position:absolute;inset:0;background-image:radial-gradient(2px 2px at 12% 14%,#fff 50%,transparent 100%),radial-gradient(1px 1px at 27% 25%,#fff 50%,transparent 100%),radial-gradient(2px 2px at 66% 11%,#fff 50%,transparent 100%),radial-gradient(1px 1px at 82% 31%,#fff 50%,transparent 100%),radial-gradient(1px 1px at 45% 8%,#fff 50%,transparent 100%),radial-gradient(2px 2px at 91% 18%,#fff 50%,transparent 100%);opacity:.65;animation:twinkle 5s ease-in-out infinite alternate}
+.moon{position:absolute;top:8%;left:8%;width:65px;height:65px;border-radius:50%;box-shadow:-12px 4px 0 0 #f7e6bd;filter:drop-shadow(0 0 18px #f8e4b866);transform:rotate(-20deg)}
+.cloud{position:absolute;width:65vw;height:18vh;min-width:380px;background:radial-gradient(ellipse at 25% 70%,#c5d0df66 0 15%,transparent 48%),radial-gradient(ellipse at 48% 55%,#a9b9d055 0 20%,transparent 52%),radial-gradient(ellipse at 72% 75%,#d2d9e555 0 17%,transparent 50%);filter:blur(13px);opacity:.5;animation:drift 65s linear infinite}
+.cloud.one{top:23%;left:-30%}.cloud.two{top:57%;right:-38%;animation-duration:82s;animation-direction:reverse;opacity:.38}.cloud.three{top:72%;left:-40%;animation-duration:95s;opacity:.34}
+.horizon{position:absolute;bottom:0;left:0;width:100%;height:18%;opacity:.72;background:linear-gradient(transparent,#0a1830 85%);clip-path:polygon(0 52%,8% 48%,13% 58%,19% 39%,25% 58%,32% 50%,39% 60%,46% 34%,51% 57%,59% 44%,65% 61%,73% 38%,81% 56%,88% 44%,95% 57%,100% 47%,100% 100%,0 100%)}
+@keyframes drift{from{transform:translateX(-10%)}to{transform:translateX(150%)}}@keyframes twinkle{from{opacity:.35}to{opacity:.8}}
+.app{width:min(100%,620px);margin:auto;padding:calc(env(safe-area-inset-top) + 13px) 17px calc(env(safe-area-inset-bottom) + 22px)}
+.top{display:flex;justify-content:space-between;align-items:center;margin:0 4px 13px}.round svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.sun svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.round{width:40px;height:40px;border:1px solid #ffffff38;border-radius:50%;background:#ffffff18;color:var(--cream);font-size:18px;display:grid;place-items:center;backdrop-filter:blur(18px)}.brand{text-align:center;font-family:Amiri,serif;font-size:40px;font-weight:700;color:#f4d99d;text-shadow:0 3px 22px #e6c47d66;line-height:1.15}.tag{text-align:center;font-size:12px;color:#f7f1e4;margin-bottom:18px}
+.glass{background:linear-gradient(135deg,rgba(255,255,255,.2),rgba(255,255,255,.075));border:1px solid var(--line);box-shadow:0 14px 40px #07152c38,inset 0 1px 0 #ffffff35;backdrop-filter:blur(22px) saturate(135%);-webkit-backdrop-filter:blur(22px) saturate(135%);border-radius:25px}
+.prayer{padding:16px 15px 13px}.cardhead{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:15px}.city{font-size:12px;color:#f4d99d;font-weight:500}.next{text-align:center;margin-top:14px;font-size:13px;color:#f4dfb3}.clock-top{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;cursor:pointer}.timer{text-align:center;font-size:clamp(43px,12vw,58px);font-weight:500;letter-spacing:1px;font-variant-numeric:tabular-nums;line-height:1.35;text-shadow:0 4px 18px #08142b66}.track{height:6px;border-radius:9px;background:#ffffff40;margin:12px 2px 7px;overflow:hidden}.track span{display:block;width:39%;height:100%;border-radius:9px;background:linear-gradient(90deg,#f7d994,#bd9650);box-shadow:0 0 12px #e9c77c99}.range{display:flex;justify-content:space-between;color:#e8eaf1;font-size:10px}.times{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px;margin-top:18px}.time{text-align:center;padding:7px 1px;border-radius:12px}.time.active{background:#ffffff20}.sun{font-size:18px;color:#f2d18b;line-height:1.3}.time small{display:block;font-size:10px;color:#fff9eb;white-space:nowrap}.time b{display:block;margin-top:4px;font-size:12px;font-weight:600;white-space:nowrap}.times{direction:rtl}.nav{direction:rtl}.datebar{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #ffffff25;margin-top:12px;padding-top:10px;color:#f1e7d4;font-size:11px}.datebar button{border:1px solid #ffffff35;background:#ffffff17;color:white;border-radius:50%;width:31px;height:31px;font-size:18px}
+.section{margin-top:17px}.wird{padding:15px}.wirdlabel{font-size:12px;color:#f4d99d}.wirdmain{display:flex;align-items:center;gap:13px;margin-top:8px}.book{width:104px;height:84px;flex:none;display:grid;place-items:center;font-size:52px;color:#f3d18b;text-shadow:0 3px 20px #f3d18b88}.wirdinfo{flex:1;min-width:0}.wirdinfo h2{font-family:Amiri,serif;font-size:25px;margin:0 0 1px;color:#fff9eb}.wirdinfo p{font-size:12px;margin:0;color:#e8e9ee}.wirdprogress{display:flex;align-items:center;gap:10px;margin-top:12px}.wirdprogress .track{flex:1;margin:0}.wirdprogress b{font-size:12px;color:#fff}.nav{display:grid;grid-template-columns:repeat(4,1fr);margin-top:17px;padding:12px 4px}.nav a{display:flex;flex-direction:column;align-items:center;gap:5px;text-decoration:none;color:#fff9eb;font-size:11px;border-left:1px solid #ffffff30}.nav a:last-child{border-left:0}.nav .ico{display:grid;place-items:center;width:29px;height:29px;color:#f2d18c;line-height:1.3}.nav .ico svg{width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.book svg{width:68px;height:68px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.foot{text-align:center;font-family:Amiri,serif;color:#f7e8ca;font-size:13px;margin:16px 0 2px}
+@media(max-width:370px){.app{padding-left:12px;padding-right:12px}.prayer{padding:13px 10px}.time small{font-size:9px}.time b{font-size:11px}.book{width:82px;font-size:44px}.wirdinfo h2{font-size:22px}}
+@media(prefers-reduced-motion:reduce){.cloud,.stars{animation:none}}
+</style><style>
+.theme-settings button.selected{background:var(--gold);color:#17130b;border-color:var(--gold)}
+.reader-toolbar{display:flex;justify-content:space-between;gap:8px;margin:10px 0}
+.reader-toolbar button{background:var(--glass);color:var(--cream);border:1px solid var(--line);border-radius:9px;padding:8px}
+.mushaf-paper{width:100%;max-width:520px;margin:0 auto;background:#050505;color:#fff;border:3px double #c7a23c;padding:8px 7px;display:flex;flex-direction:column;touch-action:pan-y}
+.mushaf-paper header{display:flex;justify-content:space-between;align-items:center;color:#d6b34d;font-size:11px;border-bottom:1px solid #a9872b55;padding:7px 2px 9px}
+.mushaf-paper footer{display:flex;justify-content:space-between;align-items:center;color:#d6b34d;font-size:13px;border-top:1px solid #a9872b55;padding:8px 2px 2px}
+.mushaf-paper footer button{background:transparent;border:0;color:inherit;font-size:26px;min-width:42px;min-height:38px}
+.mushaf-paper h2{text-align:center;border:3px double #c7a23c;padding:8px;font-family:Amiri,serif}
+.mushaf-paper #readerAyahs{display:block;width:100%;min-height:0;padding:10px;margin:0;line-height:0;background:#082019;border:1px solid #b58c42;box-shadow:inset 0 0 0 3px #082019,inset 0 0 0 4px #b58c42}
+.mushaf-svg-page svg{display:block;width:100%;height:auto;max-width:100%;max-height:none;margin:0 auto;background:#082019}.mushaf-svg-page svg #content path{fill:#f4eedc}
+.mushaf-svg-page [data-ayah]{cursor:pointer}
+.mushaf-svg-page [data-ayah].selected{fill:#d7ad43!important;filter:drop-shadow(0 0 3px #d7ad43)}
+.mushaf-paper.page-turn-next{animation:turnNext .22s ease}
+.mushaf-paper.page-turn-prev{animation:turnPrev .22s ease}
+@keyframes turnNext{from{transform:translateX(-24px);opacity:.6}to{transform:none;opacity:1}}
+@keyframes turnPrev{from{transform:translateX(24px);opacity:.6}to{transform:none;opacity:1}}
+.reader-verse{border-radius:5px;cursor:pointer}
+.reader-verse.selected{background:#b9943244}
+.reader-verse-number{display:inline-grid;place-items:center;width:26px;height:26px;border:1px solid #c6a13a;border-radius:50%;font:12px sans-serif;color:#e3c45d;vertical-align:middle;margin:0 3px}
+body[data-theme="dark"]{background:#050505;color:#fff}
+body[data-theme="dark"] .sky{display:none}
+body[data-theme="dark"] .glass{background:#111}
+body[data-theme="light"]{background:#f3ead8;color:#29251e}
+body[data-theme="light"] .sky{display:none}
+body[data-theme="light"] .glass{background:#fffdf5;color:#29251e}
+body[data-theme="light"] .mushaf-paper{background:#fffdf7;color:#191919}
+body[data-theme="light"] #readerAyahs{color:#191919}
+@media(max-width:520px){.mushaf-paper{max-width:100%;padding:6px 5px}.reader-toolbar{margin:6px 0}}
+\n/* Full-screen Mushaf reader: a dedicated reading surface, not a card inside the app */\n#mushafPageView[hidden]{display:none!important}\n#mushafPageView{position:fixed;inset:0;z-index:1000;display:flex;flex-direction:column;gap:0;padding:calc(env(safe-area-inset-top) + 8px) 8px calc(env(safe-area-inset-bottom) + 8px);background:#082019;color:#f4eedc;overflow:hidden}\n#mushafPageView .reader-toolbar{flex:0 0 auto;margin:0 0 6px;justify-content:flex-start}\n#mushafPageView .reader-toolbar button{background:#123b2d;border-color:#b58c42;color:#f4eedc}\n#mushafPageView .mushaf-paper{width:100%;max-width:620px;height:100%;min-height:0;flex:1;margin:0 auto;padding:8px 8px 4px;background:#082019;border:3px double #d2ad56;box-shadow:inset 0 0 0 2px #082019,inset 0 0 0 4px #b58c42;display:flex;flex-direction:column}\n#mushafPageView .mushaf-paper header,#mushafPageView .mushaf-paper footer{flex:0 0 auto;color:#e4c36f}\n#mushafPageView #readerAyahs{flex:1 1 auto;min-height:0;height:0;padding:4px;margin:4px 0;background:#082019;border:0;box-shadow:none;display:flex;align-items:stretch;justify-content:center;overflow:hidden}\n#mushafPageView #readerAyahs svg{width:100%;height:100%;max-height:100%;object-fit:contain}\n#mushafPageView .selected-ayah-panel{position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 58px);z-index:3;max-height:28vh;overflow:auto;padding:12px 15px;border:1px solid #c6a34f;border-radius:14px;background:#102d23;color:#fff8e7;box-shadow:0 8px 28px #0009;font-family:Amiri,serif;font-size:19px;line-height:1.8}\n#mushafPageView .selected-ayah-panel[hidden]{display:none}\n#mushafPageView .selected-ayah-panel strong{display:block;color:#e4c36f;font:600 12px sans-serif;margin-bottom:5px}\n@media(min-width:700px){#mushafPageView{padding-left:24px;padding-right:24px}#mushafPageView .mushaf-paper{max-width:520px}}\n</style><style>.controls .action:disabled{opacity:.45}.asr-word{display:inline-block;margin:3px;padding:5px 8px;border-radius:8px;background:#ffffff18}.asr-result-good{border:1px solid #9bd5ae}.asr-result-none{border:1px solid #e7c47d}</style><style>
+:root{--mushaf-page:#071f18;--mushaf-ink:#f7f0df}
+body[data-theme="light"]{--mushaf-page:#fffdf5;--mushaf-ink:#26231d}
+body[data-theme="dark"]{--mushaf-page:#050b08;--mushaf-ink:#f7f0df}
+#mushafReader[hidden]{display:none!important}
+#mushafReader{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;overflow:hidden;background:var(--mushaf-page);color:var(--mushaf-ink);padding:calc(env(safe-area-inset-top) + 5px) 8px calc(env(safe-area-inset-bottom) + 6px)}
+.reader-topbar{height:44px;flex:0 0 44px;display:grid;grid-template-columns:44px 1fr 44px;align-items:center;text-align:center;color:#dfbd65;font-weight:700}
+.reader-topbar button,.reader-index-head button{height:38px;width:38px;border:1px solid #b58c42;border-radius:50%;background:#17392c;color:#f7e7bd;font-size:24px}
+.reader-page-shell{flex:1;min-height:0;display:flex;justify-content:center;align-items:stretch}
+#mushafReader .mushaf-paper{width:100%;max-width:560px;height:100%;min-height:0;margin:0 auto;padding:8px 7px 4px;display:flex;flex-direction:column;background:var(--mushaf-page);border:3px double #c7a34c;box-shadow:inset 0 0 0 2px var(--mushaf-page),inset 0 0 0 4px #a9863a}
+#mushafReader .mushaf-paper header{height:32px;flex:0 0 32px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #9c7d3c;color:#d9b75d;font-size:11px;padding:0 4px}
+#mushafReader #readerAyahs{flex:1;min-height:0;height:0;width:100%;display:flex;align-items:stretch;justify-content:center;overflow:hidden;padding:4px 0;margin:0;background:var(--mushaf-page)}
+#mushafReader #readerAyahs svg{display:block;width:100%;height:100%;max-width:100%;background:var(--mushaf-page)}
+#mushafReader .mushaf-paper footer{height:36px;flex:0 0 36px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #9c7d3c;color:#d9b75d;padding:0 4px}
+#mushafReader .mushaf-paper footer button{background:none;border:0;color:inherit;font-size:28px;width:42px;height:36px}
+.selected-ayah-panel{position:absolute;z-index:4;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom) + 52px);max-height:25vh;overflow:auto;padding:10px 14px;border:1px solid #c7a34c;border-radius:12px;background:#102c22;color:#fff8e7;box-shadow:0 6px 22px #0008;font:19px/1.8 Amiri,serif}
+.selected-ayah-panel[hidden]{display:none}
+.selected-ayah-panel strong{display:block;color:#dfbd65;font:600 12px sans-serif}
+.reader-index-panel{position:absolute;inset:calc(env(safe-area-inset-top) + 4px) 8px calc(env(safe-area-inset-bottom) + 4px);z-index:8;border:1px solid #b58c42;border-radius:18px;background:#101311;color:#fff8e7;display:flex;flex-direction:column;padding:12px;box-shadow:0 12px 40px #000b}
+.reader-index-panel[hidden]{display:none!important}
+.reader-index-head{display:flex;align-items:center;justify-content:space-between;color:#dfbd65;padding-bottom:10px}
+#readerSurahSearch{width:100%;padding:12px;border-radius:10px;border:1px solid #796334;background:#20231f;color:white;margin-bottom:8px;font:16px sans-serif}
+.reader-surah-list{overflow:auto;min-height:0;flex:1}
+.reader-surah-row{width:100%;display:grid;grid-template-columns:38px 1fr auto;gap:10px;align-items:center;text-align:right;padding:12px 8px;border:0;border-bottom:1px solid #ffffff18;background:transparent;color:#fff8e7;font:17px Amiri,serif}
+.reader-surah-row:disabled{opacity:.5}
+.reader-surah-number{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#a98534;color:#16130d;font:13px sans-serif}
+.reader-surah-row small{color:#c8b98f;font:11px sans-serif}
+@media(min-width:700px){#mushafReader{padding-left:20px;padding-right:20px}}
+</style><style>
+.live-recitation-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0}
+.live-recitation-controls label{font-size:13px;color:var(--muted,#aaa)}
+#reciteSurahSelect{min-width:130px;flex:1;padding:10px;border-radius:10px}
+.live-recitation-text{direction:rtl;text-align:justify;line-height:2.5;font-family:Amiri,serif;font-size:23px;padding:16px;margin:12px 0;border:1px solid var(--border,#777);border-radius:14px;max-height:48vh;overflow:auto;scroll-behavior:smooth}
+.live-recitation-text .rec-word{display:inline-block;margin:0 2px;padding:0 2px;border-radius:4px;transition:background .15s,color .15s}
+.live-recitation-text .correct{color:#16834a;background:#16834a18}
+.live-recitation-text .error{color:#d52d36;background:#d52d3618}
+.live-recitation-text .uncertain{color:#b47a13;background:#b47a1318}
+.live-recitation-text .unattempted{color:inherit}
+.live-recitation-text.is-hidden .rec-word{color:transparent!important;text-shadow:0 0 9px var(--text,#ddd);background:transparent!important;user-select:none}
+</style><style>
+/* Rattil recitation workspace — Mushaf-first layout */
+#reciteView.recite-workspace{padding:16px 14px 110px;min-height:calc(100dvh - 24px);position:relative}
+.recite-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.recite-heading h2{margin:4px 0;font-family:Amiri,serif;font-size:30px;color:var(--gold)}
+.recite-heading p{margin:0 0 12px;font-size:13px;opacity:.8}
+.recite-live-indicator{font-size:11px;color:#8fd4a7;white-space:nowrap;padding-top:12px}
+.recite-engine-status{font-size:12px;margin:8px 0}
+.recite-engine-actions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}
+.recite-engine-actions button{font-size:12px;padding:8px 10px}
+.recite-index-panel,.recite-reader-panel{border:1px solid var(--line);border-radius:16px;background:rgba(0,0,0,.22);padding:12px}
+.recite-index-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.recite-index-heading h3{font:700 22px Amiri,serif;margin:0;color:var(--gold)}
+.recite-index-heading small{font-size:11px;opacity:.75}
+.recite-index-heading>span{font-size:11px;color:var(--gold)}
+.recite-search{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.08);color:inherit;font:inherit;font-size:15px;margin-bottom:8px}
+.recite-surah-index-list{display:grid;grid-template-columns:1fr 1fr;gap:7px;max-height:52dvh;overflow:auto;padding:2px}
+.recite-surah-index-item{display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:center;text-align:right;border:1px solid #ffffff20;border-radius:10px;background:rgba(255,255,255,.045);color:inherit;padding:9px 7px;min-width:0}
+.recite-surah-index-item:active{background:#d7b76b22}
+.recite-surah-index-item .surah-index-number{width:28px;height:28px;display:grid;place-items:center;border:1px solid #c6a34f;border-radius:50%;color:var(--gold);font:12px sans-serif}
+.recite-surah-index-item strong{display:block;font:17px Amiri,serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.recite-surah-index-item small{display:block;font:10px sans-serif;opacity:.65}
+.recite-reader-panel[hidden],.recite-index-panel[hidden]{display:none!important}
+.recite-reader-top{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;margin-bottom:10px}
+.recite-reader-top>div{text-align:center;min-width:0}
+.recite-reader-top strong{display:block;font:700 22px Amiri,serif;color:var(--gold)}
+.recite-reader-top small{display:block;font-size:10px;opacity:.7}
+.recite-reader-top button{font-size:12px;padding:8px 10px;white-space:nowrap}
+.live-recitation-text{direction:rtl;text-align:justify;line-height:2.25;font-family:Amiri,serif;font-size:25px;padding:10px 5px;margin:0;max-height:58dvh;overflow:auto;scroll-behavior:smooth;border:0;border-radius:0;background:transparent}
+.recite-ayah{padding:8px 4px 12px;border-bottom:1px solid #ffffff18;scroll-margin:100px;line-height:2.15}
+.recite-ayah.active{background:rgba(205,169,84,.12);border-radius:9px;box-shadow:inset 0 0 0 1px #c6a34f66}
+.recite-ayah-heading{display:flex;align-items:center;gap:8px;margin-bottom:3px;color:var(--gold);font:12px sans-serif}
+.recite-ayah-number{display:inline-grid;place-items:center;width:27px;height:27px;flex:none;border:1px solid #c6a34f;border-radius:50%;color:var(--gold);font:12px sans-serif}
+.recite-ayah-text{display:inline}
+.recite-word{display:inline;border-radius:4px;padding:0 1px;transition:background .15s,color .15s}
+.recite-word.correct{color:#55d38a;background:#16834a20}
+.recite-word.error{color:#ff7777;background:#d52d3620}
+.recite-word.uncertain{color:#e8c36b;background:#b47a1320}
+.live-recitation-text.is-hidden .recite-ayah:not(.revealed) .recite-ayah-text{color:transparent!important;text-shadow:none;user-select:none}
+.live-recitation-text.is-hidden .recite-ayah:not(.revealed) .recite-ayah-text .recite-word{color:transparent!important}
+.live-recitation-text.is-hidden .recite-ayah-number{visibility:visible!important}
+.recite-reader-empty{text-align:center;padding:32px 8px;color:#d8c99e;font:19px Amiri,serif}
+.recite-result{font-size:12px;margin:8px 0 0}
+.recite-bottom-bar{position:sticky;bottom:calc(env(safe-area-inset-bottom) + 4px);z-index:5;display:flex;align-items:center;gap:9px;padding:10px;margin:12px -2px 0;border:1px solid #ffffff28;border-radius:18px;background:rgba(10,13,12,.94);backdrop-filter:blur(16px);box-shadow:0 6px 22px #0006}
+.recite-bottom-status{flex:1;min-width:0;font-size:11px;opacity:.8}
+.recite-mic-button{width:58px;height:58px;border:0;border-radius:50%;background:#28c76f;color:white;font-size:25px;box-shadow:0 0 0 5px #28c76f24,0 3px 18px #28c76f66}
+.recite-mic-button:disabled{opacity:.4;box-shadow:none}
+.recite-stop-button{padding:10px 14px;border:1px solid #ffffff35;border-radius:12px;background:#292929;color:inherit}
+.recite-stop-button:disabled{display:none}
+.recite-privacy,.recite-license{font-size:10px;margin-top:8px}
+@media(max-width:380px){.recite-surah-index-list{grid-template-columns:1fr}.live-recitation-text{font-size:23px}.recite-reader-top{grid-template-columns:auto 1fr auto}.recite-reader-top button{padding:7px;font-size:11px}}
+</style>
+<style id="rattil-ux-v1">
+:root{--ux-bg:#0b100e;--ux-surface:#141b17;--ux-surface-2:#1b241e;--ux-line:#303d34;--ux-text:#f4f0e6;--ux-muted:#a9b2a8;--ux-gold:#d8b86c;--ux-green:#28533d}
+html,body{background:var(--ux-bg)!important;color:var(--ux-text);font-family:'IBM Plex Sans Arabic',sans-serif}
+body{background:radial-gradient(ellipse at 50% -20%,#243c2e 0,transparent 55%),var(--ux-bg)!important}
+.sky{display:none!important}
+.app{width:min(100%,560px);padding:calc(env(safe-area-inset-top) + 14px) 18px calc(env(safe-area-inset-bottom) + 22px)}
+.ux-home{min-height:calc(100dvh - env(safe-area-inset-top));display:flex;flex-direction:column}
+.ux-header{display:flex;align-items:center;justify-content:space-between;margin:2px 2px 22px}
+.ux-brand-mark{font:700 34px Amiri,serif;color:var(--ux-gold);letter-spacing:.2px}
+.ux-icon-button{width:42px;height:42px;border:1px solid var(--ux-line);border-radius:50%;background:var(--ux-surface);color:var(--ux-text);font-size:19px}
+.ux-eyebrow{margin:0 0 9px;color:var(--ux-gold);font-size:12px}
+.ux-welcome{display:flex;align-items:center;justify-content:space-between;padding:21px 19px;border:1px solid #536b58;border-radius:20px;background:linear-gradient(125deg,#1c3829,#14231b 75%);box-shadow:0 12px 30px #0003}
+.ux-welcome-copy span{font-size:12px;color:#d8cba8}.ux-welcome h1{font:700 27px Amiri,serif;margin:5px 0;color:#fff8e9}.ux-welcome p{font-size:12px;color:#c1c9be;margin:0}
+.ux-welcome-symbol{font:64px Amiri,serif;color:var(--ux-gold);opacity:.85;padding:0 8px}
+.ux-primary-actions{display:grid;gap:10px;margin-top:19px}
+.ux-action{display:flex;align-items:center;gap:13px;width:100%;min-height:75px;padding:12px 15px;border:1px solid var(--ux-line);border-radius:16px;background:var(--ux-surface);color:var(--ux-text);text-align:right}
+.ux-action:active,.ux-secondary-card:active{transform:scale(.985)}
+.ux-action-primary{background:#17251c;border-color:#3b5b45}
+.ux-action-gold{background:#2b281c;border-color:#806b3c}
+.ux-action-icon{width:42px;height:42px;display:grid;place-items:center;flex:none;border-radius:13px;background:#ffffff0c;font-size:21px}
+.ux-action strong,.ux-secondary-card strong{display:block;font-size:15px;font-weight:700}
+.ux-action small,.ux-secondary-card small{display:block;margin-top:3px;color:var(--ux-muted);font-size:11px}
+.ux-arrow{margin-right:auto;color:var(--ux-gold);font-size:25px}
+.ux-secondary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:13px}
+.ux-secondary-card{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-height:98px;padding:13px;border:1px solid var(--ux-line);border-radius:15px;background:#111814;color:var(--ux-text);text-align:right}
+.ux-secondary-card>span{font-size:20px;color:var(--ux-gold)}
+.ux-home-footer{margin-top:auto;padding:26px 0 8px;text-align:center;color:#9eaa9f;font:16px Amiri,serif}
+.legacy-home-content{display:none!important}
+.view{min-height:calc(100dvh - env(safe-area-inset-top) - 12px);padding:15px 12px 25px;background:var(--ux-surface)!important;border:1px solid var(--ux-line)!important;border-radius:20px!important;box-shadow:0 12px 30px #0003}
+.view h2{color:var(--ux-gold)}
+.controls select,.controls input,.controls button,.action{background:#202a23;color:var(--ux-text);border:1px solid var(--ux-line);border-radius:12px}
+.controls select option{color:#111}
+.recite-workspace{padding:13px 10px 18px!important}
+.recite-heading h2{font-size:25px}
+.recite-engine-status{background:#1b2820;border:1px solid var(--ux-line);border-radius:12px}
+.recite-engine-actions button{background:#1c2921;border-color:#435447}
+.recite-index-panel,.recite-reader-panel{background:transparent;border:0;border-radius:0;padding:0}
+.recite-index-heading h3{color:var(--ux-gold)}
+.recite-search{background:#151c18;border-color:var(--ux-line);color:var(--ux-text)}
+.recite-surah-index-item{background:#151c18;border-color:var(--ux-line);border-radius:12px}
+.recite-reader-top{padding:8px 0;border-bottom:1px solid var(--ux-line)}
+.recite-reader-top strong{color:var(--ux-gold)}
+.live-recitation-text{max-height:calc(100dvh - 250px);font-size:25px;padding:12px 2px;color:var(--ux-text)}
+.recite-ayah{border-bottom:1px solid #ffffff12}
+.recite-ayah.active{background:#d8b86c12;box-shadow:inset 0 0 0 1px #d8b86c55}
+.recite-ayah-number{border-color:var(--ux-gold);color:var(--ux-gold)}
+.recite-bottom-bar{position:fixed;right:12px;top:50%;bottom:auto;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;align-items:center;gap:7px;width:auto;margin:0;padding:0;border:0;background:transparent;box-shadow:none;backdrop-filter:none}
+.recite-bottom-status{display:none}
+.recite-mic-button{width:48px;height:48px;border:1px solid #d8b86c;background:#c29d4c;color:#111;border-radius:50%;font-size:20px;box-shadow:0 4px 18px #0008}
+.recite-stop-button{padding:7px 9px;background:#17231b;border-color:#65715e;font-size:11px}
+.recite-privacy,.recite-license{padding-right:48px;color:#9da89e}
+#mushafReader{background:#07130d!important}
+#mushafReader .mushaf-paper{background:#07130d!important;border-color:#b8954c!important}
+#mushafReader #readerAyahs{background:#07130d!important}
+.reader-index-panel{background:#111914;border-color:#8c7443}
+.reader-surah-row{border-bottom-color:#ffffff12}
+@media(max-width:390px){.app{padding-left:13px;padding-right:13px}.ux-welcome h1{font-size:24px}.ux-welcome-symbol{font-size:52px}.ux-action{min-height:70px}.live-recitation-text{font-size:23px}}
+@media(prefers-reduced-motion:reduce){.view{animation:none}}
+</style><style>
+/* Rattil programmed home v1 — translucent, time-aware sky */
+:root{--sky-top:#182d55;--sky-mid:#526c8c;--sky-low:#df9c79;--sky-glow:#ffd18a;--sky-glass:rgba(255,255,255,.14)}
+body{background:linear-gradient(180deg,var(--sky-top),var(--sky-mid) 48%,var(--sky-low));transition:background 2s ease,color .6s ease}
+.sky{background:radial-gradient(ellipse at 50% 73%,color-mix(in srgb,var(--sky-glow) 48%,transparent),transparent 38%),linear-gradient(180deg,var(--sky-top),var(--sky-mid) 58%,var(--sky-low));transition:background 2s ease}
+body.sky-dawn{--sky-top:#253b67;--sky-mid:#bd8d91;--sky-low:#efb68b;--sky-glow:#ffe2a6}
+body.sky-day{--sky-top:#4c83b1;--sky-mid:#80b4c4;--sky-low:#d5c6a5;--sky-glow:#fff0bd}
+body.sky-sunset{--sky-top:#293e70;--sky-mid:#bd7774;--sky-low:#e7a16d;--sky-glow:#ffd080}
+body.sky-night{--sky-top:#07142d;--sky-mid:#172b50;--sky-low:#344967;--sky-glow:#c6d6f5}
+body.sky-day .stars,body.sky-dawn .stars,body.sky-sunset .stars{opacity:0}
+body.sky-night .stars{opacity:.8}
+body.sky-day .moon,body.sky-dawn .moon,body.sky-sunset .moon{opacity:0}
+body.sky-night .moon{opacity:.85}
+.rattil-home{padding-bottom:calc(env(safe-area-inset-bottom) + 24px)}
+.rattil-topbar{display:grid;grid-template-columns:42px 1fr 42px;align-items:center;margin:0 0 10px}
+.rattil-round{width:39px;height:39px;border:1px solid #ffffff65;border-radius:50%;background:#ffffff1b;color:#fff7e8;backdrop-filter:blur(16px);font-size:20px}
+.rattil-bell{display:grid;place-items:center}
+.rattil-brand{text-align:center;display:flex;flex-direction:column;align-items:center;color:#fff7e8;line-height:1.05}
+.rattil-brand-icon{font-size:22px;color:#f5d68e;text-shadow:0 0 16px #f5d68e88}
+.rattil-brand strong{font:700 31px Amiri,serif;text-shadow:0 3px 16px #08142b77}
+.rattil-brand small{font-size:10px;letter-spacing:3px;opacity:.85}
+.rattil-greeting{text-align:center;margin:8px 0 13px;color:#fff9ed;text-shadow:0 2px 12px #14213a66}
+.rattil-greeting span{display:block;font:20px Amiri,serif}
+.rattil-greeting small{font-size:11px;opacity:.8}
+.rattil-prayer{padding:13px 10px 10px;border-radius:24px;background:linear-gradient(135deg,rgba(255,255,255,.23),rgba(255,255,255,.07))}
+.rattil-prayer-head,.rattil-prayer-foot{display:flex;justify-content:space-between;align-items:center;font-size:12px}
+.rattil-prayer-head{font-weight:700}
+.rattil-city{font-size:10px;color:#f6dca7}
+.rattil-next{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:9px 3px 10px;font-size:12px}
+.rattil-next strong{font-size:21px;letter-spacing:1px;font-variant-numeric:tabular-nums;color:#ffe3a6}
+.rattil-times{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px}
+.rattil-time{text-align:center;border-radius:12px;padding:7px 1px 8px;min-width:0;transition:background .3s,transform .3s}
+.rattil-time.active{background:rgba(255,226,166,.2);box-shadow:inset 0 0 0 1px #ffdf9a88;transform:translateY(-2px)}
+.rattil-prayer-icon{display:grid;place-items:center;height:30px;color:#ffe09a}
+.rattil-prayer-icon svg{width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.rattil-time small{display:block;font-size:10px;white-space:nowrap;margin-top:3px}
+.rattil-time b{display:block;font-size:12px;font-weight:600;white-space:nowrap;margin-top:3px;font-variant-numeric:tabular-nums}
+.rattil-prayer-foot{border-top:1px solid #ffffff2b;margin-top:8px;padding-top:8px;font-size:9px;opacity:.82}
+.rattil-section-title{font-size:14px;font-weight:700;margin:18px 3px 9px;color:#fff6e7}
+.rattil-feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;direction:rtl}
+.rattil-feature{min-height:116px;border:1px solid #ffffff70;border-radius:21px;background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.075));box-shadow:0 10px 30px #07152c2b,inset 0 1px 0 #ffffff35;backdrop-filter:blur(20px);color:#fff9ee;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:12px 7px;font:inherit}
+.rattil-feature:active{transform:scale(.975);background:#ffffff30}
+.rattil-feature-icon{height:48px;color:#ffdf9b;display:grid;place-items:center;filter:drop-shadow(0 3px 10px #f5d68e55)}
+.rattil-feature-icon svg{width:48px;height:48px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.rattil-feature strong{font-size:14px}
+.rattil-feature small{font-size:10px;opacity:.78}
+.rattil-resume{margin-top:12px;padding:12px 13px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.rattil-resume div{display:flex;flex-direction:column;gap:2px}
+.rattil-resume div span{font-size:10px;color:#ffe09a}
+.rattil-resume div strong{font-size:13px}
+.rattil-resume div small{font-size:10px;opacity:.75}
+.rattil-resume button{border:1px solid #ffe09a88;background:#ffe09a20;color:#fff7e8;border-radius:12px;padding:9px;font:inherit;font-size:11px;white-space:nowrap}
+.rattil-home-footer{text-align:center;font:14px Amiri,serif;margin:15px 0 0;color:#fff1d2}
+.rattil-tool-view{background:rgba(10,25,45,.28)}
+.qibla-compass{display:grid;place-items:center;padding:22px}
+.qibla-ring{width:min(72vw,270px);aspect-ratio:1;border:2px solid #ffe09a88;border-radius:50%;display:grid;place-items:center;position:relative;background:radial-gradient(circle,#ffffff18,transparent 68%),repeating-conic-gradient(from 0deg,#ffffff44 0 1deg,transparent 1deg 15deg)}
+.qibla-north{position:absolute;top:12px;font-size:12px;color:#ffe09a}
+.qibla-needle{font-size:75px;color:#ffe09a;transform:rotate(0deg);filter:drop-shadow(0 0 12px #ffe09a77)}
+.qibla-center{position:absolute;font-size:22px}
+.adhkar-tabs{display:flex;gap:8px;margin:16px 0}
+.adhkar-tabs button,.adhkar-actions button{border:1px solid #ffffff45;background:#ffffff15;color:#fff;border-radius:11px;padding:10px;font:inherit}
+.adhkar-tabs button.selected{background:#e6c47d;color:#172033}
+.adhkar-card{border:1px solid #ffffff45;border-radius:18px;padding:18px;text-align:center;background:#ffffff12}
+.adhkar-card>small{display:block;color:#ffe09a}
+.adhkar-card>strong{display:block;font:28px Amiri,serif;margin:15px 0}
+.adhkar-counter{width:132px;height:132px;border-radius:50%;border:2px solid #ffe09a;background:#ffffff16;color:#fff;font-size:32px}
+.adhkar-counter small{font-size:14px;opacity:.75}
+.adhkar-actions{display:flex;justify-content:center;gap:8px;margin-top:16px}
+@media(max-width:370px){.rattil-feature{min-height:105px}.rattil-time small{font-size:9px}.rattil-time b{font-size:11px}.rattil-next strong{font-size:18px}}
+@media(prefers-reduced-motion:reduce){.cloud,.stars{animation:none!important}.rattil-time,.rattil-feature{transition:none}}
+</style></head><body>
+<div class="sky" aria-hidden="true"><div class="stars"></div><div class="moon"></div><div class="cloud one"></div><div class="cloud two"></div><div class="cloud three"></div><div class="horizon"></div></div>
+<main class="app"><section id="homeView" class="home-view rattil-home">
+  <header class="rattil-topbar">
+    <button id="openSettings" class="rattil-round" aria-label="الإعدادات">⚙</button>
+    <div class="rattil-brand"><span class="rattil-brand-icon">۞</span><strong>رَتِّل</strong><small>رحلتك مع القرآن</small></div>
+    <span class="rattil-round rattil-bell" aria-label="التنبيهات">♧</span>
+  </header>
+  <div class="rattil-greeting"><span>السلام عليكم ورحمة الله وبركاته</span><small id="rattilGreetingDate">أهلاً بك في رَتِّل</small></div>
+  <section class="rattil-prayer glass">
+    <div class="rattil-prayer-head"><span>مواقيت الصلاة</span><span class="rattil-city">⌖ القاهرة</span></div>
+    <div class="rattil-next"><span id="nextPrayer">جارٍ تحميل مواقيت الصلاة</span><strong id="prayerCountdown">--:--:--</strong></div>
+    <div class="rattil-times" id="prayerTimes" dir="rtl">
+      <div class="rattil-time time"><span class="rattil-prayer-icon"><svg viewBox="0 0 32 32"><path d="M4 25h24M16 4v8M7 10l5 5M25 10l-5 5M3 17h6M23 17h6"/></svg></span><small>الفجر</small><b id="prayer-Fajr">—:—</b></div>
+      <div class="rattil-time time"><span class="rattil-prayer-icon"><svg viewBox="0 0 32 32"><path d="M4 25h24M8 25a8 8 0 0 1 16 0M16 13V3m-4 4 4-4 4 4M5 18h3m16 0h3"/></svg></span><small>الشروق</small><b id="prayer-Sunrise">—:—</b></div>
+      <div class="rattil-time time"><span class="rattil-prayer-icon"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="6"/><path d="M16 2v4m0 20v4M2 16h4m20 0h4M6 6l3 3m14 14 3 3M26 6l-3 3M9 23l-3 3"/></svg></span><small>الظهر</small><b id="prayer-Dhuhr">—:—</b></div>
+      <div class="rattil-time time"><span class="rattil-prayer-icon"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="5"/><path d="M16 2v4m-10 1 3 3m14-3-3 3M2 16h4m20 0h4M5 27h22M9 23l-4 4m18-4 4 4"/></svg></span><small>العصر</small><b id="prayer-Asr">—:—</b></div>
+      <div class="rattil-time time"><span class="rattil-prayer-icon"><svg viewBox="0 0 32 32"><path d="M3 25h26M8 25a8 8 0 0 1 16 0M16 4v7m-4-3 4 3 4-3M5 29h22"/></svg></span><small>المغرب</small><b id="prayer-Maghrib">—:—</b></div>
+      <div class="rattil-time time"><span class="rattil-prayer-icon"><svg viewBox="0 0 32 32"><path d="M23 21A11 11 0 0 1 10 5a12 12 0 1 0 13 16Z"/><path d="m23 4 1.2 3.2L27 8l-2.8 1.2L23 12l-1.2-2.8L19 8l2.8-.8L23 4Z"/></svg></span><small>العشاء</small><b id="prayer-Isha">—:—</b></div>
+    </div>
+    <div class="rattil-prayer-foot"><span hidden id="previousPrayer"></span><span hidden id="upcomingPrayer"></span><button id="previousDate" type="button" aria-label="اليوم السابق">‹</button><span id="date">جارٍ تحديد التاريخ</span><span id="prayerSource">المواقيت حسب القاهرة</span><button id="nextDate" type="button" aria-label="اليوم التالي">›</button></div>
+  </section>
+  <div class="rattil-section-title">خدمات رَتِّل</div>
+  <section class="rattil-feature-grid" aria-label="خدمات رتل">
+    <button class="rattil-feature" id="homeOpenIndex" type="button"><span class="rattil-feature-icon"><svg viewBox="0 0 64 64"><path d="M7 13q13-6 25 3v39Q20 46 7 52zM57 13q-13-6-25 3v39q12-9 25-3zM32 16v39M13 21q8-2 15 2M51 21q-8-2-15 2"/></svg></span><strong>المصحف والتفسير</strong><small id="lastReadLabel">اقرأ وتدبّر</small></button>
+    <button class="rattil-feature" data-navigate="recite" type="button"><span class="rattil-feature-icon"><svg viewBox="0 0 64 64"><rect x="23" y="5" width="18" height="34" rx="9"/><path d="M15 28v5a17 17 0 0 0 34 0v-5M32 50v9M22 59h20M8 27v10m48-10v10M3 31v3m58-3v3"/></svg></span><strong>التسميع AI</strong><small>استمع وصحّح تلاوتك</small></button>
+    <button class="rattil-feature" data-navigate="qibla" type="button"><span class="rattil-feature-icon"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="25"/><path d="m42 18-7 19-19 9 9-19zM25 27l12 10"/></svg></span><strong>القبلة والبوصلة</strong><small>اعرف اتجاه القبلة</small></button>
+    <button class="rattil-feature" data-navigate="adhkar" type="button"><span class="rattil-feature-icon"><svg viewBox="0 0 64 64"><path d="M32 8a21 21 0 1 0 21 21 21 21 0 0 0-21-21Z"/><path d="M32 8v8M18 14l5 7m-11 8h8m25-15-5 7m11 8h-8M32 50v7m-8-2 8 6 8-6"/></svg></span><strong>الأذكار</strong><small>أذكارك اليومية</small></button>
+  </section>
+  <section class="rattil-resume glass"><div><span>وِرد اليوم</span><strong>كمّل من حيث وصلت</strong><small>آخر موضع محفوظ على جهازك</small></div><button id="resumeReading" type="button">استكمال القراءة ←</button></section>
+  <footer class="rattil-home-footer">اللهم اجعل القرآن ربيع قلوبنا ونور صدورنا</footer>
+</section>
+<section id="mushafView" class="view glass panel">
+<button class="action bottomBack" data-home>← الرئيسية</button><h2>المصحف الشريف</h2>
+<div class="controls"><button id="openSurahIndex" type="button">فهرس السور</button><select id="surahSelect" aria-label="اختر السورة"><option>جارٍ تحميل السور…</option></select><button id="loadSurah">عرض السورة</button></div>
+<div id="mushafListView"><div class="muted" id="surahMeta">النص القرآني بالرسم العثماني</div><div class="saved-bookmarks"><h3>علاماتي المحفوظة</h3><div id="bookmarkList" class="bookmark-list">لا توجد علامات محفوظة بعد.</div></div><div id="quranContent" class="empty">اختر سورة لبدء القراءة</div>
+</div><div class="muted" style="margin-top:14px">مصدر النص: AlQuran Cloud API. يُعرض النص كما ورد من المصدر دون تعديل.</div>
+</section>
+<section id="memorizeView" class="view glass panel"><button class="action bottomBack" data-home>← الرئيسية</button><h2>الحفظ</h2><p>حدد السورة والآيات التي تريد حفظها. تقدمك محفوظ على هذا الجهاز.</p><div class="controls"><select id="memorizeSurah"></select><input id="memorizeFrom" type="number" min="1" value="1" aria-label="من آية"><input id="memorizeTo" type="number" min="1" value="7" aria-label="إلى آية"><button id="savePlan">حفظ الخطة</button></div><div id="planStatus" class="status">لم يتم تحديد خطة بعد.</div></section>
+<section id="reciteView" class="view glass panel recite-workspace">
+<button class="action bottomBack" data-home>← الرئيسية</button>
+<header class="recite-heading"><div><h2>التسميع</h2><p>اختر سورة، ثم ابدأ التلاوة. تتم المعالجة محليًا على جهازك.</p></div><span class="recite-live-indicator" id="reciteLiveIndicator">● جاهز</span></header>
+<div id="asrStatus" class="status recite-engine-status" aria-live="polite">محرك التسميع لم يتم تحميله بعد.</div>
+<div class="recite-engine-actions"><button id="loadAsr" class="action">تحميل محرك التسميع</button><button id="clearAsrCache" class="action" disabled>حذف النموذج المحفوظ</button></div>
+<section id="reciteIndexPanel" class="recite-index-panel">
+<div class="recite-index-heading"><div><h3>فهرس السور</h3><small>اختر السورة التي تريد تسميعها</small></div><span>١١٤ سورة</span></div>
+<input id="reciteSurahSearchInput" class="recite-search" type="search" placeholder="ابحث باسم السورة أو رقمها" aria-label="البحث في فهرس السور">
+<div id="reciteSurahIndexList" class="recite-surah-index-list"><div class="muted">جارٍ تحميل فهرس السور…</div></div>
+</section>
+<section id="reciteReaderPanel" class="recite-reader-panel" hidden>
+<div class="recite-reader-top"><button id="reciteBackToIndex" class="action">‹ الفهرس</button><div><strong id="reciteCurrentSurahName">سورة الفاتحة</strong><small id="reciteCurrentSurahMeta">٧ آيات</small></div><button id="toggleReciteText" class="action" type="button" aria-pressed="false">إخفاء الآيات</button></div>
+<div id="liveRecitationText" class="live-recitation-text" aria-live="polite"><div class="recite-reader-empty">اختر سورة من الفهرس لعرض آياتها.</div></div>
+<div id="asrResult" class="status recite-result" aria-live="polite">سيتم تمييز موضع التلاوة تلقائيًا عند التعرف عليه.</div>
+</section>
+<div class="recite-bottom-bar"><div class="recite-bottom-status" id="reciteBottomStatus">حمّل محرك التسميع أول مرة لاستخدام الميكروفون.</div><button id="startRec" class="recite-mic-button" disabled aria-label="ابدأ التسميع">🎙</button><button id="stopRec" class="recite-stop-button" disabled>إيقاف</button></div>
+<div class="muted recite-privacy">الصوت لا يُرفع إلى خادم. لا يدّعي هذا الإصدار تقييم أحكام التجويد.</div>
+<div class="muted recite-license">Zipformer (NPL-1.2) • @tilawa/core (MIT) • ملفات النموذج والبيانات تخضع لترخيص NPL-1.2 غير التجاري.</div>
+</section>
+<section id="achievementsView" class="view glass panel"><button class="action bottomBack" data-home>← الرئيسية</button><h2>إنجازاتي</h2><div id="achievementStats" class="status">جارٍ قراءة تقدمك المحفوظ على هذا الجهاز…</div><p class="muted">الإحصائيات ستُحتسب من جلسات القراءة والحفظ المسجلة فعليًا، دون أرقام تجريبية.</p></section>
+<section id="settingsView" class="view glass panel"><button class="action bottomBack" data-home>← الرئيسية</button><h2>الإعدادات</h2><div class="saved-bookmarks"><h3>مظهر التطبيق</h3><p class="muted">اختر المظهر المناسب، وسيتم حفظ اختيارك على هذا الجهاز.</p><div class="controls theme-settings"><button type="button" data-theme-choice="auto">تلقائي حسب الجهاز</button><button type="button" data-theme-choice="light">نهاري</button><button type="button" data-theme-choice="dark">ليلي</button></div><div id="themeStatus" class="muted" aria-live="polite"></div></div></section>
+<script type="module" src="./app.js"></script><script>if("serviceWorker" in navigator && location.protocol==="https:"){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(e=>console.warn("Rattil offline worker registration failed",e)));}</script>
+<section id="qiblaView" class="view glass panel rattil-tool-view">
+<button class="action bottomBack" data-home>← الرئيسية</button><h2>القبلة والبوصلة</h2>
+<p class="muted">اسمح للموقع باستخدام موقعك، ثم فعّل البوصلة لتحديد اتجاه القبلة.</p>
+<div class="qibla-compass"><div class="qibla-ring"><span class="qibla-north">N</span><span class="qibla-needle" id="qiblaNeedle">▲</span><span class="qibla-center">🕋</span></div></div>
+<div class="status" id="qiblaStatus">لم يتم تحديد اتجاه القبلة بعد.</div><button class="action" id="enableQibla" type="button">تحديد موقعي وتشغيل البوصلة</button>
+</section>
+<section id="adhkarView" class="view glass panel rattil-tool-view">
+<button class="action bottomBack" data-home>← الرئيسية</button><h2>الأذكار</h2>
+<p class="muted">اختر الذكر واضغط على العداد للتسبيح. يتم حفظ العدد على هذا الجهاز.</p>
+<div class="adhkar-tabs"><button class="selected" type="button" data-adhkar-set="morning">أذكار الصباح</button><button type="button" data-adhkar-set="evening">أذكار المساء</button></div>
+<div class="adhkar-card"><small>الذكر</small><strong id="adhkarText">سبحان الله</strong><button id="adhkarCounter" class="adhkar-counter" type="button"><span id="adhkarCount">0</span><small> / 33</small></button><div class="adhkar-actions"><button id="adhkarReset" type="button">إعادة العداد</button><button id="adhkarNext" type="button">الذكر التالي</button></div></div>
+<div class="status" id="adhkarStatus">ابدأ ذكرك، وسيتم حفظ تقدمك تلقائيًا.</div>
+</section>
+</main>
+<section id="mushafReader" hidden aria-label="قارئ المصحف"><div class="reader-topbar"><button id="closeMushafReader" aria-label="إغلاق المصحف">×</button><span id="readerSurah">المصحف الشريف</span><button id="readerOpenIndex" aria-label="فهرس السور">☷</button></div><div class="reader-page-shell"><div class="mushaf-paper" id="mushafPaper"><header><span id="readerJuz">الجزء —</span><span id="readerSurahName">المصحف</span><span id="readerHizb">الحزب —</span></header><div id="readerAyahs" class="mushaf-svg-page" aria-label="صفحة المصحف"></div><footer><button id="previousMushafPage" aria-label="الصفحة السابقة">‹</button><b id="readerPageNumber">—</b><button id="nextMushafPage" aria-label="الصفحة التالية">›</button></footer></div></div><div id="selectedAyahPanel" class="selected-ayah-panel" hidden></div><div id="readerIndexPanel" class="reader-index-panel" hidden><div class="reader-index-head"><button id="closeReaderIndex">×</button><strong>فهرس السور</strong><span>114 سورة</span></div><input id="readerSurahSearch" type="search" placeholder="ابحث باسم السورة أو رقمها"><div id="readerSurahList" class="reader-surah-list"></div></div></section>
+<script>document.getElementById('date').textContent=new Intl.DateTimeFormat('ar-EG',{weekday:'long',day:'numeric',month:'long'}).format(new Date());</script></body></html>
