@@ -318,5 +318,110 @@ function sendAudioChunk(samples){
 async function startRecording(){
  if(!activeReciteSurah){asrStatus('اختر سورة من الفهرس أولًا.');return}
  if(!asrReady||!asrWorker){asrStatus('حمّل محرك التسميع أولًا.');return;}
- if(!navigator.mediaDevices?.getUserMedia||(!window.AudioContext&&!window.webkitAudioContext)){asrStatus6�������k�w��rSurahSearch" type="search" placeholder="ابحث باسم السورة أو رقمها"><div id="readerSurahList" class="reader-surah-list"></div></div></section>
-<script>document.getElementById('date').textContent=new Intl.DateTimeFormat('ar-EG',{weekday:'long',day:'numeric',month:'long'}).format(new Date());</script></body></html>
+ if(!navigator.mediaDevices?.getUserMedia||(!window.AudioContext&&!window.webkitAudioContext)){asrStatus('المتصفح لا يدعم الميكروفون. افتح رَتِّل من Safari على HTTPS.');return;}
+ try{
+  liveMediaStream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+  const Ctx=window.AudioContext||window.webkitAudioContext;liveAudioContext=new Ctx();await liveAudioContext.resume();
+  liveSource=liveAudioContext.createMediaStreamSource(liveMediaStream);liveProcessor=liveAudioContext.createScriptProcessor(4096,1,1);
+  liveSamples=new Float32Array(0);liveLastVerse=null;liveCurrentVerse=null;
+  $('liveRecitationText').querySelectorAll('.recite-word').forEach(word=>{
+   word.classList.remove('revealed','correct','error','uncertain');
+   word.classList.add('unattempted');
+   word.removeAttribute('aria-label');
+  });
+  asrWorker.postMessage({type:'reset'});
+  liveProcessor.onaudioprocess=e=>{
+   if(!liveAudioContext)return;
+   const next=resampleTo16k(e.inputBuffer.getChannelData(0),liveAudioContext.sampleRate);
+   const joined=new Float32Array(liveSamples.length+next.length);joined.set(liveSamples);joined.set(next,liveSamples.length);liveSamples=joined;
+   while(liveSamples.length>=4800){sendAudioChunk(liveSamples.subarray(0,4800));liveSamples=liveSamples.slice(4800);}
+  };
+  liveSource.connect(liveProcessor);liveProcessor.connect(liveAudioContext.destination);
+  $('startRec').disabled=true;$('stopRec').disabled=false;
+  asrStatus('التسميع المباشر يعمل على الجهاز — الصوت لا يغادر الآيفون.');$('reciteBottomStatus').textContent='جاري الاستماع إلى تلاوتك…';$('reciteLiveIndicator').textContent='● يستمع';
+ }catch(e){asrStatus('تعذر فتح الميكروفون: '+(e.message||'تحقق من الإذن.'));await stopLiveRecording();}
+}
+async function stopLiveRecording(){
+ if(liveProcessor){liveProcessor.onaudioprocess=null;try{liveProcessor.disconnect();}catch(e){}}
+ if(liveSource){try{liveSource.disconnect();}catch(e){}}
+ if(liveSamples.length)sendAudioChunk(liveSamples);
+ liveSamples=new Float32Array(0);
+ if(liveMediaStream)liveMediaStream.getTracks().forEach(t=>t.stop());
+ if(liveAudioContext){try{await liveAudioContext.close();}catch(e){}}
+ liveProcessor=liveSource=liveMediaStream=liveAudioContext=null;
+ if(asrWorker&&asrReady)asrWorker.postMessage({type:'stop'});
+ $('startRec').disabled=!asrReady||!activeReciteSurah;$('stopRec').disabled=true;
+ asrStatus('تم إيقاف التسميع. الصوت لم يغادر جهازك.');$('reciteBottomStatus').textContent='تم إيقاف التسميع';$('reciteLiveIndicator').textContent='● جاهز';
+}
+$('toggleReciteText').addEventListener('click',()=>{const h=$('liveRecitationText'),hidden=h.classList.toggle('is-hidden'),b=$('toggleReciteText');b.textContent=hidden?'إظهار الكلمات':'إخفاء الكلمات';b.setAttribute('aria-pressed',String(hidden));b.setAttribute('aria-label',hidden?'إظهار الكلمات المخفية':'إخفاء الكلمات');});
+document.querySelectorAll('[data-correction-action]').forEach(button=>button.addEventListener('click',()=>{if(!asrWorker)return;document.querySelectorAll('[data-correction-action]').forEach(action=>action.disabled=true);$('reciteCorrectionText').textContent='تم إرسال اختيارك إلى المحرك…';asrWorker.postMessage({type:'correction_action',action:button.dataset.correctionAction});setTimeout(()=>document.querySelectorAll('[data-correction-action]').forEach(action=>action.disabled=false),600);}));
+
+$('startRec').addEventListener('click',startRecording);
+$('stopRec').addEventListener('click',stopLiveRecording);
+
+
+ // Qibla compass. First tap obtains location; the next tap requests iOS compass permission in a user gesture.
+ let qiblaBearing=null,qiblaOrientationHandler=null,qiblaOrientationTimer=null;
+ function bearingToKaaba(lat,lon){
+  const kLat=21.4225*Math.PI/180,kLon=39.8262*Math.PI/180,pLat=lat*Math.PI/180,pLon=lon*Math.PI/180;
+  const y=Math.sin(kLon-pLon)*Math.cos(kLat),x=Math.cos(pLat)*Math.sin(kLat)-Math.sin(pLat)*Math.cos(kLat)*Math.cos(kLon-pLon);
+  return (Math.atan2(y,x)*180/Math.PI+360)%360;
+ }
+ $('enableQibla')?.addEventListener('click',async()=>{
+  const status=$('qiblaStatus'),button=$('enableQibla');
+  if(qiblaBearing===null){
+   status.textContent='جارٍ تحديد موقعك…';
+   if(!navigator.geolocation){status.textContent='المتصفح لا يدعم تحديد الموقع.';return;}
+   navigator.geolocation.getCurrentPosition(pos=>{
+    qiblaBearing=bearingToKaaba(pos.coords.latitude,pos.coords.longitude);
+    status.textContent='اتجاه القبلة من الشمال: '+Math.round(qiblaBearing)+'°. اضغط تفعيل البوصلة.';
+    button.textContent='تفعيل البوصلة';
+   },err=>{status.textContent=err.code===1?'لم يتم السماح بالموقع. فعّل إذن الموقع.':'تعذر تحديد الموقع. حاول مرة أخرى.';},{enableHighAccuracy:true,timeout:12000,maximumAge:300000});
+   return;
+  }
+  try{
+   if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){
+    const permission=await DeviceOrientationEvent.requestPermission();
+    if(permission!=='granted'){
+     $('qiblaNeedle').style.transform='rotate('+qiblaBearing+'deg)';
+     status.textContent='لم يُسمح بالبوصلة؛ السهم يوضح الاتجاه التقريبي من الشمال ('+Math.round(qiblaBearing)+'°).';
+     button.textContent='إعادة محاولة البوصلة';return;
+    }
+   }
+   if(qiblaOrientationHandler)window.removeEventListener('deviceorientation',qiblaOrientationHandler,true);
+   if(qiblaOrientationTimer)clearTimeout(qiblaOrientationTimer);
+   let receivedHeading=false;
+   qiblaOrientationHandler=e=>{
+    const heading=Number.isFinite(e.webkitCompassHeading)?e.webkitCompassHeading:e.absolute===true&&Number.isFinite(e.alpha)?(360-e.alpha):null;
+    if(heading===null)return;
+    receivedHeading=true;if(qiblaOrientationTimer)clearTimeout(qiblaOrientationTimer);
+    $('qiblaNeedle').style.transform='rotate('+((qiblaBearing-heading+360)%360)+'deg)';
+    status.textContent='البوصلة نشطة. وجّه الهاتف حتى يشير السهم لاتجاه القبلة.';
+    button.textContent='البوصلة مفعّلة';button.disabled=true;
+   };
+   window.addEventListener('deviceorientation',qiblaOrientationHandler,true);
+   status.textContent='جارٍ انتظار قراءة حساس الاتجاه…';
+   qiblaOrientationTimer=setTimeout(()=>{
+    if(receivedHeading)return;
+    window.removeEventListener('deviceorientation',qiblaOrientationHandler,true);qiblaOrientationHandler=null;
+    $('qiblaNeedle').style.transform='rotate('+qiblaBearing+'deg)';
+    status.textContent='حساس البوصلة غير متاح؛ السهم يوضح الاتجاه التقريبي من الشمال ('+Math.round(qiblaBearing)+'°).';
+    button.textContent='إعادة محاولة البوصلة';button.disabled=false;
+   },3000);
+  }catch(err){if(qiblaBearing!==null){$('qiblaNeedle').style.transform='rotate('+qiblaBearing+'deg)';status.textContent='حساس البوصلة غير متاح؛ السهم يوضح الاتجاه التقريبي من الشمال ('+Math.round(qiblaBearing)+'°).';button.textContent='إعادة محاولة البوصلة';button.disabled=false;}else status.textContent='تعذر تفعيل البوصلة على هذا الجهاز.';}
+ });
+ // Simple local tasbih counter; counts persist on this device.
+ const adhkarSets={morning:['سبحان الله','الحمد لله','الله أكبر'],evening:['أستغفر الله','سبحان الله وبحمده','لا إله إلا الله']};
+ let adhkarSet='morning',adhkarIndex=0,adhkarCount=Number(localStorage.getItem('rattil-adhkar-count')||0);
+ function renderAdhkar(){
+  $('adhkarText').textContent=adhkarSets[adhkarSet][adhkarIndex];
+  $('adhkarCount').textContent=adhkarCount;
+  document.querySelectorAll('[data-adhkar-set]').forEach(x=>x.classList.toggle('selected',x.dataset.adhkarSet===adhkarSet));
+ }
+ document.querySelectorAll('[data-adhkar-set]').forEach(x=>x.addEventListener('click',()=>{adhkarSet=x.dataset.adhkarSet;adhkarIndex=0;adhkarCount=0;localStorage.setItem('rattil-adhkar-count','0');$('adhkarStatus').textContent='ابدأ ذكرك، وسيتم حفظ تقدمك تلقائيًا.';renderAdhkar();}));
+ $('adhkarCounter')?.addEventListener('click',()=>{adhkarCount=Math.min(33,adhkarCount+1);localStorage.setItem('rattil-adhkar-count',String(adhkarCount));renderAdhkar();if(adhkarCount===33)$('adhkarStatus').textContent='أحسنت، اكتمل العدد المحدد.';});
+ $('adhkarReset')?.addEventListener('click',()=>{adhkarCount=0;localStorage.setItem('rattil-adhkar-count','0');$('adhkarStatus').textContent='تمت إعادة العداد.';renderAdhkar();});
+ $('adhkarNext')?.addEventListener('click',()=>{adhkarIndex=(adhkarIndex+1)%adhkarSets[adhkarSet].length;adhkarCount=0;localStorage.setItem('rattil-adhkar-count','0');$('adhkarStatus').textContent='انتقلت إلى الذكر التالي.';renderAdhkar();});
+ renderAdhkar();
+
+})();
