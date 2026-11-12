@@ -1,5 +1,5 @@
 {
-  "id": "/",
+  "id": "./",
   "name": "رتل — رفيقك مع القرآن",
   "short_name": "رتل",
   "description": "مساحة هادئة للقراءة والحفظ والمراجعة.",
@@ -11,5 +11,5 @@
   "orientation": "portrait",
   "background_color": "#0a1112",
   "theme_color": "#0b1414",
-  "icons": [{"src":"/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+  "icons": [{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
 }
