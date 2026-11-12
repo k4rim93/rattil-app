@@ -5,19 +5,44 @@ function announce(message){toast.textContent=message;toast.classList.add('visibl
 function readStore(key,fallback=null){try{return localStorage.getItem(key)??fallback}catch{return fallback}}
 function writeStore(key,value){try{localStorage.setItem(key,String(value))}catch{announce('تعذّر الحفظ على هذا الجهاز.')}}
 
-function showView(name){
+const viewHistory=[{name:document.querySelector('.view.active')?.id.replace('view-','')||'home',scrollY:window.scrollY}];
+function renderView(name,scrollY=0){
   const target=document.getElementById(`view-${name}`);if(!target)return;
   views.forEach(view=>view.classList.toggle('active',view===target));
+  document.getElementById('backButton').hidden=viewHistory.length<=1;
   document.querySelectorAll('.tabbar [data-view]').forEach(button=>{
     const active=button.dataset.view===name;button.classList.toggle('active',active);
     if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');
   });
   document.title=`رتل — ${target.dataset.title||'رفيقك مع القرآن'}`;
   document.getElementById('mainContent').focus({preventScroll:true});
-  window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+  requestAnimationFrame(()=>window.scrollTo({top:scrollY,behavior:'instant'}));
   if(name==='quran'&&!pageLoaded)loadPage(page);
 }
+function scrollToTop(){const current=viewHistory.at(-1);if(current)current.scrollY=0;window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})}
+function showView(name){
+  if(!document.getElementById(`view-${name}`))return;
+  const current=viewHistory.at(-1);
+  if(current?.name===name){scrollToTop();return}
+  if(current)current.scrollY=window.scrollY;
+  viewHistory.push({name,scrollY:0});
+  history.pushState({rattilView:name},'',window.location.href);
+  renderView(name,0);
+}
+function navigateBack(){if(viewHistory.length>1)history.back()}
+window.addEventListener('popstate',()=>{if(viewHistory.length>1)viewHistory.pop();const previous=viewHistory.at(-1)||{name:'home',scrollY:0};renderView(previous.name,previous.scrollY)});
+let edgeStart=null;
+document.addEventListener('touchstart',event=>{const touch=event.changedTouches[0];edgeStart=touch&&touch.clientX<=24&&!document.querySelector('dialog[open]')?{x:touch.clientX,y:touch.clientY}:null},{capture:true,passive:true});
+document.addEventListener('touchend',event=>{
+  if(!edgeStart)return;const touch=event.changedTouches[0],dx=touch.clientX-edgeStart.x,dy=touch.clientY-edgeStart.y;edgeStart=null;
+  if(dx>72&&Math.abs(dy)<100&&viewHistory.length>1){if(event.cancelable)event.preventDefault();event.stopImmediatePropagation();navigateBack()}
+},{capture:true,passive:false});
+document.addEventListener('touchcancel',()=>{edgeStart=null},{capture:true,passive:true});
+document.getElementById('backButton').addEventListener('click',navigateBack);
 document.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>showView(button.dataset.view)));
+const backToTop=document.getElementById('backToTop');let scrollFrame=0;
+window.addEventListener('scroll',()=>{if(scrollFrame)return;scrollFrame=requestAnimationFrame(()=>{backToTop.hidden=window.scrollY<280;scrollFrame=0})},{passive:true});
+backToTop.addEventListener('click',scrollToTop);
 
 const modeButtons=[...document.querySelectorAll('[data-mode]')];
 modeButtons.forEach(button=>button.addEventListener('click',()=>{

@@ -18,6 +18,7 @@
           <span><strong>رَتِّل</strong><small>رفيقك مع القرآن</small></span>
         </button>
         <div class="top-actions">
+          <button class="icon-button back-button" id="backButton" aria-label="رجوع" title="رجوع" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5 7.5 12l7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
           <button class="icon-button" id="installButton" aria-label="تثبيت رتل على الشاشة الرئيسية" hidden title="تثبيت رتل">⇧</button>
           <button class="icon-button" data-view="settings" aria-label="الإعدادات" title="الإعدادات">⚙</button>
         </div>
@@ -111,6 +112,7 @@
         <button data-view="progress"><span aria-hidden="true">⌁</span><small>التقدم</small></button>
       </nav>
     </div>
+    <button class="back-to-top" id="backToTop" aria-label="الرجوع إلى أعلى الصفحة" title="إلى الأعلى" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6.5 10.5 12 5l5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <dialog class="picker-dialog" id="pagePickerDialog" aria-labelledby="pagePickerTitle"><form method="dialog"><button class="dialog-close" aria-label="إغلاق">×</button><h2 id="pagePickerTitle">اذهب إلى صفحة</h2><label for="pageInput">رقم الصفحة (١–٦٠٤)</label><div class="page-input-row"><input id="pageInput" type="number" min="1" max="604" inputmode="numeric" value="42" /><button class="gold-button" id="goToPageButton" value="go">اذهب</button></div></form></dialog>
     <dialog class="picker-dialog surah-dialog" id="surahPickerDialog" aria-labelledby="surahPickerTitle"><div class="dialog-heading"><h2 id="surahPickerTitle">فهرس السور</h2><button class="dialog-close" id="closeSurahPicker" aria-label="إغلاق">×</button></div><div id="surahList" class="surah-list" role="list"></div></dialog>
