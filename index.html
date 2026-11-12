@@ -32,7 +32,7 @@
           </div>
 
           <section class="prayer-strip" aria-label="مواقيت الصلاة">
-            <div class="prayer-next"><span class="prayer-glyph" aria-hidden="true">☾</span><div><small>الصلاة القادمة · <span id="nextPrayerName">المغرب</span></small><strong id="prayerCountdown">01:25:30</strong></div></div>
+            <div class="prayer-next"><span class="prayer-glyph" id="nextPrayerGlyph" aria-hidden="true"></span><div><small>الصلاة القادمة · <span id="nextPrayerName">المغرب</span></small><strong id="prayerCountdown">01:25:30</strong></div></div>
             <button class="quiet-link" data-view="today">المواقيت <span aria-hidden="true">‹</span></button>
             <p class="sample-note" id="locationLabel">القاهرة (افتراضي) · حساب محلي</p>
           </section>
@@ -51,13 +51,23 @@
 
         <section class="view" id="view-today" data-title="اليوم">
           <header class="page-heading"><p class="date-line" id="todayDate2"></p><h1>وردك اليوم</h1><p>اختر وقتًا يناسبك، وخلي وردك قابلًا للاستمرار.</p></header>
+          <section class="prayer-times-section" aria-labelledby="prayerTimesTitle">
+            <header class="prayer-section-heading"><div><h2 id="prayerTimesTitle">مواقيت الصلاة</h2><p id="prayerMethodNote">تُحسب حسب إحداثيات القاهرة الافتراضية.</p></div></header>
+            <div class="prayer-countdown-panel">
+              <p class="prayer-city"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.2"/></svg><span id="prayerCityName">القاهرة</span></p>
+              <p class="prayer-next-label">الوقت المتبقي لصلاة <strong id="prayerDashboardNextName">الفجر</strong></p>
+              <strong class="prayer-dashboard-countdown" id="prayerCountdownDashboard">--:--:--</strong>
+              <div class="prayer-progress-track" role="progressbar" aria-label="الوقت حتى الصلاة القادمة" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="prayerProgressFill"></span></div>
+              <div class="prayer-progress-labels"><span id="prayerProgressFrom">العشاء</span><span id="prayerProgressTo">الفجر</span></div>
+            </div>
+            <div id="prayerTimesList" class="prayer-times-list" role="list" aria-label="مواعيد الصلاة اليوم" aria-live="polite"></div>
+          </section>
           <div class="daily-focus"><span class="focus-mark">۞</span><div><small>خطة اليوم</small><h2>قراءة هادئة</h2><p>صفحتان · حوالي ٦ دقائق</p></div><button class="gold-button" data-view="quran">ابدأ القراءة</button></div>
           <div class="simple-list">
             <button class="list-row" data-view="quran"><span class="list-icon">◫</span><span><strong>القراءة</strong><small>سورة البقرة · الآية ٢٥٥</small></span><span class="state-pill done-pill">متابعة</span></button>
             <button class="list-row" data-view="practice"><span class="list-icon">◉</span><span><strong>التسميع</strong><small>راجع ما حفظته هذا الأسبوع</small></span><span class="state-pill">ابدأ</span></button>
             <button class="list-row" data-view="azkar"><span class="list-icon">۞</span><span><strong>أذكار اليوم</strong><small>افتح أذكار الصباح والمساء</small></span><span class="state-pill">فتح</span></button>
           </div>
-          <section class="prayer-times-section"><h2>مواقيت الصلاة اليوم</h2><p class="sample-note wide-note" id="prayerMethodNote">تُحسب حسب إحداثيات القاهرة الافتراضية.</p><div id="prayerTimesList" class="prayer-times-list" aria-live="polite"></div></section>
           <p class="sample-note wide-note">الخطة والمحتوى هنا بيانات توضيحية في النسخة الأولية.</p>
         </section>
 

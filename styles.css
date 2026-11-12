@@ -22,3 +22,31 @@ body.light .mushaf-svg #content path{fill:#f5f1e7!important}
 .mushaf-paper{touch-action:pan-y;overscroll-behavior-x:contain}
 
 .mushaf-paper{min-height:0;padding:8px 6px 48px;background:#060707;border:0;border-left:1px solid #826c38;box-shadow:none;display:block}.mushaf-svg-host{min-height:0}.page-number{left:8px;right:auto;bottom:8px;transform:none;padding:2px 12px;border:1px solid #80671f;border-radius:8px;background:#0b0e0e}
+
+.prayer-times-section{margin:26px 0 30px}
+.prayer-section-heading{display:flex;align-items:end;justify-content:space-between;margin-bottom:13px}
+.prayer-section-heading h2{margin:0;color:var(--text);font-size:18px}
+.prayer-section-heading p{position:static;margin:2px 0 0;color:var(--muted);font-size:11px}
+.prayer-countdown-panel{padding:20px 17px 15px;border:1px solid #34463e;border-radius:20px;background:linear-gradient(155deg,#172725,#111c1b)}
+.prayer-city{display:flex;justify-content:center;align-items:center;gap:6px;margin:0;color:#e2d4a8;font-size:14px}
+.prayer-city svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.prayer-next-label{margin:10px 0 0;text-align:center;color:#d6d8cb;font-size:15px}
+.prayer-next-label strong{color:var(--gold-light);font-weight:600}
+.prayer-dashboard-countdown{display:block;margin:0 auto 20px;text-align:center;direction:ltr;color:#f5f1e8;font-size:clamp(42px,12vw,62px);font-weight:400;line-height:1.2;letter-spacing:.01em;font-variant-numeric:tabular-nums}
+.prayer-progress-track{height:7px;overflow:hidden;border-radius:99px;background:#35413c;direction:rtl}
+.prayer-progress-track span{display:block;width:0;height:100%;border-radius:inherit;background:var(--gold-light);transition:width .5s ease-out}
+.prayer-progress-labels{display:flex;justify-content:space-between;gap:12px;margin-top:8px;direction:ltr;color:#d4d7ca;font-size:12px;font-variant-numeric:tabular-nums}
+.prayer-progress-labels span{direction:rtl;white-space:nowrap}
+.prayer-times-list{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin-top:19px;border:0}
+.prayer-time-row{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px;padding:11px 2px 10px;border:0;border-radius:13px;text-align:center;color:var(--text)}
+.prayer-time-icon{width:27px;height:27px;display:grid;place-items:center;color:var(--green-light)}
+.prayer-icon-svg{display:block;width:25px;height:25px}
+.prayer-time-name{font-size:11px;color:#d5d7ce;white-space:nowrap}
+.prayer-time-value{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.prayer-time-row.next-prayer{background:#d8b96a12;color:var(--gold-light)}
+.prayer-time-row.next-prayer .prayer-time-icon,.prayer-time-row.next-prayer .prayer-time-name{color:var(--gold-light)}
+.prayer-glyph{width:38px;height:38px;flex:0 0 38px;border-radius:13px;background:#27392e;color:var(--gold-light);display:grid;place-items:center}
+.prayer-glyph .prayer-icon-svg{width:24px;height:24px}
+@media(max-width:390px){.prayer-times-list{gap:1px}.prayer-time-row{padding-inline:0}.prayer-time-name{font-size:10px}.prayer-time-value{font-size:12px}.prayer-progress-labels{font-size:11px}}
+
+.prayer-progress-track,.prayer-progress-labels{direction:ltr}

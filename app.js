@@ -149,27 +149,47 @@ document.querySelectorAll('#todayDate,#todayDate2').forEach(node=>node.textConte
 const locations={cairo:{lat:30.0444,lon:31.2357,name:'القاهرة'}};
 let userLocation={...locations.cairo,name:`${locations.cairo.name} (افتراضي)`};
 try{const saved=JSON.parse(readStore('rattil-location','null'));if(saved&&Number.isFinite(saved.lat)&&Number.isFinite(saved.lon))userLocation=saved}catch{}
-function setLocationLabels(){document.getElementById('locationLabel').textContent=`${userLocation.name} · حساب محلي`;document.getElementById('settingsLocationLabel').textContent=`${userLocation.name} · اضغط لتغيير الموقع`;document.getElementById('prayerMethodNote').textContent=`طريقة الحساب المصرية · ${userLocation.name}`}
+function setLocationLabels(){const shortName=userLocation.name.replace(' (افتراضي)','');document.getElementById('locationLabel').textContent=`${shortName} · حساب محلي`;document.getElementById('prayerCityName').textContent=shortName;document.getElementById('settingsLocationLabel').textContent=`${userLocation.name} · اضغط لتغيير الموقع`;document.getElementById('prayerMethodNote').textContent=`طريقة الحساب المصرية · ${userLocation.name}`}
 function prayerTimesFor(date){const coordinates=new adhan.Coordinates(userLocation.lat,userLocation.lon);const params=adhan.CalculationMethod.Egyptian();params.madhab=adhan.Madhab.Shafi;return new adhan.PrayerTimes(coordinates,date,params)}
 const prayerNames={fajr:'الفجر',sunrise:'الشروق',dhuhr:'الظهر',asr:'العصر',maghrib:'المغرب',isha:'العشاء'};
+const prayerIconPaths={
+  fajr:'<path d="M3 19h18M6 14l2 1.4M12 11v3M18 14l-2 1.4M4.5 10.5l1.2 1.2M19.5 10.5l-1.2 1.2"/>',
+  sunrise:'<path d="M3 19h18M6 16a6 6 0 0 1 12 0M12 3v3M5.6 6.6l2.1 2.1M18.4 6.6l-2.1 2.1M3.5 12.5l2.4.6M20.5 12.5l-2.4.6"/>',
+  dhuhr:'<circle cx="12" cy="12" r="3.4"/><path d="M12 2v3M12 19v3M4.9 4.9 7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/>',
+  asr:'<circle cx="12" cy="12" r="2.8"/><circle cx="12" cy="3.2" r=".65"/><circle cx="18.2" cy="5.8" r=".65"/><circle cx="20.8" cy="12" r=".65"/><circle cx="18.2" cy="18.2" r=".65"/><circle cx="12" cy="20.8" r=".65"/><circle cx="5.8" cy="18.2" r=".65"/><circle cx="3.2" cy="12" r=".65"/><circle cx="5.8" cy="5.8" r=".65"/>',
+  maghrib:'<path d="M3 19h18M6 18a6 6 0 0 1 12 0M12 4v3M5.7 7l2 2M18.3 7l-2 2M3.5 13l2.4.6M20.5 13l-2.4.6"/>',
+  isha:'<path d="M18.5 15.5A8 8 0 0 1 8.4 5.4a8.5 8.5 0 1 0 10.1 10.1Z"/><path d="M17.5 4v3M16 5.5h3M21 10v2M20 11h2"/>'
+};
+function prayerIconSvg(key){return `<svg class="prayer-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${prayerIconPaths[key]||prayerIconPaths.fajr}</svg>`}
 function formatTime(date){return new Intl.DateTimeFormat('ar-EG',{hour:'numeric',minute:'2-digit',hour12:true}).format(date)}
+function formatCompactPrayerTime(date){return formatTime(date).replace(/\s*[صم]$/,'')}
 let nextPrayerAt=null;
 function updatePrayerCountdown(){
   if(!nextPrayerAt)return;
   const seconds=Math.max(0,Math.floor((nextPrayerAt-new Date())/1000)),hours=Math.floor(seconds/3600),minutes=Math.floor(seconds%3600/60),remaining=seconds%60;
-  document.getElementById('prayerCountdown').textContent=[hours,minutes,remaining].map(value=>String(value).padStart(2,'0')).map(toArabic).join(':');
+  const value=[hours,minutes,remaining].map(part=>String(part).padStart(2,'0')).map(toArabic).join(':');
+  document.getElementById('prayerCountdown').textContent=value;document.getElementById('prayerCountdownDashboard').textContent=value;
 }
 function updatePrayerTimes(){
   try{
     const now=new Date(),times=prayerTimesFor(now),rows=Object.entries(prayerNames).map(([key,name])=>({key,name,time:times[key]}));
     const list=document.getElementById('prayerTimesList');list.replaceChildren();
-    rows.forEach(row=>{const line=document.createElement('div');line.className='prayer-time-row';line.dataset.prayer=row.key;const name=document.createElement('span');name.textContent=row.name;const time=document.createElement('strong');time.textContent=formatTime(row.time);line.append(name,time);list.append(line)});
-    let next=rows.filter(row=>row.key!=='sunrise'&&row.time>now)[0];let nextAt=next?.time;
-    if(!next){next={key:'fajr',name:prayerNames.fajr};const tomorrow=new Date(now);tomorrow.setDate(now.getDate()+1);nextAt=prayerTimesFor(tomorrow).fajr}
+    rows.forEach(row=>{const line=document.createElement('div');line.className='prayer-time-row';line.dataset.prayer=row.key;line.setAttribute('role','listitem');const icon=document.createElement('span');icon.className=`prayer-time-icon prayer-${row.key}`;icon.innerHTML=prayerIconSvg(row.key);const name=document.createElement('span');name.className='prayer-time-name';name.textContent=row.name;const time=document.createElement('strong');time.className='prayer-time-value';time.textContent=formatCompactPrayerTime(row.time);line.append(icon,name,time);list.append(line)});
+    const cycle=['fajr','dhuhr','asr','maghrib','isha'].map(key=>({key,name:prayerNames[key],time:times[key]}));
+    let nextIndex=cycle.findIndex(row=>row.time>now),previous,next,nextAt;
+    if(nextIndex>=0){next=cycle[nextIndex];nextAt=next.time;if(nextIndex>0)previous=cycle[nextIndex-1];else{const yesterday=new Date(now);yesterday.setDate(now.getDate()-1);previous={key:'isha',name:prayerNames.isha,time:prayerTimesFor(yesterday).isha}}
+    }else{const tomorrow=new Date(now);tomorrow.setDate(now.getDate()+1);next={key:'fajr',name:prayerNames.fajr};nextAt=prayerTimesFor(tomorrow).fajr;previous=cycle.at(-1)}
     document.getElementById('nextPrayerName').textContent=next.name;
+    document.getElementById('prayerDashboardNextName').textContent=next.name;
+    document.getElementById('nextPrayerGlyph').innerHTML=prayerIconSvg(next.key);
     list.querySelector(`[data-prayer="${next.key}"]`)?.classList.add('next-prayer');
+    const progress=Math.max(0,Math.min(100,((now-previous.time)/(nextAt-previous.time))*100));
+    document.getElementById('prayerProgressFill').style.width=`${progress}%`;
+    document.querySelector('.prayer-progress-track').setAttribute('aria-valuenow',String(Math.round(progress)));
+    document.getElementById('prayerProgressFrom').textContent=`${previous.name} ${formatTime(previous.time)}`;
+    document.getElementById('prayerProgressTo').textContent=`${next.name} ${formatTime(nextAt)}`;
     nextPrayerAt=nextAt;updatePrayerCountdown();
-  }catch{document.getElementById('prayerCountdown').textContent='—';document.getElementById('prayerTimesList').textContent='تعذّر حساب المواقيت على هذا الجهاز.'}
+  }catch{document.getElementById('prayerCountdown').textContent='—';document.getElementById('prayerCountdownDashboard').textContent='—';document.getElementById('prayerTimesList').textContent='تعذّر حساب المواقيت على هذا الجهاز.'}
 }
 setLocationLabels();updatePrayerTimes();setInterval(updatePrayerTimes,60000);setInterval(updatePrayerCountdown,1000);
 document.getElementById('locationButton').addEventListener('click',()=>{
