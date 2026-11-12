@@ -35,6 +35,7 @@ let edgeStart=null;
 document.addEventListener('touchstart',event=>{const touch=event.changedTouches[0];edgeStart=touch&&touch.clientX<=24&&!document.querySelector('dialog[open]')?{x:touch.clientX,y:touch.clientY}:null},{capture:true,passive:true});
 document.addEventListener('touchend',event=>{
   if(!edgeStart)return;const touch=event.changedTouches[0],dx=touch.clientX-edgeStart.x,dy=touch.clientY-edgeStart.y;edgeStart=null;
+  if(document.getElementById('view-quran').classList.contains('active'))return;
   if(dx>72&&Math.abs(dy)<100&&viewHistory.length>1){if(event.cancelable)event.preventDefault();event.stopImmediatePropagation();navigateBack()}
 },{capture:true,passive:false});
 document.addEventListener('touchcancel',()=>{edgeStart=null},{capture:true,passive:true});
@@ -79,29 +80,38 @@ async function fetchJson(url){
 }
 const quranApi='https://api.alquran.cloud/v1';
 async function getQuranJson(url){const cached=await cachedJson(url);if(cached)return cached;return fetchJson(url)}
-function renderPage(data,requestedPage){
-  const ayahs=data?.data?.ayahs;if(!Array.isArray(ayahs)||!ayahs.length)throw new Error('empty page');
-  const root=document.getElementById('quranVerses');root.replaceChildren();
-  let lastSurah=null;
-  ayahs.forEach(ayah=>{
-    if(ayah.surah.number!==lastSurah){
-      if(ayah.numberInSurah===1){const heading=document.createElement('h2');heading.className='surah-heading';heading.textContent=ayah.surah.name;root.append(heading);if(ayah.surah.number!==1&&ayah.surah.number!==9){const basmala=document.createElement('p');basmala.className='bismillah';basmala.textContent='بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';root.append(basmala)}}
-      lastSurah=ayah.surah.number;
-    }
-    const text=document.createElement('span');text.className='ayah-text';text.textContent=`${ayah.text} `;root.append(text);
-    const marker=document.createElement('span');marker.className='ayah-marker';marker.textContent=` ﴿${toArabic(ayah.numberInSurah)}﴾ `;root.append(marker);
-  });
+const mushafSvgBase='https://cdn.jsdelivr.net/gh/quran-ws/quran-svg@b4155f07e4aea087d2c458069acff9f7c7e749f6/mushafs/hafs/kfqc/svg';
+function mushafPageUrl(pageNumber){return `${mushafSvgBase}/${String(pageNumber).padStart(3,'0')}.svg`}
+async function fetchPageSvg(url){
+  if('caches'in window){try{const cache=await caches.open(quranCacheName);const hit=await cache.match(url);if(hit)return hit.text()}catch{}}
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);
+  try{
+    const response=await fetch(url,{signal:controller.signal,headers:{Accept:'image/svg+xml'}});
+    if(!response.ok)throw new Error(`HTTP ${response.status}`);
+    if('caches'in window){try{const cache=await caches.open(quranCacheName);await cache.put(url,response.clone())}catch{}}
+    return await response.text();
+  }finally{clearTimeout(timer)}
+}
+function renderPageSvg(source,requestedPage){
+  const parsed=new DOMParser().parseFromString(source,'image/svg+xml');
+  const svg=parsed.documentElement;
+  if(svg.localName!=='svg'||parsed.querySelector('parsererror')||!svg.querySelector('#content'))throw new Error('invalid mushaf page');
+  const root=document.getElementById('mushafSvgHost');
+  const mounted=document.importNode(svg,true);
+  mounted.classList.add('mushaf-svg');mounted.setAttribute('role','img');mounted.setAttribute('aria-label',`صفحة المصحف ${toArabic(requestedPage)}`);
+  mounted.removeAttribute('width');mounted.removeAttribute('height');
+  root.replaceChildren(mounted);
   document.getElementById('paperPageNumber').textContent=toArabic(requestedPage);pageLoaded=true;
 }
 async function loadPage(requestedPage){
-  const current=++pageRequest;const root=document.getElementById('quranVerses');
-  root.innerHTML='<p class="quran-loading">جارٍ تحميل آيات الصفحة…</p>';
-  const url=`${quranApi}/page/${requestedPage}/quran-uthmani`;
+  const current=++pageRequest,root=document.getElementById('mushafSvgHost');
+  root.innerHTML='<p class="quran-loading">جارٍ تحميل صفحة المصحف…</p>';
+  const url=mushafPageUrl(requestedPage);
   try{
-    const data=await getQuranJson(url);if(current!==pageRequest)return;renderPage(data,requestedPage);
+    const svg=await fetchPageSvg(url);if(current!==pageRequest)return;renderPageSvg(svg,requestedPage);
   }catch{
     if(current!==pageRequest)return;
-    pageLoaded=false;root.innerHTML='<div class="quran-error">لم نتمكن من تحميل الصفحة. تأكد من الاتصال ثم حاول مرة أخرى.<button class="gold-button" id="retryPage">إعادة المحاولة</button></div>';
+    pageLoaded=false;root.innerHTML='<div class="quran-error">تعذّر تحميل الصفحة. افتحها أول مرة مع اتصال بالإنترنت، ثم ستُحفظ على هذا الجهاز.<button class="gold-button" id="retryPage">إعادة المحاولة</button></div>';
     document.getElementById('retryPage').addEventListener('click',()=>loadPage(requestedPage));
   }
 }
@@ -130,7 +140,7 @@ function syncBookmark(){const active=Number(readStore('rattil-bookmarked-page','
 const previousSetPage=setPage;setPage=function(next){previousSetPage(next);syncBookmark()};syncBookmark();
 let touchStart=null;const mushafPaper=document.querySelector('.mushaf-paper');
 mushafPaper.addEventListener('touchstart',event=>{if(event.changedTouches.length)touchStart={x:event.changedTouches[0].clientX,y:event.changedTouches[0].clientY}},{passive:true});
-mushafPaper.addEventListener('touchend',event=>{if(!touchStart||!event.changedTouches.length)return;const touch=event.changedTouches[0],dx=touch.clientX-touchStart.x,dy=touch.clientY-touchStart.y;touchStart=null;if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.25)setPage(page+(dx<0?1:-1))},{passive:true});
+mushafPaper.addEventListener('touchend',event=>{if(!touchStart||!event.changedTouches.length)return;const touch=event.changedTouches[0],dx=touch.clientX-touchStart.x,dy=touch.clientY-touchStart.y;touchStart=null;if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.25)setPage(page+(dx>0?1:-1))},{passive:true});
 document.addEventListener('keydown',event=>{if(document.getElementById('view-quran').classList.contains('active')&&!pagePicker.open&&!surahPicker.open){if(event.key==='ArrowLeft')setPage(page+1);if(event.key==='ArrowRight')setPage(page-1)}});
 
 const today=new Date();const dateText=new Intl.DateTimeFormat('ar-EG',{weekday:'long',day:'numeric',month:'long'}).format(today);
