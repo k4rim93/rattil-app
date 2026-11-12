@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0b1414" />
     <meta name="description" content="رتل — رفيقك الهادئ للقراءة والحفظ والمراجعة." />
-    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="styles.css" />
     <title>رتل — رفيقك مع القرآن</title>
@@ -33,11 +33,11 @@
           <section class="prayer-strip" aria-label="مواقيت الصلاة">
             <div class="prayer-next"><span class="prayer-glyph" aria-hidden="true">☾</span><div><small>الصلاة القادمة · <span id="nextPrayerName">المغرب</span></small><strong id="prayerCountdown">01:25:30</strong></div></div>
             <button class="quiet-link" data-view="today">المواقيت <span aria-hidden="true">‹</span></button>
-            <p class="sample-note">القاهرة · أوقات تجريبية</p>
+            <p class="sample-note" id="locationLabel">القاهرة (افتراضي) · حساب محلي</p>
           </section>
 
           <section class="continue-row">
-            <div><span class="section-symbol" aria-hidden="true">۞</span><div><h2>كمّل من حيث وصلت</h2><p>سورة البقرة · الآية ٢٥٥</p></div></div>
+            <div><span class="section-symbol" aria-hidden="true">۞</span><div><h2>كمّل من حيث وصلت</h2><p>صفحة <span id="homePageNumber">٤٢</span> من المصحف</p></div></div>
             <button class="round-arrow" data-view="quran" aria-label="متابعة القراءة">←</button>
           </section>
 
@@ -54,23 +54,30 @@
           <div class="simple-list">
             <button class="list-row" data-view="quran"><span class="list-icon">◫</span><span><strong>القراءة</strong><small>سورة البقرة · الآية ٢٥٥</small></span><span class="state-pill done-pill">متابعة</span></button>
             <button class="list-row" data-view="practice"><span class="list-icon">◉</span><span><strong>التسميع</strong><small>راجع ما حفظته هذا الأسبوع</small></span><span class="state-pill">ابدأ</span></button>
-            <button class="list-row" data-view="progress"><span class="list-icon">⌁</span><span><strong>أذكار اليوم</strong><small>افتح أذكار الصباح والمساء</small></span><span class="state-pill">فتح</span></button>
+            <button class="list-row" data-view="azkar"><span class="list-icon">۞</span><span><strong>أذكار اليوم</strong><small>افتح أذكار الصباح والمساء</small></span><span class="state-pill">فتح</span></button>
           </div>
+          <section class="prayer-times-section"><h2>مواقيت الصلاة اليوم</h2><p class="sample-note wide-note" id="prayerMethodNote">تُحسب حسب إحداثيات القاهرة الافتراضية.</p><div id="prayerTimesList" class="prayer-times-list" aria-live="polite"></div></section>
           <p class="sample-note wide-note">الخطة والمحتوى هنا بيانات توضيحية في النسخة الأولية.</p>
         </section>
 
         <section class="view" id="view-quran" data-title="المصحف">
-          <div class="mushaf-toolbar"><button class="text-button" id="bookmarkButton">♧ <span>علامة</span></button><div class="page-location"><small>الجزء ٣</small><strong id="pageNumber">٤٢</strong></div><button class="text-button" id="indexButton">الأحزاب ⌄</button></div>
-          <div class="mushaf-paper" role="region" aria-label="معاينة صفحة المصحف">
-            <div class="mushaf-ornament top-ornament" aria-hidden="true">۞ ۞ ۞ ۞ ۞</div>
-            <div class="surah-heading"><span>سُورَةُ الْبَقَرَةِ</span></div>
-            <div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
-            <p class="quran-sample">اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ</p>
-            <div class="mushaf-ornament bottom-ornament" aria-hidden="true">۞ ۞ ۞ ۞ ۞</div>
-            <span class="page-number">٤٢</span>
+          <div class="mushaf-toolbar"><button class="text-button" id="bookmarkButton" aria-pressed="false">♧ <span>علامة</span></button><button class="page-location page-picker-trigger" id="pagePickerButton" aria-label="اختيار رقم الصفحة"><small>صفحة</small><strong id="pageNumber">٤٢</strong></button><button class="text-button" id="indexButton">فهرس السور ⌄</button></div>
+          <div class="mushaf-paper" role="region" aria-label="صفحة المصحف">
+            <div id="quranVerses" class="quran-verses" aria-live="polite"><p>جارٍ تحميل آيات الصفحة…</p></div>
+            <span class="page-number" id="paperPageNumber">٤٢</span>
           </div>
-          <div class="mushaf-controls"><button id="previousPage" aria-label="الصفحة السابقة">→</button><span>صفحة <b id="pageNumberBottom">٤٢</b></span><button id="nextPage" aria-label="الصفحة التالية">←</button></div>
-          <p class="mushaf-disclaimer">معاينة مؤقتة للنص والتنسيق؛ استبدلها بصفحات مصحف مرخّصة ومراجعة قبل النشر.</p>
+          <div class="mushaf-controls"><button id="previousPage" aria-label="الصفحة السابقة">→</button><span>صفحة <b id="pageNumberBottom">٤٢</b> من ٦٠٤</span><button id="nextPage" aria-label="الصفحة التالية">←</button></div>
+          <p class="mushaf-disclaimer">النص العثماني يُحمّل للصفحة المختارة عند الاتصال بالإنترنت. تخطيط الصفحة هنا معاينة، وليس صورة مصحف المدينة المطابقة.</p>
+        </section>
+
+        <section class="view" id="view-azkar" data-title="أذكار اليوم">
+          <header class="page-heading"><h1>أذكار اليوم</h1><p>اضغط على الذكر لتسجيل تكرارك على هذا الجهاز.</p></header>
+          <div class="azkar-list">
+            <button class="dhikr-row" data-dhikr="subhanallah" data-target="33"><span class="dhikr-copy"><strong>سُبْحَانَ اللَّهِ</strong><small>٣٣ مرة</small></span><span class="dhikr-count" id="count-subhanallah">٠ / ٣٣</span></button>
+            <button class="dhikr-row" data-dhikr="alhamdulillah" data-target="33"><span class="dhikr-copy"><strong>الْحَمْدُ لِلَّهِ</strong><small>٣٣ مرة</small></span><span class="dhikr-count" id="count-alhamdulillah">٠ / ٣٣</span></button>
+            <button class="dhikr-row" data-dhikr="allahuakbar" data-target="34"><span class="dhikr-copy"><strong>اللَّهُ أَكْبَرُ</strong><small>٣٤ مرة</small></span><span class="dhikr-count" id="count-allahuakbar">٠ / ٣٤</span></button>
+          </div>
+          <button class="quiet-link reset-azkar" id="resetAzkar">إعادة عدّ أذكار اليوم</button>
         </section>
 
         <section class="view" id="view-practice" data-title="التسميع">
@@ -92,7 +99,7 @@
 
         <section class="view" id="view-settings" data-title="الإعدادات">
           <header class="page-heading"><h1>الإعدادات</h1><p>خلّي رتل مناسب لطريقتك.</p></header>
-          <div class="simple-list"><button class="list-row" id="themeToggle"><span class="list-icon">☾</span><span><strong>موجة الليل</strong><small>الواجهة الداكنة الهادئة</small></span><span class="state-pill">مفعّل</span></button><button class="list-row" id="locationButton"><span class="list-icon">⌖</span><span><strong>الموقع ومواقيت الصلاة</strong><small>القاهرة · بيانات تجريبية</small></span><span class="chevron">‹</span></button><button class="list-row" id="offlineButton"><span class="list-icon">⇩</span><span><strong>العمل دون إنترنت</strong><small>واجهة التطبيق تُحفظ على الجهاز</small></span><span class="state-pill">جاهز</span></button></div>
+          <div class="simple-list"><button class="list-row" id="themeToggle"><span class="list-icon">☾</span><span><strong>موجة الليل</strong><small>الواجهة الداكنة الهادئة</small></span><span class="state-pill">مفعّل</span></button><button class="list-row" id="locationButton"><span class="list-icon">⌖</span><span><strong>الموقع ومواقيت الصلاة</strong><small id="settingsLocationLabel">القاهرة (افتراضي) · اضغط لتحديد موقعك</small></span><span class="chevron">‹</span></button><button class="list-row" id="offlineButton"><span class="list-icon">⇩</span><span><strong>العمل دون إنترنت</strong><small>واجهة التطبيق والصفحات المفتوحة تُحفظ</small></span><span class="state-pill">جاهز</span></button></div>
         </section>
       </main>
 
@@ -105,6 +112,9 @@
       </nav>
     </div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="app.js" defer></script>
+    <dialog class="picker-dialog" id="pagePickerDialog" aria-labelledby="pagePickerTitle"><form method="dialog"><button class="dialog-close" aria-label="إغلاق">×</button><h2 id="pagePickerTitle">اذهب إلى صفحة</h2><label for="pageInput">رقم الصفحة (١–٦٠٤)</label><div class="page-input-row"><input id="pageInput" type="number" min="1" max="604" inputmode="numeric" value="42" /><button class="gold-button" id="goToPageButton" value="go">اذهب</button></div></form></dialog>
+    <dialog class="picker-dialog surah-dialog" id="surahPickerDialog" aria-labelledby="surahPickerTitle"><div class="dialog-heading"><h2 id="surahPickerTitle">فهرس السور</h2><button class="dialog-close" id="closeSurahPicker" aria-label="إغلاق">×</button></div><div id="surahList" class="surah-list" role="list"></div></dialog>
+    <script src="./vendor/adhan.umd.min.js" defer></script>
+    <script src="./app.js" defer></script>
   </body>
 </html>
