@@ -50,3 +50,7 @@ body.light .mushaf-svg #content path{fill:#f5f1e7!important}
 @media(max-width:390px){.prayer-times-list{gap:1px}.prayer-time-row{padding-inline:0}.prayer-time-name{font-size:10px}.prayer-time-value{font-size:12px}.prayer-progress-labels{font-size:11px}}
 
 .prayer-progress-track,.prayer-progress-labels{direction:ltr}
+
+.home-prayer-times{margin-top:18px}
+
+
