@@ -181,6 +181,7 @@ function updatePrayerTimes(){
     }else{const tomorrow=new Date(now);tomorrow.setDate(now.getDate()+1);next={key:'fajr',name:prayerNames.fajr};nextAt=prayerTimesFor(tomorrow).fajr;previous=cycle.at(-1)}
     
     document.getElementById('prayerDashboardNextName').textContent=next.name;
+    document.getElementById('nextPrayerGlyph').innerHTML=prayerIconSvg(next.key);
     
     list.querySelector(`[data-prayer="${next.key}"]`)?.classList.add('next-prayer');
     const progress=Math.max(0,Math.min(100,((now-previous.time)/(nextAt-previous.time))*100));
