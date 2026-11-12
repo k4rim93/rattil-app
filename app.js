@@ -149,7 +149,7 @@ document.querySelectorAll('#todayDate,#todayDate2').forEach(node=>node.textConte
 const locations={cairo:{lat:30.0444,lon:31.2357,name:'القاهرة'}};
 let userLocation={...locations.cairo,name:`${locations.cairo.name} (افتراضي)`};
 try{const saved=JSON.parse(readStore('rattil-location','null'));if(saved&&Number.isFinite(saved.lat)&&Number.isFinite(saved.lon))userLocation=saved}catch{}
-function setLocationLabels(){const shortName=userLocation.name.replace(' (افتراضي)','');document.getElementById('locationLabel').textContent=`${shortName} · حساب محلي`;document.getElementById('prayerCityName').textContent=shortName;document.getElementById('settingsLocationLabel').textContent=`${userLocation.name} · اضغط لتغيير الموقع`;document.getElementById('prayerMethodNote').textContent=`طريقة الحساب المصرية · ${userLocation.name}`}
+function setLocationLabels(){const shortName=userLocation.name.replace(' (افتراضي)','');document.getElementById('prayerCityName').textContent=shortName;document.getElementById('settingsLocationLabel').textContent=`${userLocation.name} · اضغط لتغيير الموقع`;document.getElementById('prayerMethodNote').textContent=`طريقة الحساب المصرية · ${userLocation.name}`}
 function prayerTimesFor(date){const coordinates=new adhan.Coordinates(userLocation.lat,userLocation.lon);const params=adhan.CalculationMethod.Egyptian();params.madhab=adhan.Madhab.Shafi;return new adhan.PrayerTimes(coordinates,date,params)}
 const prayerNames={fajr:'الفجر',sunrise:'الشروق',dhuhr:'الظهر',asr:'العصر',maghrib:'المغرب',isha:'العشاء'};
 const prayerIconPaths={
@@ -168,7 +168,7 @@ function updatePrayerCountdown(){
   if(!nextPrayerAt)return;
   const seconds=Math.max(0,Math.floor((nextPrayerAt-new Date())/1000)),hours=Math.floor(seconds/3600),minutes=Math.floor(seconds%3600/60),remaining=seconds%60;
   const value=[hours,minutes,remaining].map(part=>String(part).padStart(2,'0')).map(toArabic).join(':');
-  document.getElementById('prayerCountdown').textContent=value;document.getElementById('prayerCountdownDashboard').textContent=value;
+  document.getElementById('prayerCountdownDashboard').textContent=value;
 }
 function updatePrayerTimes(){
   try{
@@ -179,9 +179,9 @@ function updatePrayerTimes(){
     let nextIndex=cycle.findIndex(row=>row.time>now),previous,next,nextAt;
     if(nextIndex>=0){next=cycle[nextIndex];nextAt=next.time;if(nextIndex>0)previous=cycle[nextIndex-1];else{const yesterday=new Date(now);yesterday.setDate(now.getDate()-1);previous={key:'isha',name:prayerNames.isha,time:prayerTimesFor(yesterday).isha}}
     }else{const tomorrow=new Date(now);tomorrow.setDate(now.getDate()+1);next={key:'fajr',name:prayerNames.fajr};nextAt=prayerTimesFor(tomorrow).fajr;previous=cycle.at(-1)}
-    document.getElementById('nextPrayerName').textContent=next.name;
+    
     document.getElementById('prayerDashboardNextName').textContent=next.name;
-    document.getElementById('nextPrayerGlyph').innerHTML=prayerIconSvg(next.key);
+    
     list.querySelector(`[data-prayer="${next.key}"]`)?.classList.add('next-prayer');
     const progress=Math.max(0,Math.min(100,((now-previous.time)/(nextAt-previous.time))*100));
     document.getElementById('prayerProgressFill').style.width=`${progress}%`;
@@ -189,7 +189,7 @@ function updatePrayerTimes(){
     document.getElementById('prayerProgressFrom').textContent=`${previous.name} ${formatTime(previous.time)}`;
     document.getElementById('prayerProgressTo').textContent=`${next.name} ${formatTime(nextAt)}`;
     nextPrayerAt=nextAt;updatePrayerCountdown();
-  }catch{document.getElementById('prayerCountdown').textContent='—';document.getElementById('prayerCountdownDashboard').textContent='—';document.getElementById('prayerTimesList').textContent='تعذّر حساب المواقيت على هذا الجهاز.'}
+  }catch{document.getElementById('prayerCountdownDashboard').textContent='—';document.getElementById('prayerTimesList').textContent='تعذّر حساب المواقيت على هذا الجهاز.'}
 }
 setLocationLabels();updatePrayerTimes();setInterval(updatePrayerTimes,60000);setInterval(updatePrayerCountdown,1000);
 document.getElementById('locationButton').addEventListener('click',()=>{
@@ -216,3 +216,4 @@ let deferredInstall;
 window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferredInstall=event;document.getElementById('installButton').hidden=false});
 document.getElementById('installButton').addEventListener('click',async()=>{if(!deferredInstall){announce('من Safari اختار مشاركة ثم إضافة إلى الشاشة الرئيسية.');return}deferredInstall.prompt();await deferredInstall.userChoice;deferredInstall=null});
 if('serviceWorker'in navigator&&window.location.protocol.startsWith('http'))navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+
