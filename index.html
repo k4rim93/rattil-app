@@ -31,16 +31,21 @@
             <div class="scene-copy"><p class="date-line" id="todayDate">الخميس، ١٢ نوفمبر</p><h1>السكينة تبدأ<br />بآية.</h1><p>مساحة هادئة لوردك، قراءتك، ومراجعتك.</p></div>
           </div>
 
-          <section class="prayer-times-section home-prayer-times" aria-labelledby="prayerTimesTitle">
-            <header class="prayer-section-heading"><div><h2 id="prayerTimesTitle">مواقيت الصلاة</h2><p id="prayerMethodNote">تُحسب حسب إحداثيات القاهرة الافتراضية.</p></div></header>
+          <section class="home-prayer-times" aria-labelledby="prayerTimesTitle">
             <div class="prayer-countdown-panel">
-              <p class="prayer-city"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.2"/></svg><span id="prayerCityName">القاهرة</span></p>
-              <p class="prayer-next-label">الوقت المتبقي لصلاة <strong id="prayerDashboardNextName">الفجر</strong></p>
-              <strong class="prayer-dashboard-countdown" id="prayerCountdownDashboard">--:--:--</strong>
+              <div class="prayer-summary">
+                <div class="prayer-next-block">
+                  <span class="prayer-glyph" id="nextPrayerGlyph" aria-hidden="true"></span>
+                  <span><small>الصلاة القادمة</small><strong id="prayerDashboardNextName">الفجر</strong></span>
+                </div>
+                <div class="prayer-countdown-block"><small>باقي على الصلاة</small><strong class="prayer-dashboard-countdown" id="prayerCountdownDashboard">--:--:--</strong></div>
+              </div>
               <div class="prayer-progress-track" role="progressbar" aria-label="الوقت حتى الصلاة القادمة" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="prayerProgressFill"></span></div>
-              <div class="prayer-progress-labels"><span id="prayerProgressFrom">العشاء</span><span id="prayerProgressTo">الفجر</span></div>
+              <div class="prayer-progress-labels" aria-hidden="true"><span id="prayerProgressFrom">العشاء</span><span id="prayerProgressTo">الفجر</span></div>
+              <header class="prayer-schedule-heading"><h2 id="prayerTimesTitle">مواقيت الصلاة</h2><span id="prayerCityName">القاهرة</span></header>
+              <div id="prayerTimesList" class="prayer-times-list" role="list" aria-label="مواعيد الصلاة اليوم" aria-live="polite"></div>
+              <p class="prayer-method-note" id="prayerMethodNote">طريقة الحساب المصرية · القاهرة (افتراضي)</p>
             </div>
-            <div id="prayerTimesList" class="prayer-times-list" role="list" aria-label="مواعيد الصلاة اليوم" aria-live="polite"></div>
           </section>
 
           <section class="continue-row">
