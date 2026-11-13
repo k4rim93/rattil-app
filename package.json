@@ -1,0 +1,20 @@
+{
+  "name": "rattil",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "prepare:assets": "node scripts/prepare-assets.mjs",
+    "build": "npm run prepare:assets && vite build",
+    "dev": "npm run prepare:assets && vite --host 0.0.0.0",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "@tilawa/core": "0.4.0",
+    "onnxruntime-web": "1.24.2"
+  },
+  "devDependencies": {
+    "vite": "7.3.1"
+  }
+}
+
