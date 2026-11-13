@@ -96,9 +96,9 @@ async function init() {
     post("loading_status", { message: "بدء المحرك محليًا على الجهاز…" });
     session = await createRecognitionSession({
       ort, model: () => modelBuffer, io: () => io, corpus: () => corpus, quran: () => quran,
-      executionProviders: ["wasm"], structural: { timing: "pause" }, onEvent: (event) => post("event", { event }),
+      executionProviders: ["wasm"], structural: { timing: "stop" }, onEvent: (event) => post("event", { event }),
     });
-    session.zipformer?.setMode("correction");
+    session.zipformer?.setMode("tracking");
     post("ready");
   } catch (error) {
     console.error("Rattil ASR init failed at", stage, error);
@@ -109,6 +109,7 @@ async function handle(message) {
   if (message.type === "init") return init();
   if (message.type === "reset") session?.reset();
   if (message.type === "set_expected") { session?.zipformer?.setExpected(message.passage || null); return; }
+  if (message.type === "set_mode") { session?.zipformer?.setMode(message.mode === "correction" ? "correction" : "tracking"); return; }
   if (message.type === "correction_action") { session?.zipformer?.correct(message.action); return; }
   if (message.type === "audio" && session) await session.feed(message.samples);
   if (message.type === "stop" && session) await session.stop();
