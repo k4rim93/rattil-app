@@ -175,4 +175,25 @@ body.immersive-reading .mushaf-disclaimer{display:none}
 .recitation-page-number{position:absolute;bottom:8px;left:8px;padding:2px 12px;border:1px solid #80671f;border-radius:8px;background:#0b0e0e;color:var(--gold-light);font-family:var(--quran);font-size:12px}
 .recitation-mushaf-host>.quran-loading,.recitation-mushaf-host>.recitation-empty{align-self:center;padding:26px 12px;color:var(--muted);text-align:center;font-size:12px}
 @media(max-width:390px){.recitation-mushaf-paper{padding-inline:4px}.recitation-reader-head strong{font-size:17px}.recitation-reader-head small{font-size:10px}}
+.recitation-modes{grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}
+.recitation-modes button{padding:9px 5px;font-size:11px}
+.recitation-mushaf-host{position:relative;display:block;min-height:0}
+.recitation-mushaf-host .mushaf-svg{width:100%;height:auto}
+.recitation-word-overlay{position:absolute;inset:0;direction:rtl;pointer-events:none}
+.recitation-word-ayah{position:absolute;overflow:hidden;direction:rtl;text-align:justify;text-align-last:justify;font-family:var(--quran);font-size:clamp(11px,4vw,16px);line-height:1.62;white-space:normal}
+.recitation-live-word{border-radius:3px;transition:color .12s ease,background-color .12s ease}
+.recitation-live-word.unattempted{color:transparent;text-shadow:none}
+.recitation-live-word.correct,.recitation-history-words .correct{color:#79e3a3;background:#11633a55}
+.recitation-live-word.error,.recitation-history-words .error{color:#ff938e;background:#78272577}
+.recitation-mushaf-host.preview .recitation-word-overlay{visibility:hidden}
+.recitation-history-panel{padding-top:18px}
+.recitation-history-list{display:grid;gap:8px;margin-top:12px;text-align:right}
+.recitation-history-empty,.recitation-history-entry{padding:13px;border:1px solid var(--line);border-radius:13px;background:var(--surface-raised);color:var(--muted);font-size:12px;line-height:1.8}
+.recitation-history-entry summary{cursor:pointer;color:var(--text);font-weight:600}
+.recitation-history-entry[open] summary{margin-bottom:9px;color:var(--gold-light)}
+.recitation-history-words{direction:rtl;color:var(--text);font-family:var(--quran);font-size:16px;line-height:2.2}
+.recitation-history-verse{padding-top:7px;margin-top:7px;border-top:1px solid var(--line)}
+.recitation-history-verse>small{color:var(--gold-light);font-size:10px}
+.recitation-history-words span{border-radius:3px;padding:1px 2px}
+.recitation-controls[hidden]{display:none}
 
