@@ -180,7 +180,8 @@ body.immersive-reading .mushaf-disclaimer{display:none}
 .recitation-modes button{padding:9px 5px;font-size:11px}
 .recitation-mushaf-host{position:relative;display:block;min-height:0}
 .recitation-mushaf-host .mushaf-svg{width:100%;height:auto}
-.recitation-word-overlay{position:absolute;inset:0;direction:rtl;pointer-events:none}
+.recitation-word-overlay{position:absolute;inset:0;z-index:1;direction:rtl;pointer-events:none}
+.recitation-page-stage .mushaf-svg{position:relative;z-index:2}
 .recitation-word-ayah{position:absolute;overflow:hidden;direction:rtl;text-align:justify;text-align-last:justify;font-family:var(--quran);font-size:clamp(11px,4vw,16px);line-height:1.62;white-space:normal}
 .recitation-live-word{border-radius:3px;transition:color .12s ease,background-color .12s ease}
 .recitation-live-word.unattempted{color:transparent;text-shadow:none}
