@@ -1,3 +1,5 @@
+import './vendor/adhan.umd.min.js';
+
 const views=[...document.querySelectorAll('.view')];
 const toast=document.getElementById('toast');
 let toastTimer;
@@ -256,7 +258,7 @@ const locations={cairo:{lat:30.0444,lon:31.2357,name:'القاهرة'}};
 let userLocation={...locations.cairo,name:`${locations.cairo.name} (افتراضي)`};
 try{const saved=JSON.parse(readStore('rattil-location','null'));if(saved&&Number.isFinite(saved.lat)&&Number.isFinite(saved.lon))userLocation=saved}catch{}
 function setLocationLabels(){const shortName=userLocation.name.replace(' (افتراضي)','');document.getElementById('prayerCityName').textContent=shortName;document.getElementById('settingsLocationLabel').textContent=`${userLocation.name} · اضغط لتغيير الموقع`;document.getElementById('prayerMethodNote').textContent=`طريقة الحساب المصرية · ${userLocation.name}`}
-function prayerTimesFor(date){const coordinates=new adhan.Coordinates(userLocation.lat,userLocation.lon);const params=adhan.CalculationMethod.Egyptian();params.madhab=adhan.Madhab.Shafi;return new adhan.PrayerTimes(coordinates,date,params)}
+function prayerTimesFor(date){const coordinates=new window.adhan.Coordinates(userLocation.lat,userLocation.lon);const params=window.adhan.CalculationMethod.Egyptian();params.madhab=window.adhan.Madhab.Shafi;return new window.adhan.PrayerTimes(coordinates,date,params)}
 const prayerNames={fajr:'الفجر',sunrise:'الشروق',dhuhr:'الظهر',asr:'العصر',maghrib:'المغرب',isha:'العشاء'};
 const prayerIconPaths={
   fajr:'<path d="M3 19h18M6 14l2 1.4M12 11v3M18 14l-2 1.4M4.5 10.5l1.2 1.2M19.5 10.5l-1.2 1.2"/>',
@@ -296,7 +298,7 @@ function updatePrayerTimes(){
     document.getElementById('prayerProgressFrom').textContent=`${previous.name} ${formatTime(previous.time)}`;
     document.getElementById('prayerProgressTo').textContent=`${next.name} ${formatTime(nextAt)}`;
     nextPrayerAt=nextAt;updatePrayerCountdown();
-  }catch{document.getElementById('prayerCountdownDashboard').textContent='—';document.getElementById('prayerTimesList').textContent='تعذّر حساب المواقيت على هذا الجهاز.'}
+  }catch(error){console.error('Prayer times calculation failed:',error);document.getElementById('prayerCountdownDashboard').textContent='—';document.getElementById('prayerTimesList').textContent='تعذّر حساب المواقيت على هذا الجهاز.'}
 }
 setLocationLabels();updatePrayerTimes();setInterval(updatePrayerTimes,60000);setInterval(updatePrayerCountdown,1000);
 document.getElementById('locationButton').addEventListener('click',()=>{
