@@ -196,4 +196,54 @@ body.immersive-reading .mushaf-disclaimer{display:none}
 .recitation-history-verse>small{color:var(--gold-light);font-size:10px}
 .recitation-history-words span{border-radius:3px;padding:1px 2px}
 .recitation-controls[hidden]{display:none}
+.recitation-page-stage{position:relative;width:100%;aspect-ratio:345/550;flex:0 0 auto}
+.recitation-page-stage .mushaf-svg{width:100%;height:100%;display:block}
+.recitation-page-stage.preview .recitation-word-overlay{visibility:hidden}
+.recitation-waiting{position:absolute;z-index:3;top:50%;left:50%;width:min(88%,340px);transform:translate(-50%,-50%);text-align:center;pointer-events:none}
+.recitation-waiting[hidden]{display:none}
+.recitation-waiting strong,.recitation-waiting small{display:block}
+.recitation-waiting strong{color:#f3eee2;font-family:var(--quran);font-size:22px;font-weight:400}
+.recitation-waiting small{margin-top:6px;color:#b5b7a8;font-size:12px}
+.practice-heading{padding-bottom:10px}
+.practice-panel{padding:12px 13px 13px}
+.asr-engine-row{padding:3px 0 7px;border-bottom:0}
+.asr-engine-row>div{display:flex;align-items:center;gap:7px}
+.asr-engine-row strong{font-size:11px}
+.asr-engine-row small{margin:0;font-size:10px;line-height:1.35}
+.asr-download-notice{margin:0;color:#aeb7ab;font-size:10px;line-height:1.5;text-align:right}
+.mode-panel{padding:11px 0 4px}
+.mode-panel p{margin-bottom:8px;line-height:1.6}
+.mode-panel .gold-button.wide{margin-top:10px;padding:12px}
+.recitation-controls[hidden]{display:none!important}
+body.recitation-session-active{overflow:hidden;overscroll-behavior:none}
+body.recitation-session-active .app-shell{position:fixed;inset:0;width:100%;max-width:none;height:100dvh;min-height:0;margin:0;padding:0;overflow:hidden;border:0;border-radius:0}
+body.recitation-session-active .topbar,body.recitation-session-active .tabbar,body.recitation-session-active .back-to-top{display:none!important}
+body.recitation-session-active #mainContent{position:absolute;inset:0;max-width:none;overflow:hidden}
+body.recitation-session-active .view:not(#view-practice){display:none!important}
+body.recitation-session-active #view-practice.active{position:absolute;inset:env(safe-area-inset-top) 0 calc(76px + env(safe-area-inset-bottom));display:flex;flex-direction:column;min-height:0;padding:4px 12px 8px;overflow:hidden}
+body.recitation-session-active .practice-heading,body.recitation-session-active .recitation-modes,body.recitation-session-active .practice-panel{display:none!important}
+body.recitation-session-active .recitation-reader:not([hidden]){display:flex;flex:1;flex-direction:column;min-height:0;margin:0;padding:0;border:0;overflow:hidden}
+body.recitation-session-active .recitation-reader-head{flex:0 0 48px;justify-content:space-between;padding:0 2px 7px}
+body.recitation-session-active .recitation-exit{flex:0 0 38px;width:38px;height:38px;border:1px solid var(--line);border-radius:50%;background:var(--surface-raised);color:var(--text);font-size:25px;line-height:1}
+body.recitation-session-active .recitation-reader-title{text-align:center;flex:1;min-width:0}
+body.recitation-session-active .recitation-reader-title strong{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.recitation-session-active .recitation-reader-title small{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.recitation-session-active .recitation-preview-button{flex:0 0 auto;min-height:34px;padding:0 9px;border:1px solid #79663b66;border-radius:9px;background:#172320;color:var(--gold-light);font-size:10px}
+body.recitation-session-active .recitation-mushaf-paper{display:flex;flex:1;flex-direction:column;align-items:center;justify-content:center;min-height:0;margin:0;padding:0 0 24px;overflow:hidden;border:0;background:#060707}
+body.recitation-session-active .recitation-waiting strong{font-size:25px}
+body.recitation-session-active .recitation-waiting small{font-size:12px}
+body.recitation-session-active .recitation-mushaf-host{display:flex;flex:1;align-items:center;justify-content:center;width:100%;min-height:0;overflow:hidden}
+body.recitation-session-active .recitation-page-stage{width:auto;height:100%;max-width:100%;max-height:100%;aspect-ratio:345/550}
+body.recitation-session-active .recitation-page-stage .mushaf-svg{width:100%;height:100%}
+body.recitation-session-active .recitation-page-number{bottom:2px;left:2px;font-size:10px}
+body.recitation-session-active #asrResult{flex:0 0 auto;min-height:0;margin:0;padding:4px 8px;border:0;background:transparent;font-size:10px;line-height:1.4}
+body.recitation-session-active .recitation-controls:not([hidden]){position:fixed;left:50%;bottom:calc(5px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(520px,calc(100% - 28px));display:flex;justify-content:center;gap:14px;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;backdrop-filter:none}
+body.recitation-session-active .recitation-controls>span{position:absolute;bottom:73px;left:50%;transform:translateX(-50%);width:max-content;max-width:90%;text-align:center;color:var(--muted);font-size:10px}
+body.recitation-session-active .recitation-controls #startRec{display:none}
+body.recitation-session-active .recitation-controls #stopRec:not(:disabled){display:grid;place-items:center;width:62px;height:62px;padding:0;border:1px solid #ead28c;border-radius:50%;background:#d6bf76;color:#14211d;font-size:0;box-shadow:0 0 0 7px #d6bf7626}
+body.recitation-session-active .recitation-controls #stopRec svg{width:21px;height:21px;fill:currentColor;stroke:none}
+body.recitation-session-active .recitation-controls #stopRec:disabled{display:none}
+body.recitation-session-active .clear-asr-cache,body.recitation-session-active .asr-limits{display:none}
+@media(max-height:700px){body.recitation-session-active .recitation-page-stage{height:100%;width:auto}body.recitation-session-active .recitation-reader-head{flex-basis:42px}}
+@media(min-width:700px){body.recitation-session-active .app-shell{border-radius:0}body.recitation-session-active #view-practice.active{max-width:640px;left:50%;right:auto;width:min(100%,640px);transform:translateX(-50%)}}
 
