@@ -112,7 +112,7 @@ async function handle(message) {
   if (message.type === "set_mode") { session?.zipformer?.setMode(message.mode === "correction" ? "correction" : "tracking"); return; }
   if (message.type === "correction_action") { session?.zipformer?.correct(message.action); return; }
   if (message.type === "audio" && session) await session.feed(message.samples);
-  if (message.type === "stop" && session) await session.stop();
+  if (message.type === "stop" && session) { await session.stop(); post("stopped"); }
 }
 self.onmessage = (event) => {
   queue = queue.then(() => handle(event.data || {})).catch((error) => post("error", { message: error?.message || String(error), stage: "message-handler" }));
