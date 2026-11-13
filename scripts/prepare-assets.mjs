@@ -1,4 +1,4 @@
-import { mkdir, copyFile, stat, writeFile } from "node:fs/promises";
+import { mkdir, copyFile, readFile, stat, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -37,5 +37,9 @@ await copyFile(join(root, "vendor", "adhan.umd.min.js"), join(vendor, "adhan.umd
 await copyFile(join(root, "service-worker.js"), join(pub, "service-worker.js"));
 await copyFile(join(root, "manifest.webmanifest"), join(pub, "manifest.webmanifest"));
 await copyFile(join(root, "icon.svg"), join(pub, "icon.svg"));
+for (const icon of ["apple-touch-icon.png"]) {
+  const encodedIcon = await readFile(join(root, "icon-assets", `${icon}.b64`), "utf8");
+  await writeFile(join(pub, icon), Buffer.from(encodedIcon.trim(), "base64"));
+}
 console.log("Recitation assets prepared.");
 
