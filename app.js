@@ -60,7 +60,8 @@ document.getElementById('startReview').addEventListener('click',()=>{
 
 const toArabic=value=>new Intl.NumberFormat('ar-EG',{useGrouping:false}).format(value);
 const pagePicker=document.getElementById('pagePickerDialog');
-const surahPicker=document.getElementById('surahPickerDialog');
+const mushafIndex=document.getElementById('mushafIndexDialog');
+const ayahNoteDialog=document.getElementById('ayahNoteDialog');
 let page=Number(readStore('rattil-page','42'))||42,pageLoaded=false,pageRequest=0;
 function updatePageNumbers(){for(const id of ['pageNumber','pageNumberBottom','paperPageNumber','homePageNumber'])document.getElementById(id).textContent=toArabic(page)}
 function setPage(next){page=Math.max(1,Math.min(604,Number(next)||1));writeStore('rattil-page',page);pageLoaded=false;updatePageNumbers();loadPage(page)}
@@ -102,6 +103,14 @@ function renderPageSvg(source,requestedPage){
   mounted.removeAttribute('width');mounted.removeAttribute('height');
   root.replaceChildren(mounted);
   document.getElementById('paperPageNumber').textContent=toArabic(requestedPage);pageLoaded=true;
+  connectAyahMarkers(requestedPage,mounted);
+}
+async function connectAyahMarkers(requestedPage,svg){
+  try{
+    const result=await getQuranJson(`${quranApi}/page/${requestedPage}/quran-uthmani`);if(page!==requestedPage)return;
+    const ayahs=result.data.ayahs,markers=[...svg.querySelectorAll('#ayah_markers .ayah-mark')];
+    markers.forEach((marker,index)=>{const ayah=ayahs[index];if(!ayah)return;const reference={surah:ayah.surah.number,surahName:ayah.surah.name,ayah:ayah.numberInSurah,page:requestedPage};let pressTimer=0,didLongPress=false,pointerType='';marker.classList.add('ayah-note-marker');marker.setAttribute('role','button');marker.setAttribute('tabindex','0');marker.setAttribute('aria-label',`اضغط مطولًا لإضافة ملاحظة على ${ayah.surah.name}، الآية ${toArabic(ayah.numberInSurah)}`);marker.addEventListener('pointerdown',event=>{pointerType=event.pointerType;if(pointerType==='touch'||pointerType==='pen'){didLongPress=false;pressTimer=setTimeout(()=>{didLongPress=true;openAyahNote(reference)},550)}});['pointerup','pointerleave','pointercancel'].forEach(type=>marker.addEventListener(type,()=>clearTimeout(pressTimer)));marker.addEventListener('click',event=>{if(event.detail===0||pointerType==='mouse')openAyahNote(reference);else if(didLongPress)event.preventDefault()})});
+  }catch{/* يبقى عرض المصحف متاحًا حتى عند تعذّر تحميل بيانات الفهرسة */}
 }
 async function loadPage(requestedPage){
   const current=++pageRequest,root=document.getElementById('mushafSvgHost');
@@ -120,28 +129,87 @@ document.getElementById('previousPage').addEventListener('click',()=>setPage(pag
 document.getElementById('nextPage').addEventListener('click',()=>setPage(page+1));
 document.getElementById('pagePickerButton').addEventListener('click',()=>{document.getElementById('pageInput').value=page;pagePicker.showModal()});
 document.getElementById('goToPageButton').addEventListener('click',event=>{event.preventDefault();const input=document.getElementById('pageInput');const value=Number(input.value);if(!Number.isInteger(value)||value<1||value>604){input.setCustomValidity('أدخل رقمًا من ١ إلى ٦٠٤');input.reportValidity();return}input.setCustomValidity('');pagePicker.close();setPage(value)});
-document.getElementById('indexButton').addEventListener('click',async()=>{
-  surahPicker.showModal();const list=document.getElementById('surahList');if(list.dataset.loaded==='true')return;
-  list.innerHTML='<p class="quran-loading">جارٍ تحميل الفهرس…</p>';
+const indexData={meta:null,surahs:null};
+const getBookmarks=()=>{try{const saved=JSON.parse(readStore('rattil-bookmarks','[]'));return Array.isArray(saved)?saved:[]}catch{return []}};
+const getNotes=()=>{try{const saved=JSON.parse(readStore('rattil-ayah-notes','[]'));return Array.isArray(saved)?saved:[]}catch{return []}};
+const getSurahName=(number)=>indexData.surahs?.find(item=>item.number===number)?.name||`السورة ${toArabic(number)}`;
+function pageForReference(surah,ayah){const refs=indexData.meta?.pages?.references||[];let found=0;for(let i=0;i<refs.length;i++){const ref=refs[i];if(ref.surah===surah&&ref.ayah<=ayah)found=i+1;if(ref.surah>surah)break}return found||1}
+function juzForReference(surah,ayah){const refs=indexData.meta?.juzs?.references||[];let number=1;refs.forEach((ref,index)=>{if(ref.surah<surah||(ref.surah===surah&&ref.ayah<=ayah))number=index+1});return number}
+function makeIndexRow({title,detail,page:targetPage,kind='page',reference=null,progress=null}){
+  const button=document.createElement('button');button.className='surah-option index-entry';button.setAttribute('role','listitem');
+  const primary=document.createElement('span');primary.className='index-entry-copy';const strong=document.createElement('strong');strong.textContent=title;const small=document.createElement('small');small.textContent=detail;primary.append(strong,small);
+  const pageLabel=document.createElement('span');pageLabel.className='index-entry-page';pageLabel.textContent=toArabic(targetPage);
+  button.append(primary);
+  if(progress!==null){const meter=document.createElement('span');meter.className='juz-progress';meter.style.setProperty('--progress',`${progress*3.6}deg`);meter.setAttribute('role','img');meter.setAttribute('aria-label',`التقدم في الجزء حسب آخر صفحة: ${toArabic(progress)}٪`);const value=document.createElement('span');value.textContent=`${toArabic(progress)}٪`;meter.append(value);button.append(meter)}
+  button.append(pageLabel);button.addEventListener('click',()=>{if(kind==='note'&&reference)openAyahNote(reference);mushafIndex.close();showView('quran');setPage(targetPage)});return button;
+}
+function renderSavedIndexes(){
+  const notes=[...getNotes()],bookmarks=[...getBookmarks()],sort=document.querySelector('#indexSort [data-sort].selected')?.dataset.sort||'date';
+  const ordering=(a,b)=>sort==='page'?a.page-b.page:b.updatedAt-a.updatedAt;
+  notes.sort(ordering);bookmarks.sort(ordering);
+  const noteList=document.getElementById('notesList'),bookmarkList=document.getElementById('bookmarksList');noteList.replaceChildren();bookmarkList.replaceChildren();
+  if(!notes.length)noteList.innerHTML='<div class="index-empty"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M19 3l2 2-9 9-3 1 1-3z"/></svg></span><strong>لا توجد ملاحظات</strong><small>اضغط مطولًا على علامة آية في صفحة المصحف لإضافة ملاحظة.</small></div>';
+  else notes.forEach(note=>noteList.append(makeIndexRow({title:`${note.surahName||getSurahName(note.surah)} · الآية ${toArabic(note.ayah)}`,detail:`صفحة ${toArabic(note.page)} · ${new Intl.DateTimeFormat('ar-EG',{dateStyle:'medium'}).format(note.updatedAt)}`,page:note.page,kind:'note',reference:note})));
+  if(!bookmarks.length)bookmarkList.innerHTML='<div class="index-empty"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4.5A1.5 1.5 0 0 1 7.5 3h9A1.5 1.5 0 0 1 18 4.5V21l-6-4-6 4z"/></svg></span><strong>لا توجد صفحات محفوظة</strong><small>احفظ الصفحة من شريط المصحف للوصول إليها هنا.</small></div>';
+  else bookmarks.forEach(item=>{const ref=indexData.meta?.pages?.references?.[item.page-1];const detail=ref?`${getSurahName(ref.surah)} · الآية ${toArabic(ref.ayah)} · حُفظت ${new Intl.DateTimeFormat('ar-EG',{dateStyle:'medium'}).format(item.updatedAt)}`:`حُفظت ${new Intl.DateTimeFormat('ar-EG',{dateStyle:'medium'}).format(item.updatedAt)}`;bookmarkList.append(makeIndexRow({title:`صفحة ${toArabic(item.page)}`,detail,page:item.page}))});
+}
+async function loadIndexData(){
+  const surahList=document.getElementById('surahList'),juzList=document.getElementById('juzList');
+  if(indexData.meta&&indexData.surahs){renderSurahs();renderJuz();renderSavedIndexes();return}
+  surahList.innerHTML='<p class="quran-loading">جارٍ تحميل الفهرس…</p>';juzList.innerHTML='<p class="quran-loading">جارٍ تحميل الأجزاء…</p>';
   try{
-    const result=await getQuranJson(`${quranApi}/surah`);list.replaceChildren();
-    result.data.forEach(surah=>{const button=document.createElement('button');button.className='surah-option';button.setAttribute('role','listitem');const name=document.createElement('span');name.textContent=`${toArabic(surah.number)}. ${surah.name}`;const small=document.createElement('small');small.textContent=`${toArabic(surah.numberOfAyahs)} آية`;button.append(name,small);button.addEventListener('click',async()=>{
-      button.disabled=true;announce(`جارٍ فتح ${surah.name}`);
-      try{const result=await getQuranJson(`${quranApi}/surah/${surah.number}/quran-uthmani`);const first=result.data.ayahs[0];surahPicker.close();showView('quran');setPage(first.page)}catch{announce('تعذر فتح السورة الآن. تحقق من الاتصال وحاول مرة أخرى.')}finally{button.disabled=false}
-    });list.append(button)});list.dataset.loaded='true';
-  }catch{list.innerHTML='<p class="quran-error">تعذر تحميل الفهرس. اتصل بالإنترنت ثم أعد فتحه.</p>'}
-});
-document.getElementById('closeSurahPicker').addEventListener('click',()=>surahPicker.close());
+    const [meta,surahs]=await Promise.all([getQuranJson(`${quranApi}/meta`),getQuranJson(`${quranApi}/surah`)]);indexData.meta=meta.data;indexData.surahs=surahs.data;renderSurahs();renderJuz();renderSavedIndexes();
+  }catch{surahList.innerHTML='<p class="quran-error">تعذر تحميل الفهرس. اتصل بالإنترنت ثم أعد فتحه.</p>';juzList.innerHTML='<p class="quran-error">تعذر تحميل فهرس الأجزاء.</p>'}
+}
+function renderSurahs(){
+  if(!indexData.surahs)return;
+  const list=document.getElementById('surahList'),query=document.getElementById('surahSearch').value.trim().toLocaleLowerCase('ar');list.replaceChildren();
+  const matches=indexData.surahs.filter(s=>s.name.toLocaleLowerCase('ar').includes(query)||String(s.number).includes(query));
+  let activeJuz=0;
+  matches.forEach(surah=>{
+    const targetPage=pageForReference(surah.number,1),juz=juzForReference(surah.number,1);
+    if(juz!==activeJuz){const heading=document.createElement('h3');heading.className='index-group-heading';heading.textContent=`الجزء ${toArabic(juz)}`;list.append(heading);activeJuz=juz}
+    list.append(makeIndexRow({title:`${toArabic(surah.number)}. ${surah.name}`,detail:`${toArabic(surah.numberOfAyahs)} آية · ${surah.revelationType==='Meccan'?'مكية':'مدنية'}`,page:targetPage}));
+  });
+  if(!list.children.length)list.innerHTML='<p class="quran-error">لا توجد سورة بهذا الاسم.</p>';
+}
+function renderJuz(){
+  const list=document.getElementById('juzList'),refs=indexData.meta.juzs.references,lastPage=Number(readStore('rattil-page','42'))||42;list.replaceChildren();
+  refs.forEach((ref,index)=>{
+    const startPage=pageForReference(ref.surah,ref.ayah),endPage=index+1<refs.length?pageForReference(refs[index+1].surah,refs[index+1].ayah)-1:604,span=Math.max(1,endPage-startPage+1);
+    const progress=Math.max(0,Math.min(100,Math.round((lastPage<startPage?0:lastPage>endPage?span:lastPage-startPage+1)/span*100)));
+    list.append(makeIndexRow({title:`الجزء ${toArabic(index+1)}`,detail:`${getSurahName(ref.surah)} · الآية ${toArabic(ref.ayah)}`,page:startPage,progress}));
+  });
+}
+function selectIndexTab(name){document.querySelectorAll('[data-index-tab]').forEach(tab=>{const selected=tab.dataset.indexTab===name;tab.classList.toggle('selected',selected);tab.setAttribute('aria-selected',String(selected))});document.querySelectorAll('.index-panel').forEach(panel=>{const selected=panel.id===`indexPanel-${name}`;panel.hidden=!selected;panel.classList.toggle('active',selected)});document.getElementById('surahSearchWrap').hidden=name!=='surahs';document.getElementById('indexSort').hidden=!['notes','bookmarks'].includes(name);if(name==='notes'||name==='bookmarks')renderSavedIndexes()}
+document.getElementById('indexButton').addEventListener('click',()=>{selectIndexTab('surahs');mushafIndex.showModal();loadIndexData()});
+document.getElementById('closeMushafIndex').addEventListener('click',()=>mushafIndex.close());
+document.querySelectorAll('[data-index-tab]').forEach(tab=>tab.addEventListener('click',()=>selectIndexTab(tab.dataset.indexTab)));
+document.getElementById('surahSearch').addEventListener('input',renderSurahs);
+document.querySelectorAll('[data-sort]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-sort]').forEach(item=>item.classList.toggle('selected',item===button));renderSavedIndexes()}));
 document.getElementById('bookmarkButton').addEventListener('click',event=>{
-  const button=event.currentTarget;const saved=Number(readStore('rattil-bookmarked-page','0'));
-  if(saved===page){writeStore('rattil-bookmarked-page','0');button.classList.remove('saved');button.setAttribute('aria-pressed','false');announce('اتشالت علامة الصفحة')}else{writeStore('rattil-bookmarked-page',page);button.classList.add('saved');button.setAttribute('aria-pressed','true');announce(`اتحفظت الصفحة ${toArabic(page)}`)}
+  const button=event.currentTarget;let saved=getBookmarks();if(!saved.length){const legacy=Number(readStore('rattil-bookmarked-page','0'));if(legacy)saved=[{page:legacy,updatedAt:Date.now()}]}
+  if(saved.some(item=>item.page===page)){saved=saved.filter(item=>item.page!==page);announce('اتشالت الصفحة من المرجعيات')}else{saved.push({page,updatedAt:Date.now()});announce(`اتحفظت الصفحة ${toArabic(page)}`)}
+  writeStore('rattil-bookmarks',JSON.stringify(saved));syncBookmark();if(mushafIndex.open)renderSavedIndexes();
 });
-function syncBookmark(){const active=Number(readStore('rattil-bookmarked-page','0'))===page;const button=document.getElementById('bookmarkButton');button.classList.toggle('saved',active);button.setAttribute('aria-pressed',String(active))}
+function syncBookmark(){let saved=getBookmarks();if(!saved.length){const legacy=Number(readStore('rattil-bookmarked-page','0'));if(legacy)saved=[{page:legacy}]}const active=saved.some(item=>item.page===page);const button=document.getElementById('bookmarkButton');button.classList.toggle('saved',active);button.setAttribute('aria-pressed',String(active));button.querySelector('span').textContent=active?'محفوظة':'حفظ الصفحة'}
 const previousSetPage=setPage;setPage=function(next){previousSetPage(next);syncBookmark()};syncBookmark();
 let touchStart=null;const mushafPaper=document.querySelector('.mushaf-paper');
 mushafPaper.addEventListener('touchstart',event=>{if(event.changedTouches.length)touchStart={x:event.changedTouches[0].clientX,y:event.changedTouches[0].clientY}},{passive:true});
 mushafPaper.addEventListener('touchend',event=>{if(!touchStart||!event.changedTouches.length)return;const touch=event.changedTouches[0],dx=touch.clientX-touchStart.x,dy=touch.clientY-touchStart.y;touchStart=null;if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.25)setPage(page+(dx>0?1:-1))},{passive:true});
-document.addEventListener('keydown',event=>{if(document.getElementById('view-quran').classList.contains('active')&&!pagePicker.open&&!surahPicker.open){if(event.key==='ArrowLeft')setPage(page+1);if(event.key==='ArrowRight')setPage(page-1)}});
+document.addEventListener('keydown',event=>{if(document.getElementById('view-quran').classList.contains('active')&&!pagePicker.open&&!mushafIndex.open&&!ayahNoteDialog.open){if(event.key==='ArrowLeft')setPage(page+1);if(event.key==='ArrowRight')setPage(page-1)}});
+
+let activeNote=null;
+function noteKey(reference){return `${reference.surah}:${reference.ayah}`}
+function openAyahNote(reference){activeNote=reference;const key=noteKey(reference),saved=getNotes().find(note=>noteKey(note)===key);document.getElementById('noteVerseReference').textContent=`${reference.surahName||saved?.surahName||getSurahName(reference.surah)} · الآية ${toArabic(reference.ayah)} · صفحة ${toArabic(reference.page)}`;document.getElementById('ayahNoteText').value=saved?.text||'';document.getElementById('deleteAyahNote').hidden=!saved;ayahNoteDialog.showModal();setTimeout(()=>document.getElementById('ayahNoteText').focus(),80)}
+document.getElementById('closeAyahNote').addEventListener('click',()=>ayahNoteDialog.close());
+document.getElementById('saveAyahNote').addEventListener('click',()=>{const text=document.getElementById('ayahNoteText').value.trim();if(!text){announce('اكتب الملاحظة قبل حفظها');return}const notes=getNotes().filter(note=>noteKey(note)!==noteKey(activeNote));notes.push({...activeNote,text,updatedAt:Date.now()});writeStore('rattil-ayah-notes',JSON.stringify(notes));ayahNoteDialog.close();announce('اتحفظت الملاحظة على هذا الجهاز');if(mushafIndex.open)renderSavedIndexes()});
+document.getElementById('deleteAyahNote').addEventListener('click',()=>{writeStore('rattil-ayah-notes',JSON.stringify(getNotes().filter(note=>noteKey(note)!==noteKey(activeNote))));ayahNoteDialog.close();announce('اتحذفت الملاحظة');if(mushafIndex.open)renderSavedIndexes()});
+
+const immersiveButton=document.getElementById('immersiveButton');
+function setImmersive(active){document.body.classList.toggle('immersive-reading',active);document.documentElement.classList.toggle('immersive-reading',active);immersiveButton.setAttribute('aria-pressed',String(active));immersiveButton.textContent=active?'إنهاء ملء الشاشة':'ملء الشاشة';immersiveButton.setAttribute('aria-label',active?'إنهاء وضع القراءة الغامر':'تفعيل وضع القراءة الغامر');if(!active&&document.fullscreenElement)document.exitFullscreen?.().catch(()=>{})}
+immersiveButton.addEventListener('click',async()=>{const active=!document.body.classList.contains('immersive-reading');setImmersive(active);if(active&&document.documentElement.requestFullscreen){try{await document.documentElement.requestFullscreen()}catch{/* يبقى وضع القراءة داخل الصفحة */}}});
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&document.body.classList.contains('immersive-reading'))setImmersive(false)});
 
 const today=new Date();const dateText=new Intl.DateTimeFormat('ar-EG',{weekday:'long',day:'numeric',month:'long'}).format(today);
 document.querySelectorAll('#todayDate,#todayDate2').forEach(node=>node.textContent=dateText);
