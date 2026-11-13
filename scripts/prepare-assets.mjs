@@ -37,7 +37,9 @@ await copyFile(join(root, "vendor", "adhan.umd.min.js"), join(vendor, "adhan.umd
 await copyFile(join(root, "service-worker.js"), join(pub, "service-worker.js"));
 await copyFile(join(root, "manifest.webmanifest"), join(pub, "manifest.webmanifest"));
 await copyFile(join(root, "icon.svg"), join(pub, "icon.svg"));
-for (const icon of ["apple-touch-icon.png"]) {
+await copyFile(join(root, "design-previews", "rattil-wordmark", "rattil-wordmark.svg"), join(pub, "rattil-wordmark.svg"));
+await copyFile(join(root, "design-previews", "rattil-wordmark", "rattil-wordmark-display.svg"), join(pub, "rattil-wordmark-display.svg"));
+for (const icon of ["apple-touch-icon.png", "icon-192.png", "icon-512.png"]) {
   const encodedIcon = await readFile(join(root, "icon-assets", `${icon}.b64`), "utf8");
   await writeFile(join(pub, icon), Buffer.from(encodedIcon.trim(), "base64"));
 }
