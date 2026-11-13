@@ -1,1 +1,1 @@
-{"name":"رَتِّل","short_name":"رَتِّل","start_url":"/rattil-app/","scope":"/rattil-app/","display":"standalone","background_color":"#14251e","theme_color":"#14251e","lang":"ar","dir":"rtl"}
+{"name":"رَتِّل","short_name":"رَتِّل","start_url":"/rattil-app/","scope":"/rattil-app/","display":"standalone","background_color":"#102824","theme_color":"#102824","lang":"ar","dir":"rtl","icons":[{"src":"/rattil-app/rattil-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"},{"src":"/rattil-app/rattil-icon.png","sizes":"180x180","type":"image/png","purpose":"any"}]}
