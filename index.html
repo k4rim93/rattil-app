@@ -98,11 +98,20 @@
           <header class="page-heading practice-heading"><h1>التسميع</h1><p>اقرأ براحتك. رتل يساعدك تتابع وتراجع.</p></header>
           <div class="mode-switch" role="tablist" aria-label="اختيار وضع التسميع"><button class="selected" role="tab" aria-selected="true" data-mode="follow">اتبعني</button><button role="tab" aria-selected="false" data-mode="review">المراجعة</button></div>
           <div class="practice-panel">
-            <div id="followPanel" class="mode-panel"><div class="mic-orbit"><span aria-hidden="true">◉</span></div><h2>ابدأ من أي مكان</h2><p>مش محتاج تختار سورة أو آية. رتل هيحاول يحدد موضعك ويتابع القراءة.</p><button class="gold-button wide" id="startFollow">ابدأ المتابعة</button></div>
-            <div id="reviewPanel" class="mode-panel" hidden><div class="review-symbol">۞</div><h2>راجع حفظك</h2><p>اختار المقطع اللي عايز تسمّعه. النتيجة تفرّق بين المؤكد واللي محتاج مراجعة.</p><label for="surahSelect">السورة</label><select id="surahSelect"><option>البقرة</option><option>آل عمران</option><option>الكهف</option><option>مريم</option><option>الملك</option></select><div class="range-fields"><label>من آية<input inputmode="numeric" value="1" aria-label="من الآية" /></label><label>إلى آية<input inputmode="numeric" value="10" aria-label="إلى الآية" /></label></div><button class="gold-button wide" id="startReview">ابدأ المراجعة</button></div>
+            <div class="asr-engine-row"><div><strong>محرك التسميع</strong><small id="asrStatus" role="status" aria-live="polite">لم يتم تنزيله على هذا الجهاز بعد.</small></div><button class="quiet-link" id="loadAsr" type="button">تحميل المحرك</button></div>
+            <p class="asr-download-notice">التنزيل الأول حوالي 66 ميغابايت. بعده يُحفظ على جهازك، ويعمل التعرف محليًا دون رفع صوتك.</p>
+            <div id="followPanel" class="mode-panel"><h2>اتبع قراءتك</h2><p>ابدأ من أي موضع؛ يحاول رتل تحديد السورة والآية، ثم يوضح الكلمات التي تعرّف عليها.</p><button class="gold-button wide" id="startFollow" type="button" disabled>ابدأ المتابعة</button></div>
+            <div id="reviewPanel" class="mode-panel" hidden><h2>راجع حفظك</h2><p>حدد السورة ونطاق الآيات. تظهر المواضع التي قد تحتاج إلى مراجعة.</p><label class="practice-field" for="reviewSurah">السورة<select id="reviewSurah"><option value="">جارٍ تحميل فهرس السور…</option></select></label><div class="range-fields"><label>من آية<input id="reviewFrom" type="number" inputmode="numeric" min="1" value="1" aria-label="من الآية" /></label><label>إلى آية<input id="reviewTo" type="number" inputmode="numeric" min="1" value="10" aria-label="إلى الآية" /></label></div><button class="gold-button wide" id="startReview" type="button" disabled>ابدأ المراجعة</button></div>
           </div>
-          <div class="privacy-line"><span aria-hidden="true">◈</span><p>التعرّف الحقيقي لسه مش موصول. قبل اعتماده هنتأكد إن الصوت يفضل على جهازك.</p></div>
-          <div class="practice-status" id="practiceStatus" role="status" aria-live="polite">المعاينة لا تسجّل صوتًا ولا تشغّل تعرّفًا حقيقيًا.</div>
+          <section class="recitation-reader" id="recitationReader" aria-label="آيات التسميع" hidden>
+            <header class="recitation-reader-head"><div><strong id="recitationSurahName">موضع التلاوة</strong><small id="recitationSurahMeta">ستظهر الآية عند التعرف عليها</small></div><button id="toggleReciteText" class="quiet-link" type="button" aria-pressed="false">إخفاء الكلمات</button></header>
+            <div id="liveRecitationText" class="live-recitation-text" aria-live="polite"><p class="recitation-empty">عند بدء القراءة، سيظهر هنا موضعك في الآيات.</p></div>
+            <p id="asrResult" class="practice-status" role="status" aria-live="polite">التعرف على الآية والكلمات تقريبي وقد يخطئ.</p>
+            <section id="reciteCorrectionPanel" class="recite-correction-panel" hidden aria-live="assertive"><strong id="reciteCorrectionTitle">موضع يحتاج مراجعة</strong><p id="reciteCorrectionText"></p><div><button type="button" data-correction-action="retry">أعد قراءة الموضع</button><button type="button" data-correction-action="continue">تجاوز وأكمل</button><button type="button" data-correction-action="review_later">مراجعته لاحقًا</button><button type="button" data-correction-action="stop_retry" hidden>إنهاء الإعادة</button></div></section>
+          </section>
+          <div class="recitation-controls"><span id="reciteLiveIndicator">جاهز</span><button class="gold-button" id="startRec" type="button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4m-4 0h8"/></svg><span id="recitationStartLabel">ابدأ من أي مكان</span></button><button class="quiet-link" id="stopRec" type="button" disabled>إيقاف</button></div>
+          <button class="quiet-link clear-asr-cache" id="clearAsrCache" type="button">حذف محرك التسميع المحفوظ من هذا الجهاز</button>
+          <p class="asr-limits">النتيجة تقديرية لمساعدة الحفظ، ولا تقيّم أحكام التجويد. ترخيص النموذج يمنع فرض رسوم أو عرض إعلانات على هذه الميزة. <a href="./NPL-1.2.txt" target="_blank" rel="noreferrer">الترخيص</a> · <a href="./NOTICE.md" target="_blank" rel="noreferrer">الإشعارات</a></p>
         </section>
 
         <section class="view" id="view-progress" data-title="التقدم">
@@ -145,8 +154,8 @@
       </div>
     </dialog>
     <dialog class="note-dialog" id="ayahNoteDialog" aria-labelledby="ayahNoteTitle"><form method="dialog" id="ayahNoteForm"><div class="dialog-heading"><h2 id="ayahNoteTitle">ملاحظة على الآية</h2><button class="dialog-close" type="button" id="closeAyahNote" aria-label="إغلاق">×</button></div><p class="note-verse-reference" id="noteVerseReference"></p><label for="ayahNoteText">ملاحظتك</label><textarea id="ayahNoteText" rows="5" maxlength="1500" placeholder="اكتب ملاحظتك هنا"></textarea><div class="note-actions"><button type="button" class="quiet-link" id="deleteAyahNote" hidden>حذف الملاحظة</button><button type="button" class="gold-button" id="saveAyahNote">حفظ الملاحظة</button></div></form></dialog>
-    <script src="./vendor/adhan.umd.min.js" defer></script>
-    <script src="./app.js" defer></script>
+    <script src="/vendor/adhan.umd.min.js" defer></script>
+    <script type="module" src="./app.js"></script>
   </body>
 </html>
 
