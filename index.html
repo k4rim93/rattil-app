@@ -4,9 +4,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0b1414" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="رتل" />
     <meta name="description" content="رتل — رفيقك الهادئ للقراءة والحفظ والمراجعة." />
-    <link rel="manifest" href="./manifest.webmanifest" />
-    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="./icon-192.png" type="image/png" sizes="192x192" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="stylesheet" href="styles.css" />
     <title>رتل — رفيقك مع القرآن</title>
   </head>
@@ -14,8 +19,7 @@
     <div class="app-shell">
       <header class="topbar">
         <button class="brand" data-view="home" aria-label="رتل، الرئيسية">
-          <span class="brand-mark" aria-hidden="true">ر</span>
-          <span><strong>رَتِّل</strong><small>رفيقك مع القرآن</small></span>
+          <img class="brand-wordmark" src="./rattil-wordmark-display.svg" alt="رَتِّلْ" />
         </button>
         <div class="top-actions">
           <button class="icon-button back-button" id="backButton" aria-label="رجوع" title="رجوع" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5 7.5 12l7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
@@ -31,10 +35,21 @@
             <div class="scene-copy"><p class="date-line" id="todayDate">الخميس، ١٢ نوفمبر</p><h1>السكينة تبدأ<br />بآية.</h1><p>مساحة هادئة لوردك، قراءتك، ومراجعتك.</p></div>
           </div>
 
-          <section class="prayer-strip" aria-label="مواقيت الصلاة">
-            <div class="prayer-next"><span class="prayer-glyph" aria-hidden="true">☾</span><div><small>الصلاة القادمة · <span id="nextPrayerName">المغرب</span></small><strong id="prayerCountdown">01:25:30</strong></div></div>
-            <button class="quiet-link" data-view="today">المواقيت <span aria-hidden="true">‹</span></button>
-            <p class="sample-note" id="locationLabel">القاهرة (افتراضي) · حساب محلي</p>
+          <section class="home-prayer-times" aria-labelledby="prayerTimesTitle">
+            <div class="prayer-countdown-panel">
+              <div class="prayer-summary">
+                <div class="prayer-next-block">
+                  <span class="prayer-glyph" id="nextPrayerGlyph" aria-hidden="true"></span>
+                  <span><small>الصلاة القادمة</small><strong id="prayerDashboardNextName">الفجر</strong></span>
+                </div>
+                <div class="prayer-countdown-block"><small>باقي على الصلاة</small><strong class="prayer-dashboard-countdown" id="prayerCountdownDashboard">--:--:--</strong></div>
+              </div>
+              <div class="prayer-progress-track" role="progressbar" aria-label="الوقت حتى الصلاة القادمة" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="prayerProgressFill"></span></div>
+              <div class="prayer-progress-labels" aria-hidden="true"><span id="prayerProgressFrom">العشاء</span><span id="prayerProgressTo">الفجر</span></div>
+              <header class="prayer-schedule-heading"><h2 id="prayerTimesTitle">مواقيت الصلاة</h2><span id="prayerCityName">القاهرة</span></header>
+              <div id="prayerTimesList" class="prayer-times-list" role="list" aria-label="مواعيد الصلاة اليوم" aria-live="polite"></div>
+              <p class="prayer-method-note" id="prayerMethodNote">طريقة الحساب المصرية · القاهرة (افتراضي)</p>
+            </div>
           </section>
 
           <section class="continue-row">
@@ -57,18 +72,17 @@
             <button class="list-row" data-view="practice"><span class="list-icon">◉</span><span><strong>التسميع</strong><small>راجع ما حفظته هذا الأسبوع</small></span><span class="state-pill">ابدأ</span></button>
             <button class="list-row" data-view="azkar"><span class="list-icon">۞</span><span><strong>أذكار اليوم</strong><small>افتح أذكار الصباح والمساء</small></span><span class="state-pill">فتح</span></button>
           </div>
-          <section class="prayer-times-section"><h2>مواقيت الصلاة اليوم</h2><p class="sample-note wide-note" id="prayerMethodNote">تُحسب حسب إحداثيات القاهرة الافتراضية.</p><div id="prayerTimesList" class="prayer-times-list" aria-live="polite"></div></section>
           <p class="sample-note wide-note">الخطة والمحتوى هنا بيانات توضيحية في النسخة الأولية.</p>
         </section>
 
         <section class="view" id="view-quran" data-title="المصحف">
-          <div class="mushaf-toolbar"><button class="text-button" id="bookmarkButton" aria-pressed="false">♧ <span>علامة</span></button><button class="page-location page-picker-trigger" id="pagePickerButton" aria-label="اختيار رقم الصفحة"><small>صفحة</small><strong id="pageNumber">٤٢</strong></button><button class="text-button" id="indexButton">فهرس السور ⌄</button></div>
+          <div class="mushaf-toolbar"><button class="text-button" id="bookmarkButton" aria-pressed="false"><span>حفظ الصفحة</span></button><button class="page-location page-picker-trigger" id="pagePickerButton" aria-label="اختيار رقم الصفحة"><small>صفحة</small><strong id="pageNumber">٤٢</strong></button><div class="mushaf-toolbar-actions"><button class="text-button" id="immersiveButton" aria-pressed="false" aria-label="تفعيل وضع القراءة الغامر">ملء الشاشة</button><button class="text-button" id="indexButton">الفهرس</button></div></div>
           <div class="mushaf-paper" role="region" aria-label="صفحة المصحف">
-            <div id="quranVerses" class="quran-verses" aria-live="polite"><p>جارٍ تحميل آيات الصفحة…</p></div>
+            <div id="mushafSvgHost" class="mushaf-svg-host" aria-live="polite"><p class="quran-loading">جارٍ تحميل صفحة المصحف…</p></div>
             <span class="page-number" id="paperPageNumber">٤٢</span>
           </div>
           <div class="mushaf-controls"><button id="previousPage" aria-label="الصفحة السابقة">→</button><span>صفحة <b id="pageNumberBottom">٤٢</b> من ٦٠٤</span><button id="nextPage" aria-label="الصفحة التالية">←</button></div>
-          <p class="mushaf-disclaimer">النص العثماني يُحمّل للصفحة المختارة عند الاتصال بالإنترنت. تخطيط الصفحة هنا معاينة، وليس صورة مصحف المدينة المطابقة.</p>
+          <p class="mushaf-disclaimer">صفحات حفص من مصحف المدينة النبوية، بخطها وتقسيمها المطبوع. تُحفظ الصفحة التي تفتحها لهذا الجهاز.</p>
         </section>
 
         <section class="view" id="view-azkar" data-title="أذكار اليوم">
@@ -83,13 +97,23 @@
 
         <section class="view" id="view-practice" data-title="التسميع">
           <header class="page-heading practice-heading"><h1>التسميع</h1><p>اقرأ براحتك. رتل يساعدك تتابع وتراجع.</p></header>
-          <div class="mode-switch" role="tablist" aria-label="اختيار وضع التسميع"><button class="selected" role="tab" aria-selected="true" data-mode="follow">اتبعني</button><button role="tab" aria-selected="false" data-mode="review">المراجعة</button></div>
+          <div class="mode-switch recitation-modes" role="tablist" aria-label="اختيار وضع التسميع"><button class="selected" role="tab" aria-selected="true" data-mode="follow">اتبعني</button><button role="tab" aria-selected="false" data-mode="review">المراجعة</button><button role="tab" aria-selected="false" data-mode="history">السجل</button></div>
           <div class="practice-panel">
-            <div id="followPanel" class="mode-panel"><div class="mic-orbit"><span aria-hidden="true">◉</span></div><h2>ابدأ من أي مكان</h2><p>مش محتاج تختار سورة أو آية. رتل هيحاول يحدد موضعك ويتابع القراءة.</p><button class="gold-button wide" id="startFollow">ابدأ المتابعة</button></div>
-            <div id="reviewPanel" class="mode-panel" hidden><div class="review-symbol">۞</div><h2>راجع حفظك</h2><p>اختار المقطع اللي عايز تسمّعه. النتيجة تفرّق بين المؤكد واللي محتاج مراجعة.</p><label for="surahSelect">السورة</label><select id="surahSelect"><option>البقرة</option><option>آل عمران</option><option>الكهف</option><option>مريم</option><option>الملك</option></select><div class="range-fields"><label>من آية<input inputmode="numeric" value="1" aria-label="من الآية" /></label><label>إلى آية<input inputmode="numeric" value="10" aria-label="إلى الآية" /></label></div><button class="gold-button wide" id="startReview">ابدأ المراجعة</button></div>
+            <div class="asr-engine-row"><div><strong>محرك التسميع</strong><small id="asrStatus" role="status" aria-live="polite">لم يتم تنزيله على هذا الجهاز بعد.</small></div><button class="quiet-link" id="loadAsr" type="button">تحميل المحرك</button></div>
+            <p class="asr-download-notice">التنزيل الأول حوالي 66 ميغابايت. بعده يُحفظ على جهازك، ويعمل التعرف محليًا دون رفع صوتك.</p>
+            <div id="followPanel" class="mode-panel"><h2>اتبع قراءتك</h2><p>ابدأ من أي موضع؛ يحاول رتل تحديد السورة والآية، ثم يوضح الكلمات التي تعرّف عليها.</p><button class="gold-button wide" id="startFollow" type="button" disabled>ابدأ المتابعة</button></div>
+            <div id="reviewPanel" class="mode-panel" hidden><h2>راجع حفظك</h2><p>حدد السورة ونطاق الآيات. تظهر المواضع التي قد تحتاج إلى مراجعة.</p><label class="practice-field" for="reviewSurah">السورة<select id="reviewSurah"><option value="">جارٍ تحميل فهرس السور…</option></select></label><div class="range-fields"><label>من آية<input id="reviewFrom" type="number" inputmode="numeric" min="1" value="1" aria-label="من الآية" /></label><label>إلى آية<input id="reviewTo" type="number" inputmode="numeric" min="1" value="10" aria-label="إلى الآية" /></label></div><button class="gold-button wide" id="startReview" type="button" disabled>ابدأ المراجعة</button></div>
+            <div id="historyPanel" class="mode-panel recitation-history-panel" hidden><h2>سجل التسميع</h2><div id="recitationHistoryList" class="recitation-history-list"></div></div>
           </div>
-          <div class="privacy-line"><span aria-hidden="true">◈</span><p>التعرّف الحقيقي لسه مش موصول. قبل اعتماده هنتأكد إن الصوت يفضل على جهازك.</p></div>
-          <div class="practice-status" id="practiceStatus" role="status" aria-live="polite">المعاينة لا تسجّل صوتًا ولا تشغّل تعرّفًا حقيقيًا.</div>
+          <section class="recitation-reader" id="recitationReader" aria-label="صفحة المصحف للتسميع" hidden>
+            <header class="recitation-reader-head"><div><strong id="recitationSurahName">موضع التلاوة</strong><small id="recitationSurahMeta">تظهر أرقام الآيات فقط حتى تبدأ القراءة</small></div><button id="toggleReciteText" class="quiet-link" type="button" aria-pressed="false">معاينة الآيات</button></header>
+            <div class="recitation-mushaf-paper"><div id="liveRecitationText" class="recitation-mushaf-host" aria-label="صفحة المصحف"></div><span class="recitation-page-number" id="recitationPageNumber"></span></div>
+            <p id="asrResult" class="practice-status" role="status" aria-live="polite">التعرف على الآية والكلمات تقريبي وقد يخطئ.</p>
+            <section id="reciteCorrectionPanel" class="recite-correction-panel" hidden aria-live="assertive"><strong id="reciteCorrectionTitle">موضع يحتاج مراجعة</strong><p id="reciteCorrectionText"></p><div><button type="button" data-correction-action="retry">أعد قراءة الموضع</button><button type="button" data-correction-action="continue">تجاوز وأكمل</button><button type="button" data-correction-action="review_later">مراجعته لاحقًا</button><button type="button" data-correction-action="stop_retry" hidden>إنهاء الإعادة</button></div></section>
+          </section>
+          <div class="recitation-controls"><span id="reciteLiveIndicator">جاهز</span><button class="gold-button" id="startRec" type="button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4m-4 0h8"/></svg><span id="recitationStartLabel">ابدأ من أي مكان</span></button><button class="quiet-link" id="stopRec" type="button" disabled>إيقاف</button></div>
+          <button class="quiet-link clear-asr-cache" id="clearAsrCache" type="button">حذف محرك التسميع المحفوظ من هذا الجهاز</button>
+          <p class="asr-limits">النتيجة تقديرية لمساعدة الحفظ، ولا تقيّم أحكام التجويد. ترخيص النموذج يمنع فرض رسوم أو عرض إعلانات على هذه الميزة. <a href="./NPL-1.2.txt" target="_blank" rel="noreferrer">الترخيص</a> · <a href="./NOTICE.md" target="_blank" rel="noreferrer">الإشعارات</a></p>
         </section>
 
         <section class="view" id="view-progress" data-title="التقدم">
@@ -115,8 +139,24 @@
     <button class="back-to-top" id="backToTop" aria-label="الرجوع إلى أعلى الصفحة" title="إلى الأعلى" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6.5 10.5 12 5l5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <dialog class="picker-dialog" id="pagePickerDialog" aria-labelledby="pagePickerTitle"><form method="dialog"><button class="dialog-close" aria-label="إغلاق">×</button><h2 id="pagePickerTitle">اذهب إلى صفحة</h2><label for="pageInput">رقم الصفحة (١–٦٠٤)</label><div class="page-input-row"><input id="pageInput" type="number" min="1" max="604" inputmode="numeric" value="42" /><button class="gold-button" id="goToPageButton" value="go">اذهب</button></div></form></dialog>
-    <dialog class="picker-dialog surah-dialog" id="surahPickerDialog" aria-labelledby="surahPickerTitle"><div class="dialog-heading"><h2 id="surahPickerTitle">فهرس السور</h2><button class="dialog-close" id="closeSurahPicker" aria-label="إغلاق">×</button></div><div id="surahList" class="surah-list" role="list"></div></dialog>
-    <script src="./vendor/adhan.umd.min.js" defer></script>
-    <script src="./app.js" defer></script>
+    <dialog class="mushaf-index-dialog" id="mushafIndexDialog" aria-labelledby="mushafIndexTitle">
+      <header class="mushaf-index-header"><button class="dialog-close" id="closeMushafIndex" aria-label="إغلاق الفهرس">×</button><h2 id="mushafIndexTitle">فهرس المصحف</h2><span class="mushaf-edition">مصحف المدينة · حفص</span></header>
+      <nav class="mushaf-index-tabs" role="tablist" aria-label="أقسام فهرس المصحف">
+        <button role="tab" aria-selected="true" class="selected" data-index-tab="surahs"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01" /></svg></span><small>السور</small></button>
+        <button role="tab" aria-selected="false" data-index-tab="juz"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5h5v5H5zM14 5h5v5h-5zM5 14h5v5H5zM14 14h5v5h-5z" /></svg></span><small>الأجزاء</small></button>
+        <button role="tab" aria-selected="false" data-index-tab="notes"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M19 3l2 2-9 9-3 1 1-3z" /></svg></span><small>الملاحظات</small></button>
+        <button role="tab" aria-selected="false" data-index-tab="bookmarks"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4.5A1.5 1.5 0 0 1 7.5 3h9A1.5 1.5 0 0 1 18 4.5V21l-6-4-6 4z" /></svg></span><small>المرجعيات</small></button>
+      </nav>
+      <div class="mushaf-index-tools"><label class="index-search" id="surahSearchWrap"><span aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg></span><input id="surahSearch" type="search" placeholder="ابحث في أسماء السور" /></label><div class="index-sort" id="indexSort" hidden><button data-sort="date" class="selected">حسب التاريخ</button><button data-sort="page">حسب الصفحة</button></div></div>
+      <div class="mushaf-index-content">
+        <section class="index-panel active" id="indexPanel-surahs" role="tabpanel"><div id="surahList" class="surah-list" role="list"></div></section>
+        <section class="index-panel" id="indexPanel-juz" role="tabpanel" hidden><p class="index-hint">التقدم محسوب من آخر صفحة فتحتها على هذا الجهاز.</p><div id="juzList" class="surah-list" role="list"></div></section>
+        <section class="index-panel" id="indexPanel-notes" role="tabpanel" hidden><div id="notesList" class="surah-list" role="list"></div></section>
+        <section class="index-panel" id="indexPanel-bookmarks" role="tabpanel" hidden><div id="bookmarksList" class="surah-list" role="list"></div></section>
+      </div>
+    </dialog>
+    <dialog class="note-dialog" id="ayahNoteDialog" aria-labelledby="ayahNoteTitle"><form method="dialog" id="ayahNoteForm"><div class="dialog-heading"><h2 id="ayahNoteTitle">ملاحظة على الآية</h2><button class="dialog-close" type="button" id="closeAyahNote" aria-label="إغلاق">×</button></div><p class="note-verse-reference" id="noteVerseReference"></p><label for="ayahNoteText">ملاحظتك</label><textarea id="ayahNoteText" rows="5" maxlength="1500" placeholder="اكتب ملاحظتك هنا"></textarea><div class="note-actions"><button type="button" class="quiet-link" id="deleteAyahNote" hidden>حذف الملاحظة</button><button type="button" class="gold-button" id="saveAyahNote">حفظ الملاحظة</button></div></form></dialog>
+    <script type="module" src="./app.js"></script>
   </body>
 </html>
+
