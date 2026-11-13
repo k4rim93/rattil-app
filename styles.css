@@ -157,3 +157,6 @@ body.immersive-reading .mushaf-disclaimer{display:none}
 @media(max-width:370px){.mode-switch button{padding-inline:10px}.recitation-controls{gap:6px;padding:8px}.recitation-controls #startRec{padding-inline:9px}.live-recitation-text{font-size:20px}}
 @media(prefers-reduced-motion:reduce){.recite-word,.live-recitation-text{scroll-behavior:auto;transition:none}}
 
+.brand-wordmark{display:block;width:72px;height:58px;object-fit:contain}
+@media(max-width:390px){.brand-wordmark{width:66px;height:54px}}
+
