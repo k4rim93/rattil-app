@@ -79,3 +79,68 @@ body.light .mushaf-svg #content path{fill:#f5f1e7!important}
 @media(min-width:700px){.home-scene{min-height:245px}}
 @media(max-width:360px){.prayer-next-block{gap:7px}.prayer-glyph{width:34px;height:34px;flex-basis:34px}.prayer-countdown-block .prayer-dashboard-countdown{font-size:21px}}
 
+/* Mushaf index, personal notes, bookmarks and immersive reading. */
+.mushaf-toolbar-actions{display:flex;align-items:center;gap:10px}
+.mushaf-toolbar .text-button{min-height:38px;padding-inline:8px;white-space:nowrap}
+.mushaf-toolbar .text-button.saved{color:var(--gold-light);font-weight:700}
+.mushaf-index-dialog,.note-dialog{padding:0;border:1px solid #34463e;background:#111918;color:var(--text);box-shadow:0 24px 70px #0009}
+.mushaf-index-dialog{width:min(100vw,620px);height:min(92dvh,920px);max-height:100dvh;margin:auto;border-radius:24px;overflow:hidden;flex-direction:column}
+.mushaf-index-dialog[open]{display:flex}
+.mushaf-index-dialog::backdrop,.note-dialog::backdrop{background:#020505c9;backdrop-filter:blur(3px)}
+.mushaf-index-header{position:relative;display:flex;flex-direction:column;align-items:center;gap:7px;padding:22px 54px 15px;border-bottom:1px solid #ffffff12}
+.mushaf-index-header h2{margin:0;color:var(--gold-light);font-size:19px}
+.mushaf-index-header .dialog-close{position:absolute;inset-inline-start:15px;top:14px;width:40px;height:40px;border-radius:50%;border:1px solid #485048;background:#202322}
+.mushaf-edition{color:var(--muted);font-size:11px}
+.mushaf-index-tabs{display:grid;grid-template-columns:repeat(4,1fr);padding:8px 10px 0;border-bottom:1px solid #ffffff12}
+.mushaf-index-tabs button{min-height:65px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;border-radius:16px 16px 0 0;background:transparent;color:#a9aaa3}
+.mushaf-index-tabs button span{display:grid;place-items:center;line-height:1.2}.mushaf-index-tabs svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.mushaf-index-tabs button small{font-size:11px}
+.mushaf-index-tabs button.selected{color:var(--gold-light);background:#8a70231c}
+.mushaf-index-tools{padding:10px 14px 8px}
+.index-search{display:flex;align-items:center;gap:8px;height:43px;padding:0 13px;border:1px solid #343a38;border-radius:24px;background:#202322;color:#b7b9b4}
+.index-search span{display:grid;place-items:center}.index-search svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}.index-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font-size:13px}.index-search input::placeholder{color:#92958f}
+.index-search[hidden],.index-sort[hidden]{display:none}
+.index-sort{display:grid;grid-template-columns:1fr 1fr;padding:3px;border:1px solid #3a3b3f;border-radius:22px;background:#252629}
+.index-sort button{padding:7px 9px;border:0;border-radius:18px;background:transparent;color:#c1c1c3;font-size:12px}
+.index-sort button.selected{background:#55555b;color:#fff}
+.mushaf-index-content{min-height:0;flex:1;overflow:hidden}
+.index-panel{height:100%;overflow:auto;padding:0 16px 16px;overscroll-behavior:contain}
+.index-panel[hidden]{display:none}
+.surah-list{max-height:none;overflow:visible}
+.index-entry{min-height:68px;gap:12px;padding:12px 7px;border-color:#ffffff15}
+.index-entry-copy{min-width:0;flex:1}.index-entry-copy strong{display:block;font-size:15px;font-weight:600;color:#f1eee7}.index-entry-copy small{display:block;margin-top:3px;color:#aaa9a3;font-size:11px}
+.index-entry-page{min-width:43px;text-align:center;color:#e7dfcc;font-variant-numeric:tabular-nums}
+.index-empty{min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;padding:26px;color:#adada7}
+.index-empty>span{display:grid;place-items:center;width:64px;height:64px;border-radius:50%;background:#80692020;color:var(--gold-light)}.index-empty svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.index-empty strong{color:#e6e4df;font-size:17px}.index-empty small{max-width:30ch;font-size:12px;line-height:1.8}
+.note-dialog{width:min(92vw,440px);max-height:90dvh;padding:20px;border-radius:20px}
+.note-dialog .dialog-heading h2{margin:0;color:var(--gold-light);font-size:18px}
+.note-verse-reference{margin:15px 0 19px;color:#d4c58f;font-size:13px}
+.note-dialog label{display:block;margin-bottom:8px;color:#d5d4ce;font-size:12px}
+.note-dialog textarea{display:block;width:100%;resize:vertical;min-height:120px;padding:12px;border:1px solid #3c4b43;border-radius:12px;background:#0d1513;color:var(--text);font:inherit;font-size:14px;line-height:1.8}
+.note-dialog textarea::placeholder{color:#989c94}
+.note-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px}
+.note-actions .quiet-link{padding:10px;color:#e0a493}
+.ayah-note-marker{cursor:pointer;touch-action:manipulation}
+.ayah-note-marker:focus{outline:none;filter:drop-shadow(0 0 4px #e8cb70)}
+body.light .mushaf-index-dialog,body.light .note-dialog{background:#f5f0e5;color:#18231e}
+body.light .index-entry-copy strong{color:#18231e}body.light .index-entry-copy small{color:#606b61}body.light .index-search{background:#e9e4d8}body.light .note-dialog textarea{background:#fffaf0;color:#18231e}
+html.immersive-reading,body.immersive-reading{overflow:hidden;overscroll-behavior:none}
+body.immersive-reading .app-shell{position:fixed;inset:0;width:100%;max-width:none;min-height:100dvh;height:100dvh;padding:0;overflow:hidden;border:0;border-radius:0;z-index:30}
+body.immersive-reading .topbar,body.immersive-reading .tabbar,body.immersive-reading .back-to-top{display:none!important}
+body.immersive-reading #mainContent{height:100%;min-height:0}
+body.immersive-reading #view-quran.active{position:absolute;inset:0;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 52px) 8px calc(env(safe-area-inset-bottom) + 54px);overflow:hidden}
+body.immersive-reading .mushaf-toolbar{position:absolute;top:env(safe-area-inset-top);inset-inline:14px;margin:0;min-height:48px}
+body.immersive-reading .mushaf-paper{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:0 0 22px;border:0;background:#060707}
+body.immersive-reading .mushaf-svg-host{width:100%;height:100%;min-height:0;align-items:center;justify-content:center}
+body.immersive-reading .mushaf-svg{width:auto;height:100%;max-width:100%;max-height:100%;object-fit:contain}
+body.immersive-reading .page-number{bottom:0;left:50%;right:auto;transform:translateX(-50%)}
+body.immersive-reading .mushaf-controls{position:absolute;bottom:env(safe-area-inset-bottom);inset-inline:16px;margin:0}
+body.immersive-reading .mushaf-disclaimer{display:none}
+@media(max-width:620px){.mushaf-index-dialog{width:100vw;height:100dvh;max-height:100dvh;border:0;border-radius:0}.mushaf-index-header{padding-top:calc(env(safe-area-inset-top) + 18px)}.mushaf-index-header .dialog-close{top:calc(env(safe-area-inset-top) + 10px)}}
+.index-group-heading{margin:8px 2px 0;padding:11px 3px 5px;border-bottom:1px solid #ffffff12;color:var(--gold-light);font-size:13px;font-weight:600}
+.index-group-heading:first-child{margin-top:0}
+.index-hint{margin:2px 3px 8px;color:#a7aaa3;font-size:11px}
+.juz-progress{width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;border-radius:50%;background:conic-gradient(var(--gold-light) var(--progress),#45484a 0);position:relative;color:#f3eee2;font-size:10px;font-variant-numeric:tabular-nums}
+.juz-progress::before{content:"";position:absolute;inset:4px;border-radius:50%;background:#202322}
+.juz-progress>span{position:relative;z-index:1}
+
