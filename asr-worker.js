@@ -11,6 +11,7 @@ const quranUrl = () => asset("quran.json");
 const DB = "rattil-zipformer-assets";
 const KEYS = { model: "zipformer-a0w-ep1-a05-int8", corpus: "zipformer-quran-v03", quran: "quran-display-v02" };
 let session = null;
+let engineConfig = null;
 let queue = Promise.resolve();
 let stage = "worker-start";
 
@@ -73,7 +74,7 @@ async function init() {
     post("loading_status", { message: "بدء المحرك محليًا على الجهاز…" });
     session = await createRecognitionSession({
       ort, model: () => modelBuffer, io: () => io, corpus: () => corpus, quran: () => quran,
-      executionProviders: ["wasm"], structural: { timing: "stop" }, onEvent: (event) => post("event", { event }),
+      executionProviders: ["wasm"], ...(engineConfig ? { config: engineConfig } : {}), structural: { timing: "stop" }, onEvent: (event) => post("event", { event }),
     });
     session.zipformer?.setMode("tracking");
     post("ready");
@@ -83,12 +84,12 @@ async function init() {
   }
 }
 async function handle(message) {
-  if (message.type === "init") { if(message.baseUrl) appBase = new URL("./", message.baseUrl); return init(); }
+  if (message.type === "init") { if(message.baseUrl) appBase = new URL("./", message.baseUrl); engineConfig = message.config || null; return init(); }
   if (message.type === "reset") session?.reset();
   if (message.type === "set_expected") { session?.zipformer?.setExpected(message.passage || null); return; }
   if (message.type === "set_mode") { session?.zipformer?.setMode(message.mode === "correction" ? "correction" : "tracking"); return; }
   if (message.type === "correction_action") { session?.zipformer?.correct(message.action); return; }
-  if (message.type === "audio" && session) await session.feed(message.samples);
+  if (message.type === "audio" && session) { const began = performance.now(); await session.feed(message.samples); post("perf", { ms: performance.now() - began, samples: message.samples.length, lagMs: Date.now() - (message.sentAt || Date.now()) }); }
   if (message.type === "stop" && session) { await session.stop(); post("stopped"); }
 }
 self.onmessage = (event) => {
