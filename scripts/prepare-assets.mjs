@@ -34,6 +34,15 @@ for (const [url, destination, minimum] of assets) {
   await writeFile(destination, bytes);
 }
 
+// Independent 1 MiB files allow durable resume even when the CDN compresses responses.
+const modelPath = join(models, "zipformer_a0w_ep1_a05.int8.onnx");
+const modelBytes = await readFile(modelPath);
+if (modelBytes.byteLength !== 69246033) throw Error("Unexpected model version/size");
+await mkdir(modelPath + ".parts", { recursive: true });
+for (let offset = 0, index = 0; offset < modelBytes.byteLength; offset += 1048576, index++) {
+  await writeFile(join(modelPath + ".parts", index + ".bin"), modelBytes.subarray(offset, offset + 1048576));
+}
+
 await copyFile(join(root, "vendor", "adhan.umd.min.js"), join(vendor, "adhan.umd.min.js"));
 for (const file of ["LICENSE", "lite-path.mjs", "lite.mjs"]) {
   await copyFile(join(root, "qvp", file), join(qvp, file));
@@ -48,4 +57,3 @@ for (const icon of ["apple-touch-icon.png", "icon-192.png", "icon-512.png", "fav
   await writeFile(join(pub, icon), Buffer.from(encodedIcon.trim(), "base64"));
 }
 console.log("Recitation assets prepared.");
-
