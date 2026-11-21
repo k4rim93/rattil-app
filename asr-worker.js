@@ -1,3 +1,4 @@
+import { downloadModel } from "./model-download.js";
 import * as ort from "onnxruntime-web/wasm";
 import { createRecognitionSession } from "@tilawa/core";
 
@@ -52,35 +53,11 @@ async function json(url, key) {
   return value;
 }
 async function model() {
-  stage = "model-cache";
-  const cached = await get(KEYS.model).catch(() => null);
-  if (cached instanceof ArrayBuffer && cached.byteLength > 60_000_000) return cached;
-  stage = "model-download:" + modelUrl();
-  post("loading_status", { message: "تنزيل نموذج التسميع لأول مرة (حوالي 66 ميغابايت)…" });
-  const response = await fetch(modelUrl());
-  if (!response.ok) throw Error("HTTP " + response.status + " أثناء تنزيل النموذج");
-  const total = Number(response.headers.get("content-length")) || 0;
-  let buffer;
-  if (!response.body) buffer = await response.arrayBuffer();
-  else {
-    const reader = response.body.getReader(), chunks = [];
-    let size = 0;
-    for (;;) {
-      const part = await reader.read();
-      if (part.done) break;
-      chunks.push(part.value); size += part.value.byteLength;
-      post("loading", { percent: total ? Math.round(size / total * 100) : 0 });
-    }
-    const output = new Uint8Array(size); let offset = 0;
-    for (const chunk of chunks) { output.set(chunk, offset); offset += chunk.byteLength; }
-    buffer = output.buffer;
-  }
-  if (buffer.byteLength < 60_000_000) throw Error("النموذج الذي وصل غير مكتمل. أعد المحاولة على اتصال ثابت.");
-  await put(KEYS.model, buffer).catch((error) => {
-    console.warn("ASR model cache write failed", error);
-    post("loading_status", { message: "تم التنزيل لكن تعذّر حفظ النموذج محليًا." });
+  stage = "model-download-or-cache";
+  return downloadModel({ url: modelUrl(), get, put,
+    status: (state) => post("loading_status", { message: state === "checking" ? "فحص النموذج والأجزاء المحفوظة على الجهاز…" : state === "cached" ? "تجهيز النموذج المحفوظ، دون إعادة تنزيله…" : state === "resuming" ? "استكمال التحميل من آخر جزء محفوظ…" : "تنزيل نموذج التسميع (حوالي 66 ميغابايت)…" }),
+    progress: ({ saved, total }) => post("loading", { percent: Math.floor(saved / total * 100), saved, total }),
   });
-  return buffer;
 }
 async function init() {
   try {
@@ -102,7 +79,7 @@ async function init() {
     post("ready");
   } catch (error) {
     console.error("Rattil ASR init failed at", stage, error);
-    post("error", { message: (error?.message || String(error)) + " [" + stage + "]", stage });
+    post("error", { message: /fetch|network|load failed/i.test(error?.message || "") ? "انقطع الاتصال. الأجزاء المحفوظة موجودة؛ اضغط استكمال وحاول مرة أخرى." : (error?.message || String(error)), stage });
   }
 }
 async function handle(message) {
