@@ -1,12 +1,12 @@
 import * as ort from "onnxruntime-web/wasm";
 import { createRecognitionSession } from "@tilawa/core";
 
-const appBase = new URL("../", import.meta.url);
+let appBase = new URL(/* @vite-ignore */ "../", import.meta.url);
 const asset = (path) => new URL(path, appBase).href;
-const MODEL_URL = asset("models/zipformer_a0w_ep1_a05.int8.onnx");
-const IO_URL = asset("models/zipformer_a0w_ep1_a05.io.json");
-const CORPUS_URL = asset("zipformer_quran.json");
-const QURAN_URL = asset("quran.json");
+const modelUrl = () => asset("models/zipformer_a0w_ep1_a05.int8.onnx");
+const ioUrl = () => asset("models/zipformer_a0w_ep1_a05.io.json");
+const corpusUrl = () => asset("zipformer_quran.json");
+const quranUrl = () => asset("quran.json");
 const DB = "rattil-zipformer-assets";
 const KEYS = { model: "zipformer-a0w-ep1-a05-int8", corpus: "zipformer-quran-v03", quran: "quran-display-v02" };
 let session = null;
@@ -55,9 +55,9 @@ async function model() {
   stage = "model-cache";
   const cached = await get(KEYS.model).catch(() => null);
   if (cached instanceof ArrayBuffer && cached.byteLength > 60_000_000) return cached;
-  stage = "model-download:" + MODEL_URL;
+  stage = "model-download:" + modelUrl();
   post("loading_status", { message: "تنزيل نموذج التسميع لأول مرة (حوالي 66 ميغابايت)…" });
-  const response = await fetch(MODEL_URL);
+  const response = await fetch(modelUrl());
   if (!response.ok) throw Error("HTTP " + response.status + " أثناء تنزيل النموذج");
   const total = Number(response.headers.get("content-length")) || 0;
   let buffer;
@@ -89,7 +89,7 @@ async function init() {
     ort.env.wasm.numThreads = 1;
     stage = "load-assets";
     const [modelBuffer, corpus, quran, io] = await Promise.all([
-      model(), json(CORPUS_URL, KEYS.corpus), json(QURAN_URL, KEYS.quran), json(IO_URL, "zipformer-io-a0w-v1"),
+      model(), json(corpusUrl(), KEYS.corpus), json(quranUrl(), KEYS.quran), json(ioUrl(), "zipformer-io-a0w-v1"),
     ]);
     if (navigator.storage?.persist) try { await navigator.storage.persist(); } catch { /* Storage permission is optional. */ }
     stage = "create-session";
@@ -106,7 +106,7 @@ async function init() {
   }
 }
 async function handle(message) {
-  if (message.type === "init") return init();
+  if (message.type === "init") { if(message.baseUrl) appBase = new URL("./", message.baseUrl); return init(); }
   if (message.type === "reset") session?.reset();
   if (message.type === "set_expected") { session?.zipformer?.setExpected(message.passage || null); return; }
   if (message.type === "set_mode") { session?.zipformer?.setMode(message.mode === "correction" ? "correction" : "tracking"); return; }
@@ -117,4 +117,3 @@ async function handle(message) {
 self.onmessage = (event) => {
   queue = queue.then(() => handle(event.data || {})).catch((error) => post("error", { message: error?.message || String(error), stage: "message-handler" }));
 };
-
