@@ -17,3 +17,37 @@ body.recitation-session-active .recitation-waiting{color:#263c31;background:#f8f
 body.immersive-reading .reader-intro,body.immersive-reading .reader-practice{display:none}
 body.light .recitation-history-words .hint,body.light .recitation-history-words .uncertain{color:#765321;background:#c6a86633}
 @media(max-width:360px){body.recitation-session-active .recitation-reader-title strong{font-size:12px}body.recitation-session-active .recitation-preview-button{padding:0 7px;font-size:10px}.reader-intro{padding-bottom:10px}}
+
+/* Recitation screen v2: one calm cream page, a large "now reading" line, one mic button.
+   Inspired by Golden Quran's paper page and OpenHafith's follow screen. No proprietary assets. */
+body.recitation-session-active .app-shell{background:linear-gradient(#f7efd9,#efe3c4)}
+body.recitation-session-active #view-practice.active{padding:2px 10px 6px;color:#263b31}
+body.recitation-session-active .recitation-reader-head{flex:0 0 44px;gap:8px;padding:0 0 4px;border:0;direction:rtl}
+body.recitation-session-active .recitation-exit{width:36px;height:36px;flex-basis:36px;border:1px solid #b9a56a;background:transparent;color:#5b4a1f;font-size:22px}
+body.recitation-session-active .recitation-reader-title strong{color:#2c3f33;font-size:17px}
+body.recitation-session-active .recitation-reader-title small{color:#7a6a3e;font-size:10px}
+body.recitation-session-active .recitation-preview-button{min-height:34px;border:0;background:#e6d8b0;color:#5b4a1f;font-size:11px;border-radius:17px;padding:0 12px}
+body.recitation-session-active .recitation-mushaf-paper{background:transparent;padding:0 0 4px;justify-content:flex-start;border:0}
+body.recitation-session-active .recitation-mushaf-host{align-items:flex-start;border:1px solid #cdb97c;border-radius:6px;background:#f8f1df;box-shadow:inset 0 0 0 3px #efe3bf}
+body.recitation-session-active .recitation-page-number{color:#7a6a3e;background:transparent;border:0;left:50%;transform:translateX(-50%);bottom:0}
+body.recitation-session-active .recitation-waiting{background:#fbf5e4f2;border:1px solid #cdb97c;color:#2c3f33;transition:transform .3s}
+body.recitation-session-active .recitation-waiting.hearing{border-color:#246343;box-shadow:0 0 0 calc(3px + var(--mic-level,0)*10px) #24634322}
+body.recitation-session-active .recitation-waiting small{color:#6b6a50}
+.recitation-focus{display:none}
+body.recitation-session-active .recitation-focus:not([hidden]){display:flex;flex:0 0 auto;flex-wrap:wrap;justify-content:center;align-items:center;gap:2px 10px;direction:rtl;min-height:64px;max-height:21dvh;overflow:hidden;margin:6px 4px 0;padding:6px 14px;border-radius:16px;background:#fbf5e4;border:1px solid #d8c88f;font-family:var(--quran);font-size:clamp(20px,6.2vw,27px);line-height:1.75;color:#263b31}
+.recitation-focus .focus-word{border-radius:6px;padding:0 3px;transition:color .1s,background-color .1s}
+.recitation-focus .focus-word.todo{color:#b8ab82;letter-spacing:.1em}
+.recitation-focus .focus-word.done{color:#246343}
+.recitation-focus .focus-word.active{color:#14211d;background:#e9d58d}
+.recitation-focus .focus-word.uncertain{color:#86621f;text-decoration:underline dotted}
+.recitation-focus .focus-number{color:#8b7230;font-size:.7em;border:1px solid #c8b274;border-radius:50%;min-width:1.8em;height:1.8em;display:inline-grid;place-items:center}
+body.recitation-session-active #asrResult{color:#6b6a50;font-size:11px;padding:3px 8px}
+body.recitation-session-active .recitation-controls>span{color:#6b6a50;bottom:76px}
+body.recitation-session-active .recitation-controls #stopRec:not(:disabled),body.recitation-session-paused .recitation-controls #startRec{background:#d6bf76;box-shadow:0 0 0 calc(6px + var(--mic-level,0)*18px) #24634330;transition:box-shadow .08s linear}
+body.recitation-session-paused .recitation-controls #startRec{box-shadow:0 0 0 7px #d6bf7633}
+.perf-readout{margin:14px 2px 0;padding:10px 12px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);font-size:11px;line-height:1.9}
+body.recitation-session-active #view-practice.active{inset:env(safe-area-inset-top) 0 calc(96px + env(safe-area-inset-bottom))}
+body.recitation-session-active .recitation-waiting strong{color:#2c3f33}
+body.recitation-session-active .recitation-controls>span{display:none}
+body.recitation-session-active .recitation-controls{bottom:calc(10px + env(safe-area-inset-bottom))}
+body.recitation-session-active .recitation-controls #stopRec:not(:disabled),body.recitation-session-paused .recitation-controls #startRec{box-shadow:0 0 0 calc(4px + var(--mic-level,0)*12px) #24634330}
