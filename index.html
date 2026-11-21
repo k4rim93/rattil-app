@@ -8,11 +8,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="رتل" />
     <meta name="description" content="رتل — رفيقك الهادئ للقراءة والحفظ والمراجعة." />
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="manifest" id="appManifest" />
     <link rel="icon" href="./icon-192.png" type="image/png" sizes="192x192" />
     <link rel="icon" href="./icon.svg" type="image/svg+xml" sizes="any" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="stylesheet" href="styles.css" /><link rel="stylesheet" href="prototype.css" />
     <title>رتل — رفيقك مع القرآن</title>
   </head>
   <body>
@@ -76,13 +76,13 @@
         </section>
 
         <section class="view" id="view-quran" data-title="المصحف">
-          <div class="mushaf-toolbar"><button class="text-button" id="bookmarkButton" aria-pressed="false"><span>حفظ الصفحة</span></button><button class="page-location page-picker-trigger" id="pagePickerButton" aria-label="اختيار رقم الصفحة"><small>صفحة</small><strong id="pageNumber">٤٢</strong></button><div class="mushaf-toolbar-actions"><button class="text-button" id="immersiveButton" aria-pressed="false" aria-label="تفعيل وضع القراءة الغامر">ملء الشاشة</button><button class="text-button" id="indexButton">الفهرس</button></div></div>
+          <header class="reader-intro"><span>اقرأ على مهل</span><h1>المصحف الشريف</h1><p>رواية حفص · مصحف المدينة</p></header><div class="mushaf-toolbar"><button class="text-button" id="bookmarkButton" aria-pressed="false"><span>حفظ الصفحة</span></button><button class="page-location page-picker-trigger" id="pagePickerButton" aria-label="اختيار رقم الصفحة"><small>صفحة</small><strong id="pageNumber">٤٢</strong></button><div class="mushaf-toolbar-actions"><button class="text-button" id="immersiveButton" aria-pressed="false" aria-label="تفعيل وضع القراءة الغامر">ملء الشاشة</button><button class="text-button" id="indexButton">الفهرس</button></div></div>
           <div class="mushaf-paper" role="region" aria-label="صفحة المصحف">
             <div id="mushafSvgHost" class="mushaf-svg-host" aria-live="polite"><p class="quran-loading">جارٍ تحميل صفحة المصحف…</p></div>
             <span class="page-number" id="paperPageNumber">٤٢</span>
           </div>
           <div class="mushaf-controls"><button id="previousPage" aria-label="الصفحة السابقة">→</button><span>صفحة <b id="pageNumberBottom">٤٢</b> من ٦٠٤</span><button id="nextPage" aria-label="الصفحة التالية">←</button></div>
-          <p class="mushaf-disclaimer">صفحات حفص من مصحف المدينة النبوية، بخطها وتقسيمها المطبوع. تُحفظ الصفحة التي تفتحها لهذا الجهاز.</p>
+          <button class="gold-button reader-practice" id="practiceFromPage">سمّع من الصفحة دي ◉</button><p class="mushaf-disclaimer">صفحات حفص من مصحف المدينة النبوية، بخطها وتقسيمها المطبوع. تُحفظ الصفحة التي تفتحها لهذا الجهاز.</p>
         </section>
 
         <section class="view" id="view-azkar" data-title="أذكار اليوم">
@@ -109,9 +109,9 @@
           </div>
           <div class="practice-internal-actions" hidden aria-hidden="true"><button id="startFollow" type="button" disabled tabindex="-1">اتبعني</button></div>
           <dialog class="recitation-setup-dialog" id="recitationSetupDialog" aria-labelledby="recitationSetupTitle"><h2 id="recitationSetupTitle">تسميع محدد</h2><p>اختار السورة ونطاق الآيات، وبعدها نفتح المصحف للتسميع.</p><label for="reviewSurah">السورة<select id="reviewSurah"><option value="">جارٍ تحميل فهرس السور…</option></select></label><div class="range-fields"><label>من آية<input id="reviewFrom" type="number" inputmode="numeric" min="1" value="1" aria-label="من الآية" /></label><label>إلى آية<input id="reviewTo" type="number" inputmode="numeric" min="1" value="10" aria-label="إلى الآية" /></label></div><p id="reviewSetupStatus" class="setup-inline-status" role="status" aria-live="polite"></p><div class="recitation-setup-actions"><button class="quiet-link" id="cancelRecitationSetup" type="button">إلغاء</button><button class="gold-button" id="startReview" type="button" disabled>ابدأ التسميع</button></div></dialog>
-          <div id="recitationHistoryList" hidden></div>
+          <section class="recitation-history-panel"><header class="history-heading"><h2>جلساتك السابقة</h2><button class="quiet-link" id="clearSessionHistory" hidden>حذف السجل</button></header><p class="local-note">محفوظة على جهازك فقط، من غير رفع تسجيلات.</p><div id="recitationHistoryList" class="recitation-history-list"></div></section>
           <section class="recitation-reader" id="recitationReader" aria-label="صفحة المصحف للتسميع" hidden>
-            <header class="recitation-reader-head"><button id="exitRecitation" class="recitation-exit" type="button" aria-label="إنهاء التسميع والعودة">×</button><div class="recitation-reader-title"><strong id="recitationSurahName">موضع التلاوة</strong><small id="recitationSurahMeta">تظهر أرقام الآيات فقط حتى تبدأ القراءة</small></div><button id="toggleReciteText" class="recitation-preview-button" type="button" aria-pressed="false">معاينة</button></header>
+            <header class="recitation-reader-head"><button id="exitRecitation" class="recitation-exit" type="button" aria-label="إنهاء التسميع والعودة">×</button><div class="recitation-reader-title"><strong id="recitationSurahName">موضع التلاوة</strong><small id="recitationSurahMeta">تظهر أرقام الآيات فقط حتى تبدأ القراءة</small></div><button id="hintWord" class="recitation-preview-button" type="button">تلميح كلمة</button><button id="toggleReciteText" class="recitation-preview-button" type="button" aria-pressed="false">معاينة</button></header>
             <div class="recitation-mushaf-paper"><div id="recitationWaiting" class="recitation-waiting"><strong>ابدأ القراءة من أي موضع</strong><small>سأتابع معك السورة والآية</small></div><div id="liveRecitationText" class="recitation-mushaf-host" aria-label="صفحة المصحف"></div><span class="recitation-page-number" id="recitationPageNumber"></span></div>
             <p id="asrResult" class="practice-status" role="status" aria-live="polite">التعرف على الآية والكلمات تقريبي وقد يخطئ.</p>
             <section id="reciteCorrectionPanel" class="recite-correction-panel" hidden aria-live="assertive"><strong id="reciteCorrectionTitle">موضع يحتاج مراجعة</strong><p id="reciteCorrectionText"></p><div><button type="button" data-correction-action="retry">أعد قراءة الموضع</button><button type="button" data-correction-action="continue">تجاوز وأكمل</button><button type="button" data-correction-action="review_later">مراجعته لاحقًا</button><button type="button" data-correction-action="stop_retry" hidden>إنهاء الإعادة</button></div></section>
@@ -121,8 +121,9 @@
 
         <section class="view" id="view-progress" data-title="التقدم">
           <header class="page-heading"><h1>على طريقك</h1><p>تابع الاستمرار من غير ضغط أو مقارنة.</p></header>
-          <div class="progress-week"><span>هذا الأسبوع</span><strong>٣ أيام</strong><div class="week-dots" aria-label="ثلاثة أيام قراءة من أصل سبعة"><i class="filled"></i><i class="filled"></i><i></i><i class="filled"></i><i></i><i></i><i></i></div><small>كل رجوع للقرآن خطوة تستاهل.</small></div>
-          <div class="simple-list"><div class="list-row"><span class="list-icon">⌂</span><span><strong>القراءة</strong><small>آخر موضع: البقرة · ٢٥٥</small></span></div><div class="list-row"><span class="list-icon">◉</span><span><strong>جلسات التسميع</strong><small>ابدأ أول جلسة مراجعة</small></span></div></div>
+          <div class="progress-week"><span>آخر ٧ أيام</span><strong id="progressDays">٠ أيام تسميع</strong><div class="week-dots" id="progressDots" aria-label="أيام جلسات التسميع خلال آخر سبعة أيام"></div><small>من جلساتك المحفوظة على هذا الجهاز، مش نسبة الحفظ.</small></div>
+          <div class="progress-metrics"><div><strong id="progressSessions">٠</strong><span>جلسات مسجلة</span></div><div><strong id="progressReview">٠</strong><span>مواضع في سجل المراجعة</span></div></div><p class="local-note" id="progressLastPage"></p><button class="gold-button" data-view="practice">افتح جلساتك للمراجعة</button>
+
         </section>
 
         <section class="view" id="view-settings" data-title="الإعدادات">
@@ -159,7 +160,7 @@
       </div>
     </dialog>
     <dialog class="note-dialog" id="ayahNoteDialog" aria-labelledby="ayahNoteTitle"><form method="dialog" id="ayahNoteForm"><div class="dialog-heading"><h2 id="ayahNoteTitle">ملاحظة على الآية</h2><button class="dialog-close" type="button" id="closeAyahNote" aria-label="إغلاق">×</button></div><p class="note-verse-reference" id="noteVerseReference"></p><label for="ayahNoteText">ملاحظتك</label><textarea id="ayahNoteText" rows="5" maxlength="1500" placeholder="اكتب ملاحظتك هنا"></textarea><div class="note-actions"><button type="button" class="quiet-link" id="deleteAyahNote" hidden>حذف الملاحظة</button><button type="button" class="gold-button" id="saveAyahNote">حفظ الملاحظة</button></div></form></dialog>
+    <dialog id="clearHistoryDialog" class="picker-dialog"><form method="dialog"><h2>حذف سجل التسميع؟</h2><p>هيتم حذف الجلسات المحفوظة على الجهاز ده. الحذف ملوش رجوع.</p><button value="cancel" class="quiet-link">إلغاء</button><button type="button" id="confirmClearHistory" class="gold-button">حذف السجل</button></form></dialog>
     <script type="module" src="./app.js"></script>
   </body>
 </html>
-
