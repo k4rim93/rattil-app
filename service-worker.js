@@ -5,7 +5,7 @@ self.addEventListener('activate', event => event.waitUntil(caches.keys().then(ke
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET' || new URL(event.request.url).origin !== location.origin) return;
   // Model assets have their own IndexedDB store. Never cache HTML as a model/JS fallback.
-  if (/\.onnx$/.test(new URL(event.request.url).pathname)) return;
+  if (/\.onnx(?:$|\.parts\/)/.test(new URL(event.request.url).pathname)) return;
   event.respondWith(caches.open(CACHE).then(async cache => {
     const cached = await cache.match(event.request);
     if (cached) return cached;
