@@ -51,3 +51,8 @@ body.recitation-session-active .recitation-waiting strong{color:#2c3f33}
 body.recitation-session-active .recitation-controls>span{display:none}
 body.recitation-session-active .recitation-controls{bottom:calc(10px + env(safe-area-inset-bottom))}
 body.recitation-session-active .recitation-controls #stopRec:not(:disabled),body.recitation-session-paused .recitation-controls #startRec{box-shadow:0 0 0 calc(4px + var(--mic-level,0)*12px) #24634330}
+
+.provisional-speech{margin:14px auto 0;max-width:30rem;border:2px dashed #8a7a58;border-radius:14px;background:#ece3ce;padding:10px 12px;text-align:center}
+.provisional-speech .prov-tag{display:inline-block;font-size:.8rem;font-weight:700;color:#7a5a12;background:#f3dd9b;border-radius:8px;padding:2px 10px}
+.provisional-speech .prov-text{margin:6px 0 0;font-family:inherit;font-size:1.05rem;line-height:1.6;color:#4a4636;overflow-wrap:anywhere;text-align:center}
+.recitation-mushaf-paper{position:relative}.provisional-speech{position:absolute;z-index:4;top:12px;inset-inline:12px;margin:0;max-width:none;box-shadow:0 6px 18px #2b241826}.provisional-speech[hidden]{display:none}
