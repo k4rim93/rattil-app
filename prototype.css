@@ -39,6 +39,7 @@ body.recitation-session-active .recitation-focus:not([hidden]){display:flex;flex
 .recitation-focus .focus-word.todo{color:#b8ab82;letter-spacing:.1em}
 .recitation-focus .focus-word.done{color:#246343}
 .recitation-focus .focus-word.active{color:#14211d;background:#e9d58d}
+.recitation-focus .focus-word.tracking{color:#4a4636;background:#f3ecd7;outline:1.5px dashed #8a7a58;outline-offset:1px}
 .recitation-focus .focus-word.uncertain{color:#86621f;text-decoration:underline dotted}
 .recitation-focus .focus-number{color:#8b7230;font-size:.7em;border:1px solid #c8b274;border-radius:50%;min-width:1.8em;height:1.8em;display:inline-grid;place-items:center}
 body.recitation-session-active #asrResult{color:#6b6a50;font-size:11px;padding:3px 8px}
