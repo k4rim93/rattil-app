@@ -147,6 +147,22 @@ export function bismillahOffset(words) {
   const norm = words.map(compactHeard);
   return norm.length > 4 && norm[0] === 'بسم' && norm[1] === 'الله' && norm[2] === 'الرحمن' && norm[3] === 'الرحيم' ? 4 : 0;
 }
+// Engine word indices count pronounced words only. The display text also
+// carries standalone waqf marks (e.g. ۖ) that are never pronounced, so mapping
+// an engine word index to a display token must skip tokens without Arabic
+// letters, after the basmala offset. Otherwise every word after such a mark
+// shifts one token and the ayah's final word never gets a state (19:12/19:13).
+const ARABIC_LETTER = /[ء-يٱٰ]/;
+export function hasRecitationLetters(token) {
+  return ARABIC_LETTER.test(String(token || ''));
+}
+export function engineTokenMap(tokens) {
+  const map = [];
+  for (let i = bismillahOffset(tokens); i < tokens.length; i++) {
+    if (hasRecitationLetters(tokens[i])) map.push(i);
+  }
+  return map;
+}
 export function backfillMatchedAyah(heardText, words, confirmedIndices = new Set()) {
   const heard = compactHeard(heardText);
   const heardLoose = compactHeardLoose(heardText);
