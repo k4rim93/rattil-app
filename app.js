@@ -604,4 +604,4 @@ renderRecitationHistory();renderProgress();renderMistakesLog();
 window.addEventListener('pagehide',()=>{if(liveAudioContext)stopLiveRecording();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&liveAudioContext)stopLiveRecording();});
 
-installAppUpdate({button:document.getElementById('refreshApp'),status:document.getElementById('refreshAppStatus'),setApplying:value=>appUpdating=value,isBusy:()=>Boolean(recitationStarting||liveMediaStream||liveAudioContext||recitationStopping||currentRecitationSession||settledUiTasks.size)});
+installAppUpdate({button:document.getElementById('refreshApp'),status:document.getElementById('refreshAppStatus'),setApplying:value=>appUpdating=value,announce,isBusy:()=>Boolean(recitationStarting||liveMediaStream||liveAudioContext||recitationStopping||currentRecitationSession||settledUiTasks.size)});
