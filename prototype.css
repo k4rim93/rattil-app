@@ -33,15 +33,7 @@ body.recitation-session-active .recitation-page-number{color:#7a6a3e;background:
 body.recitation-session-active .recitation-waiting{background:#fbf5e4f2;border:1px solid #cdb97c;color:#2c3f33;transition:transform .3s}
 body.recitation-session-active .recitation-waiting.hearing{border-color:#246343;box-shadow:0 0 0 calc(3px + var(--mic-level,0)*10px) #24634322}
 body.recitation-session-active .recitation-waiting small{color:#6b6a50}
-.recitation-focus{display:none}
-body.recitation-session-active .recitation-focus:not([hidden]){display:flex;flex:0 0 auto;flex-wrap:wrap;justify-content:center;align-items:center;gap:2px 10px;direction:rtl;min-height:64px;max-height:21dvh;overflow:hidden;margin:6px 4px 0;padding:6px 14px;border-radius:16px;background:#fbf5e4;border:1px solid #d8c88f;font-family:var(--quran);font-size:clamp(20px,6.2vw,27px);line-height:1.75;color:#263b31}
-.recitation-focus .focus-word{border-radius:6px;padding:0 3px;transition:color .1s,background-color .1s}
-.recitation-focus .focus-word.todo{color:#b8ab82;letter-spacing:.1em}
-.recitation-focus .focus-word.done{color:#246343}
-.recitation-focus .focus-word.active{color:#14211d;background:#e9d58d}
-.recitation-focus .focus-word.tracking{color:#4a4636;background:#f3ecd7;outline:1.5px dashed #8a7a58;outline-offset:1px}
-.recitation-focus .focus-word.uncertain{color:#86621f;text-decoration:underline dotted}
-.recitation-focus .focus-number{color:#8b7230;font-size:.7em;border:1px solid #c8b274;border-radius:50%;min-width:1.8em;height:1.8em;display:inline-grid;place-items:center}
+.provisional-speech .prov-cands{margin:6px 0 0;font-size:.85rem;font-weight:700;color:#7a5a12;text-align:center}
 body.recitation-session-active #asrResult{color:#6b6a50;font-size:11px;padding:3px 8px}
 body.recitation-session-active .recitation-controls>span{color:#6b6a50;bottom:76px}
 body.recitation-session-active .recitation-controls #stopRec:not(:disabled),body.recitation-session-paused .recitation-controls #startRec{background:#d6bf76;box-shadow:0 0 0 calc(6px + var(--mic-level,0)*18px) #24634330;transition:box-shadow .08s linear}
