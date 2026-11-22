@@ -68,15 +68,11 @@ async function rescoreRun(runStart, runEnd) {
   }
   if (!scorer && scorerPromise) scorer = await scorerPromise;
   if (!scorer) return;
-  const lo = Math.max(0, runStart - VAD_PAD); let hi = Math.min(audioTotal, runEnd + VAD_PAD);
+  const lo = Math.max(0, runStart - VAD_PAD), hi = Math.min(audioTotal, runEnd + VAD_PAD);
   const inRun = matchLog.filter(m => m.at >= lo && m.at <= hi);
   if (!inRun.length) return;
   const surah = inRun[0].surah, from = inRun[0].ayah, to = inRun[inRun.length - 1].ayah;
   if (!inRun.every(m => m.surah === surah)) return;
-  // Only matched ayahs are scored, so audio past the last match (plus a
-  // margin for its tail) adds nothing; cap it so noise after the reciter
-  // stops cannot bloat or stall the rescore.
-  hi = Math.min(hi, inRun[inRun.length - 1].at + 8 * 16000, lo + 40 * 16000);
   try {
     scorer.zipformer?.reset();
     scorer.zipformer?.setExpected({ surah, ayah: from, ayahEnd: to });
