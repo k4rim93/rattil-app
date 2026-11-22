@@ -1,3 +1,4 @@
+import { createSettledWordBridge } from './settled-words.js';
 import { downloadModel } from "./model-download.js";
 import * as ort from "onnxruntime-web/wasm";
 import { createRecognitionSession } from "@tilawa/core";
@@ -12,6 +13,8 @@ const quranUrl = () => asset("quran.json");
 const DB = "rattil-zipformer-assets";
 const KEYS = { model: "zipformer-a0w-ep1-a05-int8", corpus: "zipformer-quran-v03", quran: "quran-display-v02" };
 let session = null;
+const settledBridge=createSettledWordBridge();let settledDirty=false;
+function flushSettledWords(){if(!settledDirty)return;settledDirty=false;for(const event of settledBridge.collect(session?.zipformer?.engine?.tracer?.verdicts(true)||[]))post("event",{event,wt:Date.now(),a:(audioTotal+feedingLen)/16});}
 let engineConfig = null;
 let queue = Promise.resolve();
 let stage = "worker-start";
@@ -195,7 +198,7 @@ async function init() {
     post("loading_status", { message: "بدء المحرك محليًا على الجهاز…" });
     session = await createRecognitionSession({
       ort, model: () => modelBuffer, io: () => io, corpus: () => corpus, quran: () => quran,
-      executionProviders: ["wasm"], ...(engineConfig ? { config: engineConfig } : {}), structural: { timing: "stop" }, onEvent: (event) => { if (event?.type === "verse_match") matchLog.push({ surah: Number(event.surah), ayah: Number(event.ayah), at: audioTotal }); try { diagEngine(event); } catch {} post("event", { event, wt: Date.now(), a: (audioTotal + feedingLen) / 16 }); },
+      executionProviders: ["wasm"], ...(engineConfig ? { config: engineConfig } : {}), structural: { timing: "stop" }, onEvent: (event) => { if(["word_progress","verse_match"].includes(event?.type))settledDirty=true; if (event?.type === "verse_match") matchLog.push({ surah: Number(event.surah), ayah: Number(event.ayah), at: audioTotal }); try { diagEngine(event); } catch {} post("event", { event, wt: Date.now(), a: (audioTotal + feedingLen) / 16 }); },
     });
     diag.setStatic("init", { assetsMs: Math.round(tAssets - tInit0), createSessionMs: Math.round(performance.now() - tAssets) });
     session.zipformer.correction.thresholds = { ...session.zipformer.correction.thresholds, gopFlag: -5 };
@@ -210,18 +213,18 @@ async function init() {
 }
 async function handle(message) {
   if (message.type === "init") { if(message.baseUrl) appBase = new URL("./", message.baseUrl); engineConfig = message.config || null; return init(); }
-  if (message.type === "reset") { session?.reset(); rescoreReset(); diag.reset(); seenDecode = seenCand = onsetSeen = false; lastWpKey = ""; }
+  if (message.type === "reset") { session?.reset(); settledBridge.reset(); settledDirty=false; rescoreReset(); diag.reset(); seenDecode = seenCand = onsetSeen = false; lastWpKey = ""; }
   if (message.type === "set_expected") { session?.zipformer?.setExpected(message.passage || null); return; }
   if (message.type === "set_mode") { sessionMode = message.mode === "correction" ? "correction" : "tracking"; session?.zipformer?.setMode(sessionMode); return; }
   if (message.type === "correction_action") { session?.zipformer?.correct(message.action); return; }
   if (message.type === "audio" && session) { const began = performance.now(), nowE = Date.now(), q = nowE - (message.mt || message.sentAt || nowE); diag.sample("queue", q); diag.bucket(nowE, "queue", q); feedingLen = message.samples.length;
     if (!onsetSeen) { let e = 0; for (let i = 0; i < message.samples.length; i++) e += message.samples[i] * message.samples[i]; if (Math.sqrt(e / message.samples.length) > VAD_THR) { onsetSeen = true; diag.mark("onset", { a: audioTotal / 16 }); } }
-    await session.feed(message.samples); const feedMs = performance.now() - began; feedingLen = 0; diag.sample("feed", feedMs); diag.sample("samples", message.samples.length); diag.bucket(Date.now(), "feed", feedMs); post("perf", { ms: feedMs, samples: message.samples.length, lagMs: Date.now() - (message.sentAt || Date.now()) });
+    await session.feed(message.samples); flushSettledWords(); const feedMs = performance.now() - began; feedingLen = 0; diag.sample("feed", feedMs); diag.sample("samples", message.samples.length); diag.bucket(Date.now(), "feed", feedMs); post("perf", { ms: feedMs, samples: message.samples.length, lagMs: Date.now() - (message.sentAt || Date.now()) });
     audioTotal += message.samples.length; audioChunks.push(message.samples);
     if (audioTotal > 5 * 60 * 16000) { let drop = audioTotal - 5 * 60 * 16000; while (drop > 0 && audioChunks.length) { const c = audioChunks[0]; if (c.length <= drop) { audioChunks.shift(); drop -= c.length; } else { audioChunks[0] = c.subarray(drop); drop = 0; } } }
     const closed = feedVad(message.samples);
     if (closed) queueRescore(closed[0], closed[1]); }
-  if (message.type === "stop" && session) { await session.stop();
+  if (message.type === "stop" && session) { await session.stop(); settledDirty=true; flushSettledWords();
     if (vadSpeech) { vadSpeech = false; queueRescore(vadRunStart, vadLastSpeech); }
     await rescoreChain;
     post("diag", { log: diag.snapshot() });
