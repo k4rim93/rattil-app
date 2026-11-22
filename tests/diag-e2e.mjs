@@ -19,23 +19,26 @@ await page.addInitScript(()=>{
   window.__holdWorker=ms=>{holding=true;setTimeout(()=>{holding=false;const q=held;held=[];for(const [w,a,t] of q)orig.call(w,a,t)},ms)};
   Worker.prototype.postMessage=function(msg,transfer){if(holding&&msg&&msg.type==='audio'){held.push([this,msg,transfer]);return}return orig.call(this,msg,transfer)};
 });
+await page.addInitScript(()=>{window.__wi=[];const W=window.Worker;window.Worker=class extends W{constructor(...a){super(...a);this.addEventListener('message',e=>{const d=e.data;if(d&&d.type==='event'&&d.event&&['word_issues','rescore_unavailable'].includes(d.event.type)){const ev=d.event;window.__wi.push({t:Date.now(),type:ev.type,ayah:ev.ayah,words:ev.words||null,cleared:ev.cleared||null})}})}}});
 await page.goto('http://127.0.0.1:4178/rattil-app/?diag=1');
 await page.locator('.tabbar [data-view=practice]').click();
-await page.locator('#loadAsr').click();
+const loadStarted=Date.now();await page.locator('#loadAsr').click();
 await page.waitForFunction(()=>document.querySelector('#loadAsr').textContent==='المحرك جاهز',null,{timeout:180000});
-const t0=Date.now();
+console.log('LOAD_TO_READY_MS',Date.now()-loadStarted);const t0=Date.now();
 await page.locator('#followFeatureStart').click();
 await page.waitForFunction(()=>!document.querySelector('#stopRec').disabled);
 await page.evaluate(t0=>{window.__cv=[];let last='';setInterval(()=>{const c=document.querySelector('.recitation-qvp-canvas');if(!c||!c.width)return;try{const x=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let h=0;for(let i=0;i<x.length;i+=97)h=(h*31+x[i])|0;const k=c.width+':'+h;if(k!==last){last=k;window.__cv.push(Date.now()-t0)}}catch{}},50)},t0);
 const at=ms=>page.waitForTimeout(Math.max(0,ms-(Date.now()-t0)));
 if(!process.env.NOINJECT){await at(10000);await page.evaluate(()=>{const e=performance.now()+1500;while(performance.now()<e);});console.log('blocked main 1500ms at +10s');}
 if(!process.env.NOINJECT){await at(25000);await page.evaluate(()=>window.__holdWorker(3000));console.log('held worker audio 3000ms at +25s');}
-await at(44000);
+await at(Number(process.env.STOPMS||44000));
 await page.screenshot({path:'/downloads/diag-live.png'});
 await page.locator('#stopRec').click();
 await page.waitForFunction(()=>window.__rattilDiag,null,{timeout:60000});
 await page.waitForTimeout(500);
-const r=await page.evaluate(()=>window.__rattilDiag);const cv=await page.evaluate(()=>window.__cv);console.log('CANVAS_CHANGES_MS',JSON.stringify(cv.filter(x=>x>6000&&x<13000)));
+console.log('RESCORE_NOTICE',await page.locator('#asrResult').textContent());const r=await page.evaluate(()=>window.__rattilDiag);const cv=await page.evaluate(()=>window.__cv);if(process.env.QSPIKE){const raw=await page.evaluate(()=>window.__rattilDiagRaw);const w=raw.worker.events;const t0=raw.main.events.find(e=>e.k==='chunk_first').t;console.log('QSPIKE',JSON.stringify(w.filter(e=>['scorer_init_start','scorer_init_end','rescore_start','rescore_end'].includes(e.k)).map(e=>[e.k,e.t-t0])),JSON.stringify(Object.keys(raw.worker)));console.log('BUCKETS',JSON.stringify(raw.worker.buckets||raw.worker.b||null).slice(0,1500))}
+if(process.env.WIQ){const wi=await page.evaluate(()=>window.__wi);const t0b=t0;console.log('WORD_ISSUES',JSON.stringify(wi.map(x=>({...x,t:x.t-t0b}))))}
+console.log('CANVAS_CHANGES_MS',JSON.stringify(cv.filter(x=>x>6000&&x<13000)));
 console.log(JSON.stringify(r,null,1));if(process.env.RAW){const raw=await page.evaluate(()=>window.__rattilDiagRaw);const t0=raw.main.events.find(e=>e.k==='chunk_first').t;console.log('RAW',JSON.stringify(raw.main.events.filter(e=>['ev_recv','wp_paint','replay'].includes(e.k)).slice(0,16).map(e=>[e.k,e.type,e.t-t0,e.ms,e.a,e.n,e.rest])));console.log('RAWW',JSON.stringify(raw.worker.events.filter(e=>e.k==='ev').slice(0,10).map(e=>[e.type,e.t-t0,e.a])));}
 await page.evaluate(()=>{document.getElementById('diagPanel').open=true;document.getElementById('diagPanel').scrollIntoView({block:'start'})});
 await page.waitForTimeout(300);
