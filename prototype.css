@@ -50,3 +50,6 @@ body.recitation-session-active .recitation-controls #stopRec:not(:disabled),body
 .provisional-speech .prov-text{margin:6px 0 0;font-family:inherit;font-size:1.05rem;line-height:1.6;color:#4a4636;overflow-wrap:anywhere;text-align:center}
 .recitation-mushaf-paper{position:relative}.provisional-speech{position:absolute;z-index:4;top:12px;inset-inline:12px;margin:0;max-width:none;box-shadow:0 6px 18px #2b241826}.provisional-speech[hidden]{display:none}
 .recitation-mushaf-paper.awaiting-match #liveRecitationText,.recitation-mushaf-paper.awaiting-match .recitation-page-number{visibility:hidden}.recitation-mushaf-paper.awaiting-match #recitationWaiting{display:block!important}body.recitation-session-active:has(.awaiting-match) #recitationSurahMeta{visibility:hidden}
+.tabbar button span{display:grid;place-items:center}
+.tabbar button svg{width:22px;height:22px;display:block}
+.tabbar button{gap:3px}
