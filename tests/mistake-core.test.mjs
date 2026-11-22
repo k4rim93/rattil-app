@@ -56,29 +56,50 @@ test('summary counts buckets exclusively and lists mistakes in order', () => {
     },
   };
   const summary = buildSessionSummary(session);
-  assert.deepEqual(summary.counts, { touched: 4, correct: 1, wrong: 1, unsure: 1, hints: 1, judged: 3 });
+  assert.deepEqual(summary.counts, { touched: 4, correct: 1, hinted: 1, wrong: 1, unsure: 1, unreviewed: 0, judged: 3 });
   assert.equal(summary.mistakes.length, 1);
   assert.deepEqual(summary.mistakes[0], { surah: 55, ayah: 3, index: 1, text: 'كلمة1', kind: 'omission' });
   assert.equal(summary.rescoreUnavailable, false);
 });
 
-test('legacy sessions without verdicts keep working; red words stay mistakes with unknown kind', () => {
+test('legacy sessions without verdicts: red stays a mistake, tracker paint alone is unreviewed', () => {
   const session = { startedAt: 1, words: [word('55:3:0', 'error'), word('55:3:1', 'correct'), word('55:3:2', 'uncertain')] };
   const summary = buildSessionSummary(session);
-  assert.deepEqual(summary.counts, { touched: 3, correct: 1, wrong: 1, unsure: 1, hints: 0, judged: 0 });
+  assert.deepEqual(summary.counts, { touched: 3, correct: 0, hinted: 0, wrong: 1, unsure: 0, unreviewed: 2, judged: 0 });
   assert.equal(summary.mistakes[0].kind, null);
+});
+
+test('stale red paint never convicts: error status with weak/no-GOP verdict is unsure', () => {
+  const weakUnsure = buildSessionSummary({ words: [word('55:3:0', 'error')], verdicts: { '55:3:0': { state: 'unsure', gop: -1.2 } } });
+  assert.deepEqual(weakUnsure.counts, { touched: 1, correct: 0, hinted: 0, wrong: 0, unsure: 1, unreviewed: 0, judged: 1 });
+  assert.equal(weakUnsure.mistakes.length, 0);
+  const noGop = buildSessionSummary({ words: [word('55:3:0', 'error')], verdicts: { '55:3:0': { state: 'wrong', gop: null } } });
+  assert.deepEqual(noGop.counts, { touched: 1, correct: 0, hinted: 0, wrong: 0, unsure: 1, unreviewed: 0, judged: 1 });
+  assert.equal(noGop.mistakes.length, 0);
+  const rescoreOk = buildSessionSummary({ words: [word('55:3:0', 'error')], verdicts: { '55:3:0': { state: 'ok', gop: -0.3 } } });
+  assert.deepEqual(rescoreOk.counts, { touched: 1, correct: 0, hinted: 0, wrong: 0, unsure: 1, unreviewed: 0, judged: 1 });
+  const skipped = buildSessionSummary({ words: [word('55:3:0', 'error')], verdicts: { '55:3:0': { state: 'skipped' } } });
+  assert.deepEqual(skipped.counts, { touched: 1, correct: 0, hinted: 0, wrong: 0, unsure: 1, unreviewed: 0, judged: 0 });
+});
+
+test('scorer failure or missing verdicts never produce reassuring correct counts', () => {
+  const session = { rescoreUnavailable: true, words: [word('55:3:0', 'correct'), word('55:3:1', 'correct')] };
+  const summary = buildSessionSummary(session);
+  assert.deepEqual(summary.counts, { touched: 2, correct: 0, hinted: 0, wrong: 0, unsure: 0, unreviewed: 2, judged: 0 });
+  assert.equal(summary.mistakes.length, 0);
+  assert.equal(summary.rescoreUnavailable, true);
 });
 
 test('verdict doubt on a live-correct word demotes it to unsure, not wrong', () => {
   const session = { words: [word('55:3:0', 'correct')], verdicts: { '55:3:0': { state: 'wrong', gop: -1 } } };
   const summary = buildSessionSummary(session);
-  assert.deepEqual(summary.counts, { touched: 1, correct: 0, wrong: 0, unsure: 1, hints: 0, judged: 1 });
+  assert.deepEqual(summary.counts, { touched: 1, correct: 0, hinted: 0, wrong: 0, unsure: 1, unreviewed: 0, judged: 1 });
   assert.equal(summary.mistakes.length, 0);
 });
 
 test('empty session is not a perfect score', () => {
   const summary = buildSessionSummary(null);
-  assert.deepEqual(summary.counts, { touched: 0, correct: 0, wrong: 0, unsure: 0, hints: 0, judged: 0 });
+  assert.deepEqual(summary.counts, { touched: 0, correct: 0, hinted: 0, wrong: 0, unsure: 0, unreviewed: 0, judged: 0 });
   assert.equal(summary.mistakes.length, 0);
 });
 
