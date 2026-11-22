@@ -27,11 +27,11 @@ try{
  await page.waitForFunction(()=>!document.querySelector('#stopRec').disabled);
  await page.locator('#hintWord').click();await page.waitForFunction(()=>document.querySelector('#asrResult').textContent.includes('تلميح في'));
  await page.screenshot({path:'/downloads/rattil-hint.png',fullPage:true});
- await page.evaluate(()=>{window.__engine.emit({type:'verse_match',surah:1,ayah:1});window.__engine.emit({type:'word_progress',surah:1,ayah:1,matched_indices:[0,1],word_index:2});window.__engine.emit({type:'correction',state:{phase:'error',issue:{surah:1,ayah:1,word:2,words:1,kind:'possible_omission'}}})});
+ await page.evaluate(()=>{window.__engine.emit({type:'verse_match',surah:1,ayah:1});window.__engine.emit({type:'word_progress',surah:1,ayah:1,matched_indices:[0,1],word_index:2});window.__engine.emit({type:'correction',state:{phase:'error',issue:{surah:1,ayah:1,word:2,words:1,kind:'possible_omission'}}});window.__engine.emit({type:'correction',state:{phase:'error',issue:{surah:1,ayah:1,word:3,words:1,kind:'possible_vowel'}}});});
  await page.screenshot({path:'/downloads/rattil-recite.png',fullPage:true});
  await page.locator('#stopRec').click();await page.waitForFunction(()=>JSON.parse(localStorage.getItem('rattil-recitation-history')||'[]').length===1);
  await page.locator('#exitRecitation').click();await page.locator('.recitation-history-entry').click();await page.screenshot({path:'/downloads/rattil-results.png',fullPage:true});
- const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('rattil-recitation-history')));assert.equal(saved.length,1);assert.equal(saved[0].words[0].hinted,true);assert.equal(saved[0].words.find(w=>w.index===2).status,'uncertain');
+ const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('rattil-recitation-history')));assert.equal(saved.length,1);assert.equal(saved[0].words[0].hinted,true);assert.equal(saved[0].words.find(w=>w.index===2).status,'error');assert.equal(saved[0].words.find(w=>w.index===3).status,'uncertain');
  await page.reload();await page.locator('.tabbar [data-view=progress]').click();assert.equal(await page.locator('#progressSessions').textContent(),'١');await page.screenshot({path:'/downloads/rattil-progress.png',fullPage:true});
  // Regression: last two surahs are on page 604, not page 1.
  await page.locator('.tabbar [data-view=quran]').click();await page.locator('#indexButton').click();await page.waitForSelector('.surah-option');
