@@ -74,7 +74,9 @@ function feedVad(chunk) {
   }
   return null;
 }
-async function rescoreRun(runStart, runEnd) {
+// Create the correction scorer once. It is built before the engine reports ready (not lazily at the first
+// speech pause) so its multi-hundred-millisecond blocking init never lands inside a live recording.
+async function ensureScorer() {
   if (!scorer && !scorerPromise && ortRef && scorerAttempts < SCORER_MAX_ATTEMPTS) {
     scorerAttempts++;
     diag.mark("scorer_init_start");
@@ -84,6 +86,12 @@ async function rescoreRun(runStart, runEnd) {
     }).then((s) => { diag.mark("scorer_init_end", { ok: true }); s.zipformer?.setMode("correction"); return s; }).catch((error) => { diag.mark("scorer_init_end", { ok: false }); console.warn("rescore scorer init failed", error); scorerPromise = null; return null; });
   }
   if (!scorer && scorerPromise) scorer = await scorerPromise;
+  return scorer;
+}
+const yieldToQueue = () => new Promise((resolve) => setTimeout(resolve, 0));
+const RESCORE_SLICE = 4000; // 0.25 s of audio per scorer step, so live audio is never queued behind a whole run
+async function rescoreRun(runStart, runEnd) {
+  await ensureScorer();
   if (!scorer) {
     if (scorerAttempts >= SCORER_MAX_ATTEMPTS && !rescoreUnavailablePosted) {
       rescoreUnavailablePosted = true;
@@ -101,7 +109,8 @@ async function rescoreRun(runStart, runEnd) {
     diag.mark("rescore_start", { samples: hi - lo });
     scorer.zipformer?.reset();
     scorer.zipformer?.setExpected({ surah, ayah: from, ayahEnd: to });
-    await scorer.feed(audioSlice(lo, hi));
+    const slice = audioSlice(lo, hi);
+    for (let i = 0; i < slice.length; i += RESCORE_SLICE) { await scorer.feed(slice.subarray(i, Math.min(slice.length, i + RESCORE_SLICE))); await yieldToQueue(); }
     diag.mark("rescore_end");
     const vs = (scorer.zipformer?.engine?.tracer?.verdicts?.(true) || []).filter(v => v.surah === surah && v.ayah >= from && v.ayah <= to);
     const byAyah = new Map();
@@ -189,6 +198,7 @@ async function init() {
     session.zipformer.correction.thresholds = { ...session.zipformer.correction.thresholds, gopFlag: -5 };
     session.zipformer?.setMode("tracking");
     ortRef = ort; modelBufferRef = modelBuffer; ioRef = io; corpusRef = corpus; quranRef = quran;
+    await ensureScorer();
     post("ready");
   } catch (error) {
     console.error("Rattil ASR init failed at", stage, error);
