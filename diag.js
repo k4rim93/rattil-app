@@ -126,7 +126,7 @@ export function renderDiagLines(report) {
   line('تحديد الآية', p.locked);
   line('أول تقدّم كلمة من المحرك', p.firstCursor);
   if (p.firstCursorReceived) L.push(`وصول أول كلمة للصفحة: ${s(p.firstCursorReceived.wallMs)} (نقل العامل→الصفحة ${p.firstCursorReceived.workerToPageMs} م.ث)`);
-  if (p.firstPaint) L.push(`أول رسم لكلمة: ${s(p.firstPaint.wallMs)} (من الوصول للرسم ${p.firstPaint.receivedToPaintMs} م.ث)`);
+  if (p.firstPaint) L.push(`أول رسم مُسجَّل بعد وصول تحديث (قد يكون أبعد من أول رسم فعلي): ${s(p.firstPaint.wallMs)} (من الوصول للرسم ${p.firstPaint.receivedToPaintMs} م.ث)`);
   const d = x => x ? `وسيط ${x.p50} · 95٪ ${x.p95} · أقصى ${x.max} م.ث` : 'غير متاح';
   L.push(`التقاط: فجوة بين الأجزاء ${d(report.capture.chunkGapMs)} · وصول ${d(report.capture.deliveryMs)}`);
   if (report.capture.dropouts.length) L.push(`انقطاعات التقاط: ${report.capture.dropouts.map(x => `${s(x.atMs)}:${x.gapMs}م.ث`).join(' · ')}`);
