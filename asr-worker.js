@@ -134,6 +134,17 @@ async function rescoreRun(runStart, runEnd, epoch) {
       if (cleared.length) post("event", { event: { type: "word_issues", surah: cur.surah, ayah: cur.ayah, cleared } });
       flaggedWords.set(key, cur.flagged);
     }
+    // Full per-word verdicts for the rescored range, so the app can build an
+    // honest session summary (correct/wrong-kind/unsure/coverage). These never
+    // change live highlighting; word_issues above owns the paint.
+    const num = (x) => (typeof x === "number" && Number.isFinite(x) ? Math.round(x * 100) / 100 : null);
+    const verdictAyahs = new Map();
+    for (const v of vs) {
+      const key = v.surah + ":" + v.ayah;
+      if (!verdictAyahs.has(key)) verdictAyahs.set(key, { surah: v.surah, ayah: v.ayah, words: [] });
+      verdictAyahs.get(key).words.push({ w: v.word, state: v.state, gop: num(v.gop), gopNone: num(v.gopNone), repGain: num(v.repGain), vowelErrors: v.vowelErrors | 0 });
+    }
+    for (const cur of verdictAyahs.values()) post("event", { event: { type: "word_verdicts", surah: cur.surah, ayah: cur.ayah, words: cur.words } });
   } catch (error) { diag.mark("rescore_end", { err: true }); console.warn("rescore failed", error); }
 }
 
