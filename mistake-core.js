@@ -5,10 +5,15 @@
 //   gopNone: same ratio forcing silence (omission hypothesis)
 //   repGain: gain of forcing the word twice (> 0: repeated)
 //   vowelErrors: aligned short-vowel substitutions
-// A word is only treated as a mistake when the engine doubted it (wrong/unsure)
-// AND the acoustic rescore confirmed it (gop <= GOP_FLAG) — the same bar the
-// red highlighting uses. Engine doubt without acoustic confirmation stays
-// "unsure", never "wrong".
+// A word is only treated as a mistake when the acoustic rescore confirms it
+// (gop <= GOP_FLAG) — the same bar the red highlighting uses — AND one of:
+//   - the engine doubted it (state wrong/unsure), or
+//   - the tracker skipped it and the silence hypothesis clearly beats the
+//     heard one (gopNone > gop + OMISSION_MARGIN): the engine's omission
+//     evidence, which is emitted with state 'skipped', or
+//   - the repeat hypothesis wins (repGain > 0) even though the engine state
+//     stayed ok: the engine's repetition evidence.
+// Engine doubt without acoustic confirmation stays "unsure", never "wrong".
 
 export const GOP_FLAG = -5;
 // gopNone must beat gop by more than this to call an omission. Both are <= 0;
@@ -17,9 +22,14 @@ export const OMISSION_MARGIN = 1;
 
 export function isFlagged(verdict) {
   if (!verdict) return false;
-  return (verdict.state === 'wrong' || verdict.state === 'unsure')
-    && typeof verdict.gop === 'number' && Number.isFinite(verdict.gop)
-    && verdict.gop <= GOP_FLAG;
+  if (typeof verdict.gop !== 'number' || !Number.isFinite(verdict.gop) || verdict.gop > GOP_FLAG) return false;
+  if (verdict.state === 'wrong' || verdict.state === 'unsure') return true;
+  if (verdict.state === 'skipped') {
+    const gopNone = typeof verdict.gopNone === 'number' && Number.isFinite(verdict.gopNone) ? verdict.gopNone : null;
+    if (gopNone !== null && gopNone > verdict.gop + OMISSION_MARGIN) return true;
+  }
+  if (verdict.state === 'ok' && typeof verdict.repGain === 'number' && Number.isFinite(verdict.repGain) && verdict.repGain > 0) return true;
+  return false;
 }
 
 // verdict -> { bucket: 'correct' | 'wrong' | 'unsure' | 'unclear', kind? }
@@ -31,6 +41,10 @@ export function classifyVerdict(verdict) {
     if (verdict.state === 'wrong' || verdict.state === 'unsure') return { bucket: 'unsure' };
     return { bucket: 'unclear' };
   }
+  // The flag path fixes the kind for the two evidence-only flags: 'skipped'
+  // only flags via the omission evidence, 'ok' only via the repetition one.
+  if (verdict.state === 'skipped') return { bucket: 'wrong', kind: 'omission' };
+  if (verdict.state === 'ok') return { bucket: 'wrong', kind: 'repetition' };
   const gop = verdict.gop;
   const gopNone = typeof verdict.gopNone === 'number' && Number.isFinite(verdict.gopNone) ? verdict.gopNone : null;
   if (gopNone !== null && gopNone > gop + OMISSION_MARGIN) return { bucket: 'wrong', kind: 'omission' };
