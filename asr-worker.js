@@ -24,6 +24,9 @@ let sessionMode = "tracking";
 const GOP_FLAG = -5;
 let scorer = null;
 let scorerPromise = null;
+let scorerAttempts = 0;
+const SCORER_MAX_ATTEMPTS = 3;
+let rescoreUnavailablePosted = false;
 let ortRef = null, modelBufferRef = null, ioRef = null, corpusRef = null, quranRef = null;
 let rescoreChain = Promise.resolve();
 function queueRescore(a, b) { rescoreChain = rescoreChain.then(() => rescoreRun(a, b)).catch(() => {}); }
@@ -33,7 +36,7 @@ const matchLog = [];
 const flaggedWords = new Map(); // surah:ayah -> Set(engine word indices)
 let vadSpeech = false, vadRunStart = 0, vadLastSpeech = 0, vadEnergy = 0, vadHopCount = 0;
 const VAD_HOP = 800, VAD_GAP = 0.6 * 16000, VAD_THR = 0.01, VAD_PAD = 0.3 * 16000;
-function rescoreReset() { audioChunks = []; audioTotal = 0; matchLog.length = 0; flaggedWords.clear(); vadSpeech = false; vadRunStart = 0; vadLastSpeech = 0; vadEnergy = 0; vadHopCount = 0; }
+function rescoreReset() { audioChunks = []; audioTotal = 0; matchLog.length = 0; flaggedWords.clear(); vadSpeech = false; vadRunStart = 0; vadLastSpeech = 0; vadEnergy = 0; vadHopCount = 0; scorerAttempts = 0; rescoreUnavailablePosted = false; }
 function audioSlice(from, to) {
   const out = new Float32Array(Math.max(0, to - from));
   let pos = 0, base = 0;
@@ -60,14 +63,22 @@ function feedVad(chunk) {
   return null;
 }
 async function rescoreRun(runStart, runEnd) {
-  if (!scorer && !scorerPromise && ortRef) {
+  if (!scorer && !scorerPromise && ortRef && scorerAttempts < SCORER_MAX_ATTEMPTS) {
+    scorerAttempts++;
     scorerPromise = createRecognitionSession({
       ort: ortRef, model: () => modelBufferRef, io: () => ioRef, corpus: () => corpusRef, quran: () => quranRef,
       executionProviders: ["wasm"], structural: false, onEvent: () => {},
-    }).then((s) => { s.zipformer?.setMode("correction"); return s; }).catch(() => null);
+    }).then((s) => { s.zipformer?.setMode("correction"); return s; }).catch((error) => { console.warn("rescore scorer init failed", error); scorerPromise = null; return null; });
   }
   if (!scorer && scorerPromise) scorer = await scorerPromise;
-  if (!scorer) return;
+  if (!scorer) {
+    if (scorerAttempts >= SCORER_MAX_ATTEMPTS && !rescoreUnavailablePosted) {
+      rescoreUnavailablePosted = true;
+      console.warn("rescore unavailable after", scorerAttempts, "attempts");
+      post("event", { event: { type: "rescore_unavailable" } });
+    }
+    return;
+  }
   const lo = Math.max(0, runStart - VAD_PAD), hi = Math.min(audioTotal, runEnd + VAD_PAD);
   const inRun = matchLog.filter(m => m.at >= lo && m.at <= hi);
   if (!inRun.length) return;
