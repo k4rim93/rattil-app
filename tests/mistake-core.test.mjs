@@ -133,6 +133,16 @@ test('rescore-unavailable flag is surfaced for honest coverage wording', () => {
   assert.equal(buildSessionSummary({ words: [], rescoreUnavailable: true }).rescoreUnavailable, true);
 });
 
+test('a session with no saved verdicts is a legacy record, not known-unreviewed', () => {
+  const legacy = buildSessionSummary({ words: [word('55:1:0', 'correct'), word('55:2:0', 'correct')] });
+  assert.equal(legacy.savedVerdicts, false);
+  assert.equal(legacy.counts.unreviewed, 2);
+  const current = buildSessionSummary({ words: [word('55:1:0', 'correct'), word('55:2:0', 'correct')], verdicts: { '55:1:0': { state: 'ok', gop: -0.1 } } });
+  assert.equal(current.savedVerdicts, true);
+  assert.equal(current.counts.correct, 1);
+  assert.equal(current.counts.unreviewed, 1);
+});
+
 test('mistake history aggregates per word across sessions, most recent first', () => {
   const sessions = [
     { startedAt: 1000, endedAt: 2000, words: [word('55:3:1', 'error'), word('19:4:2', 'error')], verdicts: { '55:3:1': { state: 'wrong', gop: -9, gopNone: -1 } } },
