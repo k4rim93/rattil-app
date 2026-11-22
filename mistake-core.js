@@ -54,8 +54,11 @@ export function mistakeKindLabel(kind) {
 //   rescoreUnavailable?: bool, startedAt, endedAt, mode }
 // Buckets are exclusive, per word:
 //   wrong    = the live red flag AND the acoustic rescore confirms it
-//              (flagged verdict), or a live red flag with no rescore data at
-//              all (the only signal is the live one the user saw painted).
+//              (flagged verdict), or a red flag from the word_issues path
+//              with no verdict at all: word_issues is GOP-gated inside
+//              asr-worker's rescoreRun, so that paint carried acoustic
+//              support when shown (this also covers legacy sessions, whose
+//              red came from the same path).
 //   unsure   = engine doubt the rescore did NOT confirm — including a live
 //              red flag whose verdict came back unsure/ok/weak-GOP (stale or
 //              overridden paint must not convict a word on its own).
@@ -77,6 +80,11 @@ export function buildSessionSummary(session) {
     if (verdict && cls.bucket !== 'unclear') counts.judged++;
     if (word.status === 'error') {
       if (verdict && cls.bucket !== 'wrong') {
+        counts.unsure++;
+      } else if (!verdict && word.errorSource === 'correction') {
+        // Correction-panel red comes from the live tracker (similar-verse /
+        // missed-word suspicion), not the GOP rescore. Without a verdict it
+        // carries no acoustic confirmation, so it is doubt, not a mistake.
         counts.unsure++;
       } else {
         counts.wrong++;
