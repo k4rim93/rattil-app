@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="utf-8" />
+    <meta name="rattil-build" content="__APP_BUILD_ID__" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0b1414" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -110,6 +111,7 @@
           <div class="practice-internal-actions" hidden aria-hidden="true"><button id="startFollow" type="button" disabled tabindex="-1">اتبعني</button></div>
           <dialog class="recitation-setup-dialog" id="recitationSetupDialog" aria-labelledby="recitationSetupTitle"><h2 id="recitationSetupTitle">تسميع محدد</h2><p>اختار السورة ونطاق الآيات، وبعدها نفتح المصحف للتسميع.</p><label for="reviewSurah">السورة<select id="reviewSurah"><option value="">جارٍ تحميل فهرس السور…</option></select></label><div class="range-fields"><label>من آية<input id="reviewFrom" type="number" inputmode="numeric" min="1" value="1" aria-label="من الآية" /></label><label>إلى آية<input id="reviewTo" type="number" inputmode="numeric" min="1" value="10" aria-label="إلى الآية" /></label></div><p id="reviewSetupStatus" class="setup-inline-status" role="status" aria-live="polite"></p><div class="recitation-setup-actions"><button class="quiet-link" id="cancelRecitationSetup" type="button">إلغاء</button><button class="gold-button" id="startReview" type="button" disabled>ابدأ التسميع</button></div></dialog>
           <p id="perfReadout" class="perf-readout" hidden></p>
+          <details id="diagPanel" class="diag-panel" hidden><summary>تشخيص التوقيت (أرقام فقط، من غير صوت)</summary><pre id="diagText" dir="rtl"></pre><button class="quiet-link" id="diagCopy" type="button">نسخ التشخيص</button><textarea id="diagJson" readonly hidden rows="6" dir="ltr"></textarea></details>
           <section class="recitation-history-panel"><header class="history-heading"><h2>جلساتك السابقة</h2><button class="quiet-link" id="clearSessionHistory" hidden>حذف السجل</button></header><p class="local-note">محفوظة على جهازك فقط، من غير رفع تسجيلات.</p><div id="recitationHistoryList" class="recitation-history-list"></div></section>
           <section class="recitation-reader" id="recitationReader" aria-label="صفحة المصحف للتسميع" hidden>
             <header class="recitation-reader-head"><button id="exitRecitation" class="recitation-exit" type="button" aria-label="إنهاء التسميع والعودة">×</button><div class="recitation-reader-title"><strong id="recitationSurahName">موضع التلاوة</strong><small id="recitationSurahMeta">تظهر أرقام الآيات فقط حتى تبدأ القراءة</small></div><button id="hintWord" class="recitation-preview-button" type="button">تلميح كلمة</button><button id="toggleReciteText" class="recitation-preview-button" type="button" aria-pressed="false">معاينة</button></header>
@@ -130,6 +132,7 @@
         <section class="view" id="view-settings" data-title="الإعدادات">
           <header class="page-heading"><h1>الإعدادات</h1><p>خلّي رتل مناسب لطريقتك.</p></header>
           <div class="simple-list"><button class="list-row" id="themeToggle"><span class="list-icon">☾</span><span><strong>موجة الليل</strong><small>الواجهة الداكنة الهادئة</small></span><span class="state-pill">مفعّل</span></button><button class="list-row" id="locationButton"><span class="list-icon">⌖</span><span><strong>الموقع ومواقيت الصلاة</strong><small id="settingsLocationLabel">القاهرة (افتراضي) · اضغط لتحديد موقعك</small></span><span class="chevron">‹</span></button><button class="list-row" id="offlineButton"><span class="list-icon">⇩</span><span><strong>العمل دون إنترنت</strong><small>واجهة التطبيق والصفحات المفتوحة تُحفظ</small></span><span class="state-pill">جاهز</span></button></div>
+          <button class="list-row" id="refreshApp"><span class="list-icon">↻</span><span><strong>تحديث النسخة</strong><small>من غير حذف نتائجك أو إعداداتك أو المحرك</small></span><span class="chevron">‹</span></button><p id="refreshAppStatus" class="local-note" role="status" aria-live="polite"></p>
         </section>
       </main>
 
