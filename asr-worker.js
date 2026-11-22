@@ -34,9 +34,14 @@ let sessionMode = "tracking";
 // run ends (natural pause) or the session stops, the run's audio is re-scored
 // against the ayahs the tracker matched inside it, in a separate correction
 // session whose posteriors give per-word GOP. Only settled words with strong
-// acoustic evidence (wrong/unsure AND GOP <= -5) are flagged. Interim live
+// acoustic evidence are flagged: engine doubt (wrong/unsure) AND GOP <= -5,
+// or the tracker-skip omission evidence (skipped AND gopNone beats gop by
+// OMISSION_MARGIN), or the repetition evidence (repGain > 0 with GOP <= -5).
+// Interim live
 // verdicts are never flagged (they oscillate; measured on clean takes).
+// Keep in sync with isFlagged() in mistake-core.js.
 const GOP_FLAG = -5;
+const OMISSION_MARGIN = 1;
 let scorer = null;
 let scorerPromise = null;
 let scorerAttempts = 0;
@@ -121,7 +126,13 @@ async function rescoreRun(runStart, runEnd, epoch) {
     const vs = (scorer.zipformer?.engine?.tracer?.verdicts?.(true) || []).filter(v => v.surah === surah && v.ayah >= from && v.ayah <= to);
     const byAyah = new Map();
     for (const v of vs) {
-      const bad = (v.state === "wrong" || v.state === "unsure") && typeof v.gop === "number" && Number.isFinite(v.gop) && v.gop <= GOP_FLAG;
+      const gopOk = typeof v.gop === "number" && Number.isFinite(v.gop) && v.gop <= GOP_FLAG;
+      const gopNone = typeof v.gopNone === "number" && Number.isFinite(v.gopNone) ? v.gopNone : null;
+      const bad = gopOk && (
+        v.state === "wrong" || v.state === "unsure"
+        || (v.state === "skipped" && gopNone !== null && gopNone > v.gop + OMISSION_MARGIN)
+        || (v.state === "ok" && typeof v.repGain === "number" && Number.isFinite(v.repGain) && v.repGain > 0)
+      );
       const key = v.surah + ":" + v.ayah;
       if (!byAyah.has(key)) byAyah.set(key, { surah: v.surah, ayah: v.ayah, flagged: new Set() });
       if (bad) byAyah.get(key).flagged.add(v.word);
