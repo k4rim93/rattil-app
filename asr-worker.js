@@ -41,14 +41,15 @@ const SCORER_MAX_ATTEMPTS = 3;
 let rescoreUnavailablePosted = false;
 let ortRef = null, modelBufferRef = null, ioRef = null, corpusRef = null, quranRef = null;
 let rescoreChain = Promise.resolve();
-function queueRescore(a, b) { rescoreChain = rescoreChain.then(() => rescoreRun(a, b)).catch(() => {}); }
+let rescoreEpoch = 0; // bumped on reset so a run still slicing from an earlier session can never post its verdicts
+function queueRescore(a, b) { const e = rescoreEpoch; rescoreChain = rescoreChain.then(() => rescoreRun(a, b, e)).catch(() => {}); }
 let audioChunks = [];
 let audioTotal = 0;
 const matchLog = [];
 const flaggedWords = new Map(); // surah:ayah -> Set(engine word indices)
 let vadSpeech = false, vadRunStart = 0, vadLastSpeech = 0, vadEnergy = 0, vadHopCount = 0;
 const VAD_HOP = 800, VAD_GAP = 0.6 * 16000, VAD_THR = 0.01, VAD_PAD = 0.3 * 16000;
-function rescoreReset() { audioChunks = []; audioTotal = 0; matchLog.length = 0; flaggedWords.clear(); vadSpeech = false; vadRunStart = 0; vadLastSpeech = 0; vadEnergy = 0; vadHopCount = 0; scorerAttempts = 0; rescoreUnavailablePosted = false; }
+function rescoreReset() { rescoreEpoch++; audioChunks = []; audioTotal = 0; matchLog.length = 0; flaggedWords.clear(); vadSpeech = false; vadRunStart = 0; vadLastSpeech = 0; vadEnergy = 0; vadHopCount = 0; scorerAttempts = 0; rescoreUnavailablePosted = false; }
 function audioSlice(from, to) {
   const out = new Float32Array(Math.max(0, to - from));
   let pos = 0, base = 0;
@@ -80,18 +81,20 @@ async function ensureScorer() {
   if (!scorer && !scorerPromise && ortRef && scorerAttempts < SCORER_MAX_ATTEMPTS) {
     scorerAttempts++;
     diag.mark("scorer_init_start");
-    scorerPromise = createRecognitionSession({
+    scorerPromise = Promise.resolve().then(() => createRecognitionSession({
       ort: ortRef, model: () => modelBufferRef, io: () => ioRef, corpus: () => corpusRef, quran: () => quranRef,
       executionProviders: ["wasm"], structural: false, onEvent: () => {},
-    }).then((s) => { diag.mark("scorer_init_end", { ok: true }); s.zipformer?.setMode("correction"); return s; }).catch((error) => { diag.mark("scorer_init_end", { ok: false }); console.warn("rescore scorer init failed", error); scorerPromise = null; return null; });
+    })).then((s) => { diag.mark("scorer_init_end", { ok: true }); s.zipformer?.setMode("correction"); return s; }).catch((error) => { diag.mark("scorer_init_end", { ok: false }); console.warn("rescore scorer init failed", error); scorerPromise = null; return null; });
   }
   if (!scorer && scorerPromise) scorer = await scorerPromise;
   return scorer;
 }
 const yieldToQueue = () => new Promise((resolve) => setTimeout(resolve, 0));
 const RESCORE_SLICE = 4000; // 0.25 s of audio per scorer step, so live audio is never queued behind a whole run
-async function rescoreRun(runStart, runEnd) {
+async function rescoreRun(runStart, runEnd, epoch) {
+  if (epoch !== rescoreEpoch) return;
   await ensureScorer();
+  if (epoch !== rescoreEpoch) return;
   if (!scorer) {
     if (scorerAttempts >= SCORER_MAX_ATTEMPTS && !rescoreUnavailablePosted) {
       rescoreUnavailablePosted = true;
@@ -110,7 +113,7 @@ async function rescoreRun(runStart, runEnd) {
     scorer.zipformer?.reset();
     scorer.zipformer?.setExpected({ surah, ayah: from, ayahEnd: to });
     const slice = audioSlice(lo, hi);
-    for (let i = 0; i < slice.length; i += RESCORE_SLICE) { await scorer.feed(slice.subarray(i, Math.min(slice.length, i + RESCORE_SLICE))); await yieldToQueue(); }
+    for (let i = 0; i < slice.length; i += RESCORE_SLICE) { await scorer.feed(slice.subarray(i, Math.min(slice.length, i + RESCORE_SLICE))); await yieldToQueue(); if (epoch !== rescoreEpoch) { diag.mark("rescore_end", { aborted: true }); return; } }
     diag.mark("rescore_end");
     const vs = (scorer.zipformer?.engine?.tracer?.verdicts?.(true) || []).filter(v => v.surah === surah && v.ayah >= from && v.ayah <= to);
     const byAyah = new Map();
