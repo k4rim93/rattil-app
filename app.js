@@ -207,18 +207,21 @@ function sessionSummaryCountsNode(summary){
   const counts=summary.counts,row=document.createElement('p');row.className='session-summary-counts';
   const parts=[`${toArabic(counts.correct)} صح`,`${toArabic(counts.wrong)} غلط محتمل`,`${toArabic(counts.unsure)} غير مؤكدة`];
   if(counts.hinted)parts.push(`${toArabic(counts.hinted)} صح بتلميح`);
-  if(counts.unreviewed)parts.push(`${toArabic(counts.unreviewed)} لم تُفحص صوتيًا`);
+  if(counts.unreviewed)parts.push(summary.savedVerdicts?`${toArabic(counts.unreviewed)} لم تُفحص صوتيًا`:`${toArabic(counts.unreviewed)} من غير نتائج محفوظة`);
   row.textContent=parts.join(' · ');return row;
 }
-function sessionSummaryLegendNode(){
+function sessionSummaryLegendNode(summary){
   const legend=document.createElement('small');legend.className='session-summary-caveat';
-  legend.textContent='صح = المحرك فحص الكلمة صوتيًا وما رصدش فيها غلط واضح · صح بتلميح = اتساعدت بتلميح · غير مؤكدة = المحرك شك من غير تأكيد · لم تُفحص = المتابعة وصلتلها من غير فحص صوتي.';
+  let text='صح = المحرك فحص الكلمة صوتيًا وما رصدش فيها غلط واضح · صح بتلميح = اتساعدت بتلميح · غير مؤكدة = المحرك شك من غير تأكيد';
+  if(summary?.counts?.unreviewed)text+=summary.savedVerdicts?' · لم تُفحص = المتابعة وصلتلها من غير فحص صوتي.':' · من غير نتائج محفوظة = مفيش نتائج فحص متخزنة للجلسة دي، فمش معروف من السجل لو المحرك راجع الكلمات وقتها ولا لأ.';
+  else text+='.';
+  legend.textContent=text;
   return legend;
 }
 function sessionSummaryCaveatNode(summary){
   const note=document.createElement('small');note.className='session-summary-caveat';
   if(summary.rescoreUnavailable)note.textContent='الفحص الصوتي للغلطات ما اتاحش في الجلسة دي؛ النتيجة متابعة بس من غير فحص غلطات.';
-  else if(!summary.counts.judged)note.textContent='الفحص الصوتي لم يغطِّ كلمات الجلسة دي، فلا يوجد فحص غلطات لها.';
+  else if(!summary.counts.judged)note.textContent=summary.savedVerdicts?'الفحص الصوتي لم يغطِّ كلمات الجلسة دي، فلا يوجد فحص غلطات لها.':'الجلسة دي من غير نتائج فحص محفوظة. مش معروف من السجل لو المحرك راجع الكلمات صوتيًا وقتها ولا لأ.';
   else if(!summary.counts.wrong)note.textContent=`المحرك فحص صوتيًا ${toArabic(summary.counts.judged)} من ${toArabic(summary.counts.touched)} كلمة وما رصدش فيها غلطات واضحة. ده مش تأكيد إن التلاوة كلها صحيحة.`;
   else note.textContent=`المحرك فحص صوتيًا ${toArabic(summary.counts.judged)} من ${toArabic(summary.counts.touched)} كلمة. النتيجة تقديرية وقد تخطئ، ولا تقيّم أحكام التجويد.`;
   return note;
@@ -248,8 +251,8 @@ function openSessionSummary(session){
   const summary=buildSessionSummary(session);content.replaceChildren();
   content.append(sessionSummaryCountsNode(summary));
   const headline=document.createElement('p');headline.className='session-summary-headline';
-  headline.textContent=summary.rescoreUnavailable?'الفحص الصوتي ما كانش متاح في الجلسة دي؛ الأرقام من المتابعة الحية بس.':(summary.counts.wrong?`رصد المحرك ${toArabic(summary.counts.wrong)} موضع محتاج مراجعة:`:(summary.counts.judged?'المحرك ما رصدش غلطات واضحة في الكلمات اللي فحصها صوتيًا.':'مفيش فحص غلطات للجلسة دي.'));
-  content.append(headline,sessionMistakesNode(summary,true),sessionSummaryLegendNode(),sessionSummaryCaveatNode(summary));
+  headline.textContent=summary.rescoreUnavailable?'الفحص الصوتي ما كانش متاح في الجلسة دي؛ الأرقام من المتابعة الحية بس.':(summary.counts.wrong?`رصد المحرك ${toArabic(summary.counts.wrong)} موضع محتاج مراجعة:`:(summary.counts.judged?'المحرك ما رصدش غلطات واضحة في الكلمات اللي فحصها صوتيًا.':(summary.savedVerdicts?'مفيش فحص غلطات للجلسة دي.':'مفيش نتائج فحص محفوظة للجلسة دي.')));
+  content.append(headline,sessionMistakesNode(summary,true),sessionSummaryLegendNode(summary),sessionSummaryCaveatNode(summary));
   content.onclick=event=>{if(event.target?.classList?.contains('quiet-link'))dialog.close()};
   if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');
 }
