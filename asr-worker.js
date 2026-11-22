@@ -1,6 +1,7 @@
 import { downloadModel } from "./model-download.js";
 import * as ort from "onnxruntime-web/wasm";
 import { createRecognitionSession } from "@tilawa/core";
+import { createDiag } from "./diag.js";
 
 let appBase = new URL(/* @vite-ignore */ "../", import.meta.url);
 const asset = (path) => new URL(path, appBase).href;
@@ -14,6 +15,17 @@ let session = null;
 let engineConfig = null;
 let queue = Promise.resolve();
 let stage = "worker-start";
+// Private timing diagnostics (numbers only, never audio or text). See diag.js.
+const diag = createDiag(); diag.reset();
+let feedingLen = 0, seenDecode = false, seenCand = false, lastWpKey = "", onsetSeen = false, hbLast = Date.now();
+setInterval(() => { const n = Date.now(), late = Math.max(0, n - hbLast - 50); hbLast = n; diag.sample("loop", late); diag.bucket(n, "loop", late); }, 50);
+function diagEngine(e) {
+  const a = (audioTotal + feedingLen) / 16;
+  if (e.type === "raw_transcript") { const chars = String(e.text || "").length; if (chars > 0 && !seenDecode) { seenDecode = true; diag.mark("ev", { type: "raw_transcript", a, chars }); } }
+  else if (e.type === "verse_candidate") { if (!seenCand) { seenCand = true; diag.mark("ev", { type: "verse_candidate", a, stable: !!e.stable }); } }
+  else if (e.type === "verse_match") diag.mark("ev", { type: "verse_match", a, ayah: e.ayah });
+  else if (e.type === "word_progress") { const key = e.ayah + ":" + (e.matched_indices || []).length + ":" + e.word_index; if (key !== lastWpKey) { lastWpKey = key; diag.mark("ev", { type: "word_progress", a, ayah: e.ayah, matched: (e.matched_indices || []).length, idx: e.word_index }); } }
+}
 let sessionMode = "tracking";
 // Completed-ayah rescoring: the live tracker follows recitation; when a speech
 // run ends (natural pause) or the session stops, the run's audio is re-scored
@@ -65,10 +77,11 @@ function feedVad(chunk) {
 async function rescoreRun(runStart, runEnd) {
   if (!scorer && !scorerPromise && ortRef && scorerAttempts < SCORER_MAX_ATTEMPTS) {
     scorerAttempts++;
+    diag.mark("scorer_init_start");
     scorerPromise = createRecognitionSession({
       ort: ortRef, model: () => modelBufferRef, io: () => ioRef, corpus: () => corpusRef, quran: () => quranRef,
       executionProviders: ["wasm"], structural: false, onEvent: () => {},
-    }).then((s) => { s.zipformer?.setMode("correction"); return s; }).catch((error) => { console.warn("rescore scorer init failed", error); scorerPromise = null; return null; });
+    }).then((s) => { diag.mark("scorer_init_end", { ok: true }); s.zipformer?.setMode("correction"); return s; }).catch((error) => { diag.mark("scorer_init_end", { ok: false }); console.warn("rescore scorer init failed", error); scorerPromise = null; return null; });
   }
   if (!scorer && scorerPromise) scorer = await scorerPromise;
   if (!scorer) {
@@ -85,9 +98,11 @@ async function rescoreRun(runStart, runEnd) {
   const surah = inRun[0].surah, from = inRun[0].ayah, to = inRun[inRun.length - 1].ayah;
   if (!inRun.every(m => m.surah === surah)) return;
   try {
+    diag.mark("rescore_start", { samples: hi - lo });
     scorer.zipformer?.reset();
     scorer.zipformer?.setExpected({ surah, ayah: from, ayahEnd: to });
     await scorer.feed(audioSlice(lo, hi));
+    diag.mark("rescore_end");
     const vs = (scorer.zipformer?.engine?.tracer?.verdicts?.(true) || []).filter(v => v.surah === surah && v.ayah >= from && v.ayah <= to);
     const byAyah = new Map();
     for (const v of vs) {
@@ -104,7 +119,7 @@ async function rescoreRun(runStart, runEnd) {
       if (cleared.length) post("event", { event: { type: "word_issues", surah: cur.surah, ayah: cur.ayah, cleared } });
       flaggedWords.set(key, cur.flagged);
     }
-  } catch (error) { console.warn("rescore failed", error); }
+  } catch (error) { diag.mark("rescore_end", { err: true }); console.warn("rescore failed", error); }
 }
 
 function post(type, data = {}) { self.postMessage({ type, ...data }); }
@@ -158,16 +173,19 @@ async function init() {
     post("loading_status", { message: "تهيئة محرك التعرّف…" });
     ort.env.wasm.numThreads = 1;
     stage = "load-assets";
+    const tInit0 = performance.now();
     const [modelBuffer, corpus, quran, io] = await Promise.all([
       model(), json(corpusUrl(), KEYS.corpus), json(quranUrl(), KEYS.quran), json(ioUrl(), "zipformer-io-a0w-v1"),
     ]);
     if (navigator.storage?.persist) try { await navigator.storage.persist(); } catch { /* Storage permission is optional. */ }
+    const tAssets = performance.now();
     stage = "create-session";
     post("loading_status", { message: "بدء المحرك محليًا على الجهاز…" });
     session = await createRecognitionSession({
       ort, model: () => modelBuffer, io: () => io, corpus: () => corpus, quran: () => quran,
-      executionProviders: ["wasm"], ...(engineConfig ? { config: engineConfig } : {}), structural: { timing: "stop" }, onEvent: (event) => { if (event?.type === "verse_match") matchLog.push({ surah: Number(event.surah), ayah: Number(event.ayah), at: audioTotal }); post("event", { event }); },
+      executionProviders: ["wasm"], ...(engineConfig ? { config: engineConfig } : {}), structural: { timing: "stop" }, onEvent: (event) => { if (event?.type === "verse_match") matchLog.push({ surah: Number(event.surah), ayah: Number(event.ayah), at: audioTotal }); try { diagEngine(event); } catch {} post("event", { event, wt: Date.now(), a: (audioTotal + feedingLen) / 16 }); },
     });
+    diag.setStatic("init", { assetsMs: Math.round(tAssets - tInit0), createSessionMs: Math.round(performance.now() - tAssets) });
     session.zipformer.correction.thresholds = { ...session.zipformer.correction.thresholds, gopFlag: -5 };
     session.zipformer?.setMode("tracking");
     ortRef = ort; modelBufferRef = modelBuffer; ioRef = io; corpusRef = corpus; quranRef = quran;
@@ -179,11 +197,13 @@ async function init() {
 }
 async function handle(message) {
   if (message.type === "init") { if(message.baseUrl) appBase = new URL("./", message.baseUrl); engineConfig = message.config || null; return init(); }
-  if (message.type === "reset") { session?.reset(); rescoreReset(); }
+  if (message.type === "reset") { session?.reset(); rescoreReset(); diag.reset(); seenDecode = seenCand = onsetSeen = false; lastWpKey = ""; }
   if (message.type === "set_expected") { session?.zipformer?.setExpected(message.passage || null); return; }
   if (message.type === "set_mode") { sessionMode = message.mode === "correction" ? "correction" : "tracking"; session?.zipformer?.setMode(sessionMode); return; }
   if (message.type === "correction_action") { session?.zipformer?.correct(message.action); return; }
-  if (message.type === "audio" && session) { const began = performance.now(); await session.feed(message.samples); post("perf", { ms: performance.now() - began, samples: message.samples.length, lagMs: Date.now() - (message.sentAt || Date.now()) });
+  if (message.type === "audio" && session) { const began = performance.now(), nowE = Date.now(), q = nowE - (message.mt || message.sentAt || nowE); diag.sample("queue", q); diag.bucket(nowE, "queue", q); feedingLen = message.samples.length;
+    if (!onsetSeen) { let e = 0; for (let i = 0; i < message.samples.length; i++) e += message.samples[i] * message.samples[i]; if (Math.sqrt(e / message.samples.length) > VAD_THR) { onsetSeen = true; diag.mark("onset", { a: audioTotal / 16 }); } }
+    await session.feed(message.samples); const feedMs = performance.now() - began; feedingLen = 0; diag.sample("feed", feedMs); diag.sample("samples", message.samples.length); diag.bucket(Date.now(), "feed", feedMs); post("perf", { ms: feedMs, samples: message.samples.length, lagMs: Date.now() - (message.sentAt || Date.now()) });
     audioTotal += message.samples.length; audioChunks.push(message.samples);
     if (audioTotal > 5 * 60 * 16000) { let drop = audioTotal - 5 * 60 * 16000; while (drop > 0 && audioChunks.length) { const c = audioChunks[0]; if (c.length <= drop) { audioChunks.shift(); drop -= c.length; } else { audioChunks[0] = c.subarray(drop); drop = 0; } } }
     const closed = feedVad(message.samples);
@@ -191,6 +211,7 @@ async function handle(message) {
   if (message.type === "stop" && session) { await session.stop();
     if (vadSpeech) { vadSpeech = false; queueRescore(vadRunStart, vadLastSpeech); }
     await rescoreChain;
+    post("diag", { log: diag.snapshot() });
     post("stopped"); }
 }
 self.onmessage = (event) => {
