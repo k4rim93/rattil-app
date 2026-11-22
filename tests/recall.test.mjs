@@ -70,3 +70,14 @@ test('bismillahOffset maps engine word indices for opening ayahs only',()=>{
  assert.equal(bismillahOffset(['بَرَآءَةٞ','مِّنَ','ٱللَّهِ']),0);
  assert.equal(bismillahOffset(['ذِكْرُ','رَحْمَتِ','رَبِّكَ']),0);
 });
+
+import { engineTokenMap, hasRecitationLetters } from '../recall-core.js';
+test('engine word indices skip standalone waqf marks so the final display word maps',()=>{
+ const tokens=['يَٰيَحْيَىٰ','خُذِ','ٱلْكِتَٰبَ','بِقُوَّةٍۢ','ۖ','وَءَاتَيْنَٰهُ','ٱلْحُكْمَ','صَبِيًّۭا'];
+ assert.deepEqual(engineTokenMap(tokens),[0,1,2,3,5,6,7]);
+ assert.equal(hasRecitationLetters('ۖ'),false);assert.equal(hasRecitationLetters('بِقُوَّةٍۢ'),true);
+});
+test('engine word indices keep the basmala offset while skipping waqf marks',()=>{
+ const tokens=['بِسْمِ','ٱللَّهِ','ٱلرَّحْمَٰنِ','ٱلرَّحِيمِ','قَالَ','ۖ','رَبِّ'];
+ assert.deepEqual(engineTokenMap(tokens),[4,6]);
+});
