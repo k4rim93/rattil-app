@@ -54,4 +54,4 @@ body.recitation-session-active .recitation-controls #stopRec:not(:disabled),body
 .tabbar button svg{width:22px;height:22px;display:block}
 .tabbar button{gap:3px}
 
-.diag-panel{margin:12px 2px 0;padding:10px 12px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);font-size:11px;line-height:1.8}.diag-panel summary{cursor:pointer;font-weight:700}.diag-panel pre{white-space:pre-wrap;word-break:break-word;font:inherit;margin:8px 0}.diag-panel textarea{width:100%;font:10px/1.4 ui-monospace,monospace;margin-top:8px}
+.diag-panel{margin:12px 2px 0;padding:12px;border:1px solid #d8b96a;border-radius:12px;background:#0b1314;color:#f3eee2;font-size:13px;line-height:1.9}.diag-panel summary{cursor:pointer;font-weight:700;color:#eed797}.diag-panel pre{white-space:pre-wrap;word-break:break-word;font:inherit;margin:8px 0;color:#f3eee2}.diag-panel button{background:#eed797;color:#17211c;border:0;border-radius:10px;padding:10px 14px;font-weight:700;font-size:13px}.diag-panel textarea{width:100%;background:#111b1c;color:#f3eee2;border:1px solid #556;border-radius:8px;font:10px/1.4 ui-monospace,monospace;margin-top:8px}
