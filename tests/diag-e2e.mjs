@@ -19,7 +19,7 @@ await page.addInitScript(()=>{
   window.__holdWorker=ms=>{holding=true;setTimeout(()=>{holding=false;const q=held;held=[];for(const [w,a,t] of q)orig.call(w,a,t)},ms)};
   Worker.prototype.postMessage=function(msg,transfer){if(holding&&msg&&msg.type==='audio'){held.push([this,msg,transfer]);return}return orig.call(this,msg,transfer)};
 });
-await page.addInitScript(()=>{window.__wi=[];const W=window.Worker;window.Worker=class extends W{constructor(...a){super(...a);this.addEventListener('message',e=>{const d=e.data;if(d&&d.type==='event'&&d.event&&['word_issues','rescore_unavailable'].includes(d.event.type)){const ev=d.event;window.__wi.push({t:Date.now(),type:ev.type,ayah:ev.ayah,words:ev.words||null,cleared:ev.cleared||null})}})}}});
+await page.addInitScript(()=>{window.__wi=[];const W=window.Worker;window.Worker=class extends W{constructor(...a){super(...a);this.addEventListener('message',e=>{const d=e.data;if(d&&d.type==='event'&&d.event&&['word_issues','rescore_unavailable','settled_words'].includes(d.event.type)){const ev=d.event;window.__wi.push({t:Date.now(),type:ev.type,ayah:ev.ayah,words:ev.words||null,matched:ev.matched_indices||null,cleared:ev.cleared||null})}})}}});
 await page.goto('http://127.0.0.1:4178/rattil-app/?diag=1');
 await page.locator('.tabbar [data-view=practice]').click();
 const loadStarted=Date.now();await page.locator('#loadAsr').click();
