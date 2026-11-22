@@ -82,6 +82,11 @@ export function mistakeKindLabel(kind) {
 //   hinted   = the user asked for a hint; counted on its own, never as
 //              independent correct recitation.
 //   unreviewed = no usable acoustic verdict (missing, skipped or pending).
+// savedVerdicts tells the two kinds of "no verdict" apart: false means the
+// session holds no saved acoustic results at all (a legacy record, or a
+// session whose rescore never ran) — the record cannot say whether the words
+// were inspected live; true means this build did persist verdicts, so a word
+// without one is known-unreviewed.
 // "correct" never means tajweed-valid and never covers unexamined words.
 export function buildSessionSummary(session) {
   const words = Array.isArray(session?.words) ? session.words : [];
@@ -122,6 +127,7 @@ export function buildSessionSummary(session) {
     counts,
     mistakes,
     rescoreUnavailable: Boolean(session?.rescoreUnavailable),
+    savedVerdicts: Object.keys(verdicts).length > 0,
     mode: session?.mode || null,
     startedAt: session?.startedAt || 0,
   };
