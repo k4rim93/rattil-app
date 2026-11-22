@@ -82,6 +82,14 @@ test('stale red paint never convicts: error status with weak/no-GOP verdict is u
   assert.deepEqual(skipped.counts, { touched: 1, correct: 0, hinted: 0, wrong: 0, unsure: 1, unreviewed: 0, judged: 0 });
 });
 
+test('correction-panel red without a verdict is tracker suspicion, not a mistake', () => {
+  const session = { words: [{ ...word('55:3:0', 'error'), errorSource: 'correction' }, word('55:3:1', 'error')] };
+  const summary = buildSessionSummary(session);
+  assert.deepEqual(summary.counts, { touched: 2, correct: 0, hinted: 0, wrong: 1, unsure: 1, unreviewed: 0, judged: 0 });
+  assert.equal(summary.mistakes.length, 1);
+  assert.equal(summary.mistakes[0].index, 1);
+});
+
 test('scorer failure or missing verdicts never produce reassuring correct counts', () => {
   const session = { rescoreUnavailable: true, words: [word('55:3:0', 'correct'), word('55:3:1', 'correct')] };
   const summary = buildSessionSummary(session);
