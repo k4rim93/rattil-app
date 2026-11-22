@@ -21,6 +21,24 @@ test('engine doubt without acoustic confirmation is unsure, never wrong', () => 
   assert.deepEqual(classifyVerdict(undefined), { bucket: 'unclear' });
 });
 
+test('skipped word with clear omission evidence is an omission mistake', () => {
+  // measured on a full-word-omission fixture: gop -13.73, gopNone -3.1
+  assert.deepEqual(classifyVerdict({ state: 'skipped', gop: -13.73, gopNone: -3.1 }), { bucket: 'wrong', kind: 'omission' });
+  // without the silence-hypothesis margin a skip stays doubt, never a mistake
+  assert.deepEqual(classifyVerdict({ state: 'skipped', gop: -13.73 }), { bucket: 'unclear' });
+  // a partially-read word (tail cut) sits inside clean variation: not separable
+  assert.deepEqual(classifyVerdict({ state: 'unsure', gop: -1.8, gopNone: -5.09 }), { bucket: 'unsure' });
+});
+
+test('repetition evidence flags even when the engine state stays ok', () => {
+  // measured on a duplicated-word fixture: gop -7.21, repGain +5.29
+  assert.deepEqual(classifyVerdict({ state: 'ok', gop: -7.21, repGain: 5.29 }), { bucket: 'wrong', kind: 'repetition' });
+  // clean words can drift slightly above repGain 0 with a mild gop: the
+  // acoustic bar (gop <= -5) keeps them correct
+  assert.deepEqual(classifyVerdict({ state: 'ok', gop: -2.9, repGain: 0.19 }), { bucket: 'correct' });
+  assert.deepEqual(classifyVerdict({ state: 'ok', gop: -7, repGain: -3 }), { bucket: 'correct' });
+});
+
 test('flagged mistakes are classified from the engine hypotheses', () => {
   assert.deepEqual(classifyVerdict({ state: 'wrong', gop: -9, gopNone: -1 }), { bucket: 'wrong', kind: 'omission' });
   assert.deepEqual(classifyVerdict({ state: 'wrong', gop: -9, repGain: 2.5 }), { bucket: 'wrong', kind: 'repetition' });
