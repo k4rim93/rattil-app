@@ -26,6 +26,7 @@ await page.waitForFunction(()=>document.querySelector('#loadAsr').textContent===
 const t0=Date.now();
 await page.locator('#followFeatureStart').click();
 await page.waitForFunction(()=>!document.querySelector('#stopRec').disabled);
+await page.evaluate(t0=>{window.__cv=[];let last='';setInterval(()=>{const c=document.querySelector('.recitation-qvp-canvas');if(!c||!c.width)return;try{const x=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let h=0;for(let i=0;i<x.length;i+=97)h=(h*31+x[i])|0;const k=c.width+':'+h;if(k!==last){last=k;window.__cv.push(Date.now()-t0)}}catch{}},50)},t0);
 const at=ms=>page.waitForTimeout(Math.max(0,ms-(Date.now()-t0)));
 if(!process.env.NOINJECT){await at(10000);await page.evaluate(()=>{const e=performance.now()+1500;while(performance.now()<e);});console.log('blocked main 1500ms at +10s');}
 if(!process.env.NOINJECT){await at(25000);await page.evaluate(()=>window.__holdWorker(3000));console.log('held worker audio 3000ms at +25s');}
@@ -34,8 +35,8 @@ await page.screenshot({path:'/downloads/diag-live.png'});
 await page.locator('#stopRec').click();
 await page.waitForFunction(()=>window.__rattilDiag,null,{timeout:60000});
 await page.waitForTimeout(500);
-const r=await page.evaluate(()=>window.__rattilDiag);
-console.log(JSON.stringify(r,null,1));if(process.env.RAW){const raw=await page.evaluate(()=>window.__rattilDiagRaw);const t0=raw.main.events.find(e=>e.k==='chunk_first').t;console.log('RAW',JSON.stringify(raw.main.events.filter(e=>['ev_recv','wp_paint'].includes(e.k)).slice(0,14).map(e=>[e.k,e.type,e.t-t0,e.ms,e.a])));console.log('RAWW',JSON.stringify(raw.worker.events.filter(e=>e.k==='ev').slice(0,10).map(e=>[e.type,e.t-t0,e.a])));}
+const r=await page.evaluate(()=>window.__rattilDiag);const cv=await page.evaluate(()=>window.__cv);console.log('CANVAS_CHANGES_MS',JSON.stringify(cv.filter(x=>x>6000&&x<13000)));
+console.log(JSON.stringify(r,null,1));if(process.env.RAW){const raw=await page.evaluate(()=>window.__rattilDiagRaw);const t0=raw.main.events.find(e=>e.k==='chunk_first').t;console.log('RAW',JSON.stringify(raw.main.events.filter(e=>['ev_recv','wp_paint','replay'].includes(e.k)).slice(0,16).map(e=>[e.k,e.type,e.t-t0,e.ms,e.a,e.n,e.rest])));console.log('RAWW',JSON.stringify(raw.worker.events.filter(e=>e.k==='ev').slice(0,10).map(e=>[e.type,e.t-t0,e.a])));}
 await page.evaluate(()=>{document.getElementById('diagPanel').open=true;document.getElementById('diagPanel').scrollIntoView({block:'start'})});
 await page.waitForTimeout(300);
 await page.screenshot({path:'/downloads/diag-panel.png'});
