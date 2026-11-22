@@ -52,33 +52,47 @@ export function mistakeKindLabel(kind) {
 // Session shape: { words: [{key,surah,ayah,index,text,status,hinted}],
 //   verdicts?: {key: {state,gop,gopNone,repGain,vowelErrors}},
 //   rescoreUnavailable?: bool, startedAt, endedAt, mode }
-// Buckets are exclusive, priority: flagged wrong > hint > verdict > live status.
-// "correct" means the engine judged the word ok — never a verdict on tajweed
-// and never a claim about words the engine did not judge.
+// Buckets are exclusive, per word:
+//   wrong    = the live red flag AND the acoustic rescore confirms it
+//              (flagged verdict), or a live red flag with no rescore data at
+//              all (the only signal is the live one the user saw painted).
+//   unsure   = engine doubt the rescore did NOT confirm — including a live
+//              red flag whose verdict came back unsure/ok/weak-GOP (stale or
+//              overridden paint must not convict a word on its own).
+//   correct  = the rescore examined the word and judged it ok. A word the
+//              tracker painted correct but the rescore never examined is NOT
+//              correct: following along is not acoustic confirmation.
+//   hinted   = the user asked for a hint; counted on its own, never as
+//              independent correct recitation.
+//   unreviewed = no usable acoustic verdict (missing, skipped or pending).
+// "correct" never means tajweed-valid and never covers unexamined words.
 export function buildSessionSummary(session) {
   const words = Array.isArray(session?.words) ? session.words : [];
   const verdicts = session?.verdicts && typeof session.verdicts === 'object' ? session.verdicts : {};
-  const counts = { touched: words.length, correct: 0, wrong: 0, unsure: 0, hints: 0, judged: 0 };
+  const counts = { touched: words.length, correct: 0, hinted: 0, wrong: 0, unsure: 0, unreviewed: 0, judged: 0 };
   const mistakes = [];
   for (const word of words) {
     const verdict = verdicts[word.key] || null;
-    if (verdict) counts.judged++;
+    const cls = classifyVerdict(verdict);
+    if (verdict && cls.bucket !== 'unclear') counts.judged++;
     if (word.status === 'error') {
-      counts.wrong++;
-      mistakes.push({
-        surah: word.surah, ayah: word.ayah, index: word.index, text: word.text,
-        kind: isFlagged(verdict) ? classifyVerdict(verdict).kind : null,
-      });
+      if (verdict && cls.bucket !== 'wrong') {
+        counts.unsure++;
+      } else {
+        counts.wrong++;
+        mistakes.push({
+          surah: word.surah, ayah: word.ayah, index: word.index, text: word.text,
+          kind: cls.bucket === 'wrong' ? cls.kind : null,
+        });
+      }
     } else if (word.hinted || word.status === 'hint') {
-      counts.hints++;
-    } else if (verdict) {
-      const bucket = classifyVerdict(verdict).bucket;
-      if (bucket === 'correct') counts.correct++;
-      else counts.unsure++;
-    } else if (word.status === 'correct') {
+      counts.hinted++;
+    } else if (verdict && cls.bucket === 'correct') {
       counts.correct++;
-    } else {
+    } else if (verdict && cls.bucket !== 'unclear') {
       counts.unsure++;
+    } else {
+      counts.unreviewed++;
     }
   }
   mistakes.sort((a, b) => (a.surah - b.surah) || (a.ayah - b.ayah) || (a.index - b.index));
