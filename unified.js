@@ -52,4 +52,13 @@ document.querySelectorAll('[data-reader-action]').forEach(b=>b.addEventListener(
 for(const dialog of document.querySelectorAll('dialog')){dialog.addEventListener('click',e=>{if(e.target!==dialog)return;const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()});dialog.addEventListener('close',()=>{$('restoreReaderTools').hidden=!body.classList.contains('immersive-reading')})}
 for(const id of ['nextPage','previousPage','goToPageButton'])$(id).addEventListener('click',stopAudio,{capture:true});window.addEventListener('keydown',e=>{if((e.key==='ArrowLeft'||e.key==='ArrowRight')&&!document.querySelector('dialog[open]'))stopAudio()},{capture:true});window.addEventListener('pagehide',stopAudio);window.addEventListener('keydown',e=>{if(e.key==='Escape'&&body.classList.contains('immersive-reading')){setImmersive(false);$('restoreReaderTools').hidden=true}});
 document.querySelector('.topbar .brand').setAttribute('aria-label','الرئيسية');const updateDismiss=document.createElement('button');updateDismiss.type='button';updateDismiss.className='quiet-link un-dismiss-update';updateDismiss.textContent='إخفاء حالة التحديث';updateDismiss.addEventListener('click',()=>{$('refreshAppStatus').hidden=true;updateDismiss.hidden=true});$('refreshAppStatus').after(updateDismiss);$('refreshApp').addEventListener('click',()=>{$('refreshAppStatus').hidden=false;updateDismiss.hidden=false});const offline=$('offlineButton');offline.querySelector('.state-pill').textContent='تفاصيل';offline.addEventListener('click',()=>announce('تُحفظ واجهة رتل والصفحات اللي فتحتها بعد أول تحميل. الصوت والتفسير يحتاجان الإنترنت.'));$('themeToggle').querySelector('strong').textContent='مظهر الواجهة';
-                     }
+                     // Keep settings visible in the bottom navigation; group secondary choices without removing controls.
+const settings=$('view-settings'),settingsList=settings.querySelector('.simple-list');
+const locationGroup=document.createElement('details');locationGroup.className='un-settings-group';
+const locationSummary=document.createElement('summary');locationSummary.textContent='الموقع ومواقيت الصلاة';locationGroup.append(locationSummary);
+for(const el of [$('locationButton'),$('citySelect').closest('.city-row'),$('methodSelect').closest('.city-row')])locationGroup.append(el);
+settingsList.insertBefore(locationGroup,$('offlineButton'));
+const aboutTitle=document.createElement('h2');aboutTitle.className='un-settings-title';aboutTitle.textContent='عن رتل';settings.insertBefore(aboutTitle,$('refreshApp'));
+$('readerCredits').querySelector('summary').textContent='مصادر التلاوة وحقوق الاستخدام';
+updateDismiss.hidden=!$('refreshAppStatus').textContent.trim();
+}
