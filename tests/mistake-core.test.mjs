@@ -218,3 +218,19 @@ test('reviewed mistakes sort after open ones, history intact', () => {
   assert.equal(items[0].reviewed, 0);
   assert.equal(items[1].reviewed, 6000);
 });
+
+test('a fresh flag after an acoustically-confirmed review reopens the mistake', () => {
+  const ok = { state: 'ok', gop: -0.3, gopNone: -40, repGain: -1, vowelErrors: 0 };
+  const flag1 = { startedAt: 1000, endedAt: 2000, words: [
+    { key: '55:2:1', surah: 55, ayah: 2, index: 1, text: 'x', status: 'error' }], verdicts: {} };
+  const correct2 = { startedAt: 5000, endedAt: 6000, words: [], verdicts: { '55:2:1': ok } };
+  const flag3 = { startedAt: 9000, endedAt: 10000, words: [
+    { key: '55:2:1', surah: 55, ayah: 2, index: 1, text: 'x', status: 'error' }], verdicts: {} };
+  const items = aggregateMistakes([flag1, correct2, flag3]);
+  assert.equal(items.length, 1);
+  assert.equal(items[0].reviewed, 0, 'a later flag must reopen: the old correct review must not hide a fresh mistake');
+  assert.equal(items[0].sessions, 2, 'both flagging sessions stay in the history');
+  const correct4 = { startedAt: 12000, endedAt: 13000, words: [], verdicts: { '55:2:1': ok } };
+  const again = aggregateMistakes([flag1, correct2, flag3, correct4]);
+  assert.equal(again[0].reviewed, 13000, 'a correct review after the latest flag marks it reviewed again');
+});
