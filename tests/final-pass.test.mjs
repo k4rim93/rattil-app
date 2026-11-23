@@ -104,3 +104,18 @@ test('coverage without word info falls back to ayah-level skip', () => {
   const noWords = planFinalPass([{ surah: 55, ayah: 1, at: 5 * S }], { ayahs: new Set(['55:1']), words: new Map() }, 60 * S);
   assert.equal(noWords.length, 0);
 });
+
+test('late progress stamps shift the audio window past early-spoken words (mechanism demo, not a phone finding)', () => {
+  // The final pass bounds an ayah's audio by its progress trail: LEAD before
+  // the first stamp, TRAIL after the last. If the tracker logged the first
+  // progress 3s after speech actually began (slow device), the fed slice
+  // starts after the ayah's true onset, so words spoken in those 3s can never
+  // be aligned by any re-score of that slice.
+  const speechStart = 2 * S;
+  const firstProgress = 5 * S; // tracker confirmed 3s late
+  const trail = [{ surah: 19, ayah: 5, at: firstProgress, w: 0 }, { surah: 19, ayah: 5, at: 8 * S, w: 12 }];
+  const groups = planFinalPass(trail, new Set(), 60 * S);
+  assert.equal(groups.length, 1);
+  assert.ok(groups[0].audioFrom > speechStart, 'window starts after the true speech onset');
+  assert.equal(groups[0].audioFrom, firstProgress - 0.8 * S);
+});
