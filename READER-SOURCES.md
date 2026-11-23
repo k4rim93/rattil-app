@@ -20,3 +20,6 @@ Streaming audio and tafsir require internet. Physical iPhone testing is still ne
 
 ## Preview: explicit ayah playback gestures
 Plain tap selects the ayah only. A550ms primary-pointer hold opens the existing options sheet, cancelled by movement over10px, pointer cancellation, leaving the target, or scrolling. Keyboard Enter/Space opens options. No gesture or reciter selection starts audio; Play is explicit. Long-press generated clicks and native iOS callout/selection are suppressed in the reader. Physical Safari touch still needs user testing.
+
+## Preview: cleaner ayah sheet
+Provider credits, both provider rights links and streaming caveats are retained under Settings > Recitation sources and usage rights, outside the ayah sheet. The redundant gesture hint was removed from the sheet. The sheet ends after repeat unless tafsir is explicitly expanded; it leaves a12px plus safe-area gap above the screen bottom.
