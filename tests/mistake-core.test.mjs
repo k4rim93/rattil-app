@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { classifyVerdict, isFlagged, buildSessionSummary, aggregateMistakes, mistakeKindLabel } from '../mistake-core.js';
+import { classifyVerdict, isFlagged, buildSessionSummary, aggregateMistakes, mistakeKindLabel, unreviewedWordKeys } from '../mistake-core.js';
 
 test('only wrong/unsure with strong acoustic evidence is flagged', () => {
   assert.equal(isFlagged({ state: 'wrong', gop: -9 }), true);
@@ -233,4 +233,30 @@ test('a fresh flag after an acoustically-confirmed review reopens the mistake', 
   const correct4 = { startedAt: 12000, endedAt: 13000, words: [], verdicts: { '55:2:1': ok } };
   const again = aggregateMistakes([flag1, correct2, flag3, correct4]);
   assert.equal(again[0].reviewed, 13000, 'a correct review after the latest flag marks it reviewed again');
+});
+
+test('unreviewedWordKeys names exactly the words the summary counts as unreviewed', () => {
+  const session = {
+    words: [
+      { key: '19:1:0', status: 'correct' },                                        // correct verdict below
+      { key: '19:2:1', status: 'revealed' },                                       // no verdict -> unreviewed
+      { key: '19:2:2', status: 'revealed' },                                       // unclear verdict -> unreviewed
+      { key: '19:3:0', status: 'error' },                                          // error paint, never unreviewed
+      { key: '19:4:0', status: 'hint', hinted: true },                             // hint, never unreviewed
+      { key: '19:5:0', status: 'revealed' },                                       // unsure verdict -> not unreviewed
+    ],
+    verdicts: {
+      '19:1:0': { state: 'ok' },
+      '19:2:2': { state: 'skipped' },
+      '19:5:0': { state: 'unsure', gop: -6 },
+    },
+  };
+  assert.deepEqual(unreviewedWordKeys(session), ['19:2:1', '19:2:2']);
+  assert.equal(buildSessionSummary(session).counts.unreviewed, 2);
+});
+
+test('unreviewedWordKeys tolerates empty and verdict-less sessions', () => {
+  assert.deepEqual(unreviewedWordKeys(null), []);
+  assert.deepEqual(unreviewedWordKeys({ words: [] }), []);
+  assert.deepEqual(unreviewedWordKeys({ words: [{ key: '19:1:0', status: 'revealed' }] }), ['19:1:0']);
 });
