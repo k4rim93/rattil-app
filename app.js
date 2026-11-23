@@ -5,7 +5,7 @@ import { startCapture } from './audio-capture.js';
 import { createLatencyStats } from './latency-stats.js';
 import { splitPending } from './pending-progress.js';
 import { createDiag, buildDiagReport, renderDiagLines } from './diag.js';
-import { buildSessionSummary, aggregateMistakes, mistakeKindLabel, classifyVerdict, isFlagged } from './mistake-core.js';
+import { buildSessionSummary, aggregateMistakes, mistakeKindLabel, classifyVerdict, isFlagged, unreviewedWordKeys } from './mistake-core.js';
 const latencyStats=createLatencyStats();let pendingPaintAt=0,drawQueued=false;
 const diag=createDiag();let diagWorkerLog=null,diagHb=0,diagLastChunk=0,wpPendingAt=0,diagWpRecvAt=0,diagWpKey='';
 document.getElementById('appManifest').href=new URL('manifest.webmanifest',document.baseURI).href;
@@ -92,10 +92,14 @@ function drawRecitationQvpPageNow(){
  // Paper, decorations and (in preview) the printed words never change between events: draw them once per page and size.
  if(baseLayer.key!==layerKey||!baseLayer.canvas){const layer=baseLayer.canvas||document.createElement('canvas');layer.width=pixelWidth;layer.height=pixelHeight;const lctx=layer.getContext('2d');lctx.fillStyle='#f8f1df';lctx.fillRect(0,0,pixelWidth,pixelHeight);if(recitationPreview)recitationQvpPage.draw(lctx,{...fit,ink});recitationQvpPage.drawDecorations(lctx,{...fit,ink:'#c7a34c'});baseLayer={key:layerKey,canvas:layer}}
  ctx.drawImage(baseLayer.canvas,0,0);
- const buckets={revealed:[],correct:[],error:[],uncertain:[],hint:[],active:[]},activeBoxes=[],now=Date.now();
- recitationQvpGeometry.words.forEach((word,printedIndex)=>{const mapping=getRecitationTokenMap(word.surah,word.ayah);for(const [apiIndex,printedWord]of mapping){if(printedWord!==word.word)continue;const stateKey=`${word.surah}:${word.ayah}:${apiIndex}`,state=recitationWordStates.get(stateKey);if(state&&buckets[state]){buckets[state].push(printedIndex);if(state==='active')activeBoxes.push(word.box)}break}});
+ const buckets={revealed:[],correct:[],error:[],uncertain:[],hint:[],active:[]},activeBoxes=[],now=Date.now(),drawnAyahs=new Set();
+ recitationQvpGeometry.words.forEach((word,printedIndex)=>{const mapping=getRecitationTokenMap(word.surah,word.ayah);for(const [apiIndex,printedWord]of mapping){if(printedWord!==word.word)continue;const stateKey=`${word.surah}:${word.ayah}:${apiIndex}`,state=recitationWordStates.get(stateKey);if(state&&buckets[state]){buckets[state].push(printedIndex);drawnAyahs.add(word.surah+':'+word.ayah);if(state==='active')activeBoxes.push(word.box)}break}});
  if(activeBoxes.length){ctx.save();ctx.setTransform(fit.scale,0,0,fit.scale,fit.x,fit.y);ctx.fillStyle='#fff';for(const [x0,y0,x1,y1]of activeBoxes)ctx.fillRect(x0-2,y0-1,x1-x0+4,y1-y0+2);ctx.restore()}
  for(const [state,indices]of Object.entries(buckets)){if(indices.length){const color=state==='revealed'?ink:state==='correct'?'#246343':state==='error'?'#b23121':state==='uncertain'?'#86621f':state==='hint'?'#98652b':"#0b1414";recitationQvpPage.drawWords(ctx,indices,{...fit,ink:color})}}
+ // Masked follow view: an ayah's end marker only makes sense next to visible words.
+ // Hidden ayahs keep their words and marker concealed together; the tracked ayah keeps
+ // its marker as the reading-position cue. Preview mode draws markers in the base layer.
+ if(!recitationPreview){const markerKeys=[...drawnAyahs];if(recitationTrackingKey){const trackedKey=recitationTrackingKey.split(':').slice(0,2).join(':');if(!drawnAyahs.has(trackedKey))markerKeys.push(trackedKey)}if(markerKeys.length)recitationQvpPage.drawAyahMarkers(ctx,markerKeys,{...fit,ink:'#c7a34c'})}
  for(const [key,status]of recitationWordStates){if(status==='correct'&&recitationWordExpiry.get(key)<=now){recitationWordStates.set(key,'revealed');recitationWordExpiry.delete(key)}}
  if(recitationTrackingKey){const[trackSurah,trackAyah,trackIndex]=recitationTrackingKey.split(':').map(Number);let tracked=false;recitationQvpGeometry.words.forEach((word,printedIndex)=>{if(tracked||word.surah!==trackSurah||word.ayah!==trackAyah)return;const mapping=getRecitationTokenMap(word.surah,word.ayah);for(const [apiIndex,printedWord]of mapping){if(apiIndex!==trackIndex||printedWord!==word.word)continue;recitationQvpPage.drawWords(ctx,[printedIndex],{...fit,ink:'#7d7455'});const [x0,y0,x1,y1]=word.box;ctx.save();ctx.setTransform(fit.scale,0,0,fit.scale,fit.x,fit.y);ctx.strokeStyle='#7d7455';ctx.lineWidth=2.5;ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(x0-2,y1+4);ctx.lineTo(x1+2,y1+4);ctx.stroke();ctx.restore();tracked=true;break}})}
 }
@@ -163,7 +167,7 @@ function diagStart(){diag.reset();diagWorkerLog=null;wpPendingAt=0;diagWpRecvAt=
 function diagChunk(at){const n=Date.now();if(!diagLastChunk)diag.mark('chunk_first',{at});else{const gap=n-diagLastChunk;diag.sample('gap',gap);if(gap>250)diag.mark('chunk_gap',{gap})}diagLastChunk=n;diag.sample('deliver',n-at);diag.bucket(n,'deliver',n-at)}
 function diagRecv(m){const e=m.event||{},now=Date.now();if(m.wt)diag.sample('transport',now-m.wt);if(e.type==='word_progress'){const key=e.ayah+':'+(e.matched_indices||[]).length+':'+e.word_index;if(key!==diagWpKey){diagWpKey=key;diagWpRecvAt=now;diag.mark('ev_recv',{type:'word_progress',wt:m.wt||now,a:m.a})}}else if(e.type==='verse_match'){diagWpRecvAt=(pendingWordProgress[0]&&pendingWordProgress[0].at)||now;diag.mark('ev_recv',{type:'verse_match',wt:m.wt||now,a:m.a})}}
 function diagEnabled(){try{if(new URLSearchParams(location.search).get('diag')==='1')localStorage.setItem('rattil-diag','1');return localStorage.getItem('rattil-diag')==='1'}catch{return false}}
-function renderDiagPanel(){if(!diagEnabled())return;const host=document.getElementById('diagPanel');if(!host)return;const report=buildDiagReport(diag.snapshot(),diagWorkerLog);host.hidden=false;document.getElementById('diagText').textContent=renderDiagLines(report).join('\n');document.getElementById('diagJson').value=JSON.stringify(report);window.__rattilDiag=report;window.__rattilDiagRaw={main:diag.snapshot(),worker:diagWorkerLog}}
+function renderDiagPanel(){if(!diagEnabled())return;const host=document.getElementById('diagPanel');if(!host)return;const diagSession=currentRecitationSession||savedRecitationHistory().at(-1)||null;const diagSaved=diagSession?{unavailable:!!diagSession.rescoreUnavailable,stats:diagSession.rescoreStats||null,unreviewed:buildSessionSummary(diagSession).counts.unreviewed,unreviewedWords:unreviewedWordKeys(diagSession)}:null;const report=buildDiagReport(diag.snapshot(),diagWorkerLog,diagSaved);host.hidden=false;document.getElementById('diagText').textContent=renderDiagLines(report).join('\n');document.getElementById('diagJson').value=JSON.stringify(report);window.__rattilDiag=report;window.__rattilDiagRaw={main:diag.snapshot(),worker:diagWorkerLog}}
 document.getElementById('diagCopy')?.addEventListener('click',async()=>{const ta=document.getElementById('diagJson'),btn=document.getElementById('diagCopy');try{await navigator.clipboard.writeText(ta.value);btn.textContent='تم النسخ'}catch{ta.hidden=false;ta.select();btn.textContent='حدّد النص وانسخه'}});
 function showPerfSummary(){
  const summary=latencyStats.summary();if(!summary)return;
@@ -621,6 +625,9 @@ document.getElementById('practiceFromPage').addEventListener('click',async()=>{s
 document.getElementById('clearSessionHistory').addEventListener('click',()=>document.getElementById('clearHistoryDialog').showModal());
 document.getElementById('confirmClearHistory').addEventListener('click',()=>{writeStore('rattil-recitation-history','[]');renderRecitationHistory();renderProgress();updatePracticeSummary();renderMistakesLog();document.getElementById('clearHistoryDialog').close();announce('تم حذف سجل التسميع من هذا الجهاز.');});
 renderRecitationHistory();renderProgress();renderMistakesLog();
+// With ?diag=1 the panel also exports the last saved session's counters, so
+// diagnosing a finished session never requires recording a new one.
+try{renderDiagPanel()}catch{}
 
 window.addEventListener('pagehide',()=>{if(liveAudioContext)stopLiveRecording();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&liveAudioContext)stopLiveRecording();});
