@@ -124,10 +124,17 @@ async function rescoreRun(runStart, runEnd, epoch) {
     return;
   }
   const lo = Math.max(0, runStart - VAD_PAD), hi = Math.min(audioTotal, runEnd + VAD_PAD);
-  const inRun = matchLog.filter(m => m.at >= lo && m.at <= hi);
+  // Preserve the established match-scoped pass. A repeated ayah can produce
+  // fresh word_progress without another verse_match, so use it only as fallback.
+  let inRun = matchLog.filter(m => m.at >= lo && m.at <= hi);
+  if(!inRun.length){
+    inRun=progressLog.filter(m=>m.at>=lo&&m.at<=hi);
+    if(!inRun.length){const prior=progressLog.filter(m=>m.at<=hi).at(-1);if(prior&&lo-prior.at<=2*16000)inRun=[prior];}
+  }
   if (!inRun.length) { rescoreDone("no_match"); return; }
-  const surah = inRun[0].surah, from = inRun[0].ayah, to = inRun[inRun.length - 1].ayah;
+  const surah = inRun[0].surah;
   if (!inRun.every(m => m.surah === surah)) { rescoreDone("cross_surah"); return; }
+  const from = Math.min(...inRun.map(m => m.ayah)), to = Math.max(...inRun.map(m => m.ayah));
   try {
     diag.mark("rescore_start", { samples: hi - lo });
     scorer.zipformer?.reset();
@@ -146,13 +153,15 @@ async function rescoreRun(runStart, runEnd, epoch) {
         || (v.state === "ok" && typeof v.repGain === "number" && Number.isFinite(v.repGain) && v.repGain > 0)
       );
       const key = v.surah + ":" + v.ayah;
-      if (!byAyah.has(key)) byAyah.set(key, { surah: v.surah, ayah: v.ayah, flagged: new Set() });
+      if (!byAyah.has(key)) byAyah.set(key, { surah: v.surah, ayah: v.ayah, flagged: new Set(), clearable: new Set() });
       if (bad) byAyah.get(key).flagged.add(v.word);
+      else if(v.state==='ok')byAyah.get(key).clearable.add(v.word);
     }
     for (const [key, cur] of byAyah) {
       const prev = flaggedWords.get(key) || new Set();
       const add = [...cur.flagged].filter(w => !prev.has(w));
-      const cleared = [...prev].filter(w => !cur.flagged.has(w));
+      const cleared = [...prev].filter(w => cur.clearable.has(w));
+      for(const w of prev)if(!cur.clearable.has(w))cur.flagged.add(w);
       if (add.length) post("event", { event: { type: "word_issues", surah: cur.surah, ayah: cur.ayah, words: add } });
       if (cleared.length) post("event", { event: { type: "word_issues", surah: cur.surah, ayah: cur.ayah, cleared } });
       flaggedWords.set(key, cur.flagged);
