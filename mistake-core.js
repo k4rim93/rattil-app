@@ -82,11 +82,12 @@ export function mistakeKindLabel(kind) {
 //   hinted   = the user asked for a hint; counted on its own, never as
 //              independent correct recitation.
 //   unreviewed = no usable acoustic verdict (missing, skipped or pending).
-// savedVerdicts tells the two kinds of "no verdict" apart: false means the
-// session holds no saved acoustic results at all (a legacy record, or a
-// session whose rescore never ran) — the record cannot say whether the words
-// were inspected live; true means this build did persist verdicts, so a word
-// without one is known-unreviewed.
+// savedVerdicts tells the two kinds of "no verdict" apart. Since the capture
+// fix, every session is created with a verdicts object (possibly empty), so
+// its PRESENCE marks a record written by a verdict-collecting build: a word
+// without a verdict is then known-unreviewed. A record with no verdicts
+// property at all predates persistence — the record cannot say whether the
+// words were inspected live, so coverage is honestly unknown.
 // "correct" never means tajweed-valid and never covers unexamined words.
 export function buildSessionSummary(session) {
   const words = Array.isArray(session?.words) ? session.words : [];
@@ -127,17 +128,26 @@ export function buildSessionSummary(session) {
     counts,
     mistakes,
     rescoreUnavailable: Boolean(session?.rescoreUnavailable),
-    savedVerdicts: Object.keys(verdicts).length > 0,
+    savedVerdicts: session?.verdicts != null && typeof session.verdicts === 'object',
+    rescoreStats: session?.rescoreStats || null,
     mode: session?.mode || null,
     startedAt: session?.startedAt || 0,
   };
+}
+
+// A verdict that acoustically confirms the word was read correctly in that
+// session: the same bar the summary's "correct" bucket uses. Tracker paint
+// alone never counts.
+export function isAcousticCorrect(verdict) {
+  return classifyVerdict(verdict).bucket === 'correct';
 }
 
 // Aggregate mistakes across saved sessions: one row per word, counting how
 // many sessions flagged it. A word flagged twice in one session counts once.
 export function aggregateMistakes(sessions, { limit = 20 } = {}) {
   const map = new Map();
-  for (const session of Array.isArray(sessions) ? sessions : []) {
+  const list = Array.isArray(sessions) ? sessions : [];
+  for (const session of list) {
     const summary = buildSessionSummary(session);
     const at = Number(session?.endedAt || session?.startedAt) || 0;
     const seen = new Set();
@@ -145,7 +155,7 @@ export function aggregateMistakes(sessions, { limit = 20 } = {}) {
       const key = `${mistake.surah}:${mistake.ayah}:${mistake.index}`;
       if (seen.has(key)) continue;
       seen.add(key);
-      const current = map.get(key) || { ...mistake, sessions: 0, first: at, last: 0 };
+      const current = map.get(key) || { ...mistake, sessions: 0, first: at, last: 0, reviewed: 0 };
       current.sessions++;
       current.kind = mistake.kind || current.kind;
       current.text = mistake.text || current.text;
@@ -154,7 +164,22 @@ export function aggregateMistakes(sessions, { limit = 20 } = {}) {
       map.set(key, current);
     }
   }
+  // Remediation: a mistake is marked reviewed only when a LATER session's
+  // saved verdict for the same word acoustically confirms it correct. The
+  // flagging sessions stay in the count — the history is never rewritten.
+  for (const session of list) {
+    const startedAt = Number(session?.startedAt) || 0;
+    const verdicts = session?.verdicts && typeof session.verdicts === 'object' ? session.verdicts : null;
+    if (!verdicts || !startedAt) continue;
+    for (const [key, verdict] of Object.entries(verdicts)) {
+      const current = map.get(key);
+      if (!current || current.reviewed) continue;
+      if (startedAt <= current.last) continue;
+      if (!isAcousticCorrect(verdict)) continue;
+      current.reviewed = Number(session?.endedAt || session?.startedAt) || 0;
+    }
+  }
   return [...map.values()]
-    .sort((a, b) => (b.last - a.last) || (b.sessions - a.sessions))
+    .sort((a, b) => (Number(Boolean(a.reviewed)) - Number(Boolean(b.reviewed))) || (b.last - a.last) || (b.sessions - a.sessions))
     .slice(0, limit);
 }
