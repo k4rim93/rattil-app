@@ -71,3 +71,36 @@ test('malformed entries are ignored', () => {
   assert.equal(groups.length, 1);
   assert.equal(groups[0].ayah ?? groups[0].from, 2);
 });
+
+test('a partially covered ayah is re-planned so its remaining words get an attempt', () => {
+  const log = [
+    { surah: 55, ayah: 1, at: 5 * S, w: 0 }, { surah: 55, ayah: 1, at: 7 * S, w: 3 },
+    { surah: 55, ayah: 1, at: 9 * S, w: 5 },
+  ];
+  // Live rescore was cut off mid-ayah: it posted words 0..2 only.
+  const covered = { ayahs: new Set(['55:1']), words: new Map([['55:1', new Set([0, 1, 2])]]) };
+  const groups = planFinalPass(log, covered, 60 * S);
+  assert.equal(groups.length, 1);
+  assert.equal(groups[0].from, 1);
+});
+
+test('a fully covered ayah is skipped even with word-level coverage info', () => {
+  const log = [
+    { surah: 55, ayah: 1, at: 5 * S, w: 0 }, { surah: 55, ayah: 1, at: 9 * S, w: 5 },
+    { surah: 55, ayah: 2, at: 20 * S, w: 0 }, { surah: 55, ayah: 2, at: 24 * S, w: 2 },
+  ];
+  const covered = {
+    ayahs: new Set(['55:1', '55:2']),
+    words: new Map([['55:1', new Set([0, 1, 2, 3, 4, 5])], ['55:2', new Set([0, 1])]]),
+  };
+  const groups = planFinalPass(log, covered, 60 * S);
+  assert.deepEqual(groups.map(g => g.from), [2]);
+});
+
+test('coverage without word info falls back to ayah-level skip', () => {
+  const log = [{ surah: 55, ayah: 1, at: 5 * S, w: 0 }, { surah: 55, ayah: 1, at: 9 * S, w: 6 }];
+  const groups = planFinalPass(log, { ayahs: new Set(['55:1']), words: new Map() }, 60 * S);
+  assert.equal(groups.length, 1);
+  const noWords = planFinalPass([{ surah: 55, ayah: 1, at: 5 * S }], { ayahs: new Set(['55:1']), words: new Map() }, 60 * S);
+  assert.equal(noWords.length, 0);
+});
