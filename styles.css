@@ -269,9 +269,9 @@ body.light #refreshAppStatus.update-alert{background:#f6e9cd;border-color:#c0a25
 #view-home>.sky-bg .sky-phase.active{opacity:1}
 body[data-sky=day] #view-home>.sky-bg .sky-phase[data-phase=day]{width:200%;left:-100%;object-position:center top}
 body[data-sky=night] #view-home>.sky-bg .sky-phase[data-phase=night]{width:180%;left:-80%}
-#view-home>.sky-bg .sky-clouds{position:absolute;top:0;left:0;width:125%;height:100%;object-fit:cover;opacity:.55;animation:skyCloudDrift 10s linear infinite alternate;will-change:transform;pointer-events:none}
+#view-home>.sky-bg .sky-clouds{position:absolute;top:0;left:0;width:125%;height:100%;object-fit:cover;opacity:.55;animation:skyCloudDrift 6.5s linear infinite alternate;will-change:transform;pointer-events:none}
 #view-home>.sky-bg .sky-tint{position:absolute;inset:0;background:linear-gradient(180deg,#0716294d 0%,#07162966 38%,#071522b8 100%);transition:background 2.5s ease-in-out}
-@keyframes skyCloudDrift{from{transform:translateX(-95px)}to{transform:translateX(0)}}
+@keyframes skyCloudDrift{from{transform:translateX(-20%)}to{transform:translateX(0)}}
 body[data-sky=night] #view-home>.sky-bg .sky-tint{background:linear-gradient(180deg,#07162914 0%,#07162933 40%,#07152299 100%)}
 body[data-sky=sunset] #view-home>.sky-bg .sky-tint{background:linear-gradient(180deg,#11152530 0%,#1015224d 40%,#071522a6 100%)}
 body[data-sky=dawn] #view-home>.sky-bg .sky-tint{background:linear-gradient(180deg,#0a183033 0%,#0a18304d 42%,#071522a8 100%)}
@@ -289,7 +289,7 @@ body[data-sky=dawn] #view-home>.sky-bg .sky-tint{background:linear-gradient(180d
 #view-home .action-line[data-view=practice] .action-icon{background:linear-gradient(135deg,#e8d28e,#b5964c);color:#241f12;border:0;width:42px;height:42px}
 #view-home .continue-row{margin-top:16px;border:1px solid #ffffff2b;border-radius:16px;background:#0e1c1bb8;backdrop-filter:blur(18px) saturate(1.25);-webkit-backdrop-filter:blur(18px) saturate(1.25);padding:12px 14px}
 #view-home .continue-row .section-symbol{background:#ffffff12;border-color:#ffffff2b}
-#view-home .home-footer{text-shadow:0 1px 10px #0009;display:none}
+#view-home .home-footer{text-shadow:0 1px 10px #0009;margin-top:90px;margin-bottom:30px}
 body:has(#view-home.active) .topbar{background:transparent;border-bottom-color:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;justify-content:flex-end}
 body:has(#view-home.active) .topbar .brand,body:has(#view-home.active) .topbar #backButton{display:none}
 body:has(#view-home.active) .top-actions .icon-button{background:transparent;border-color:transparent}
