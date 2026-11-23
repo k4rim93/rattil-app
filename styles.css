@@ -307,3 +307,7 @@ body:has(#view-home.active) .tabbar button{text-shadow:0 1px 8px #000c}
 #view-home .home-footer{order:4}
 /* Floating glass tabbar: keep last content scrollable clear of the pill + safe area. */
 .app-shell{padding-bottom:calc(124px + env(safe-area-inset-bottom))}
+
+/* Static sky under Reduce Motion; unset location spans the prayer grid. */
+#view-home .prayer-time-row.prayer-unset{grid-column:1/-1;display:block;width:100%;text-align:center;padding:18px 8px;line-height:1.9}
+@media(prefers-reduced-motion:reduce){#view-home>.sky-bg .sky-clouds{animation:none!important;transform:translateX(-10%)}#view-home>.sky-bg .sky-phase{transition:none!important}}
