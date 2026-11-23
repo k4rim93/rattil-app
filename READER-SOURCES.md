@@ -23,3 +23,6 @@ Plain tap selects the ayah only. A550ms primary-pointer hold opens the existing 
 
 ## Preview: cleaner ayah sheet
 Provider credits, both provider rights links and streaming caveats are retained under Settings > Recitation sources and usage rights, outside the ayah sheet. The redundant gesture hint was removed from the sheet. The sheet ends after repeat unless tafsir is explicitly expanded; it leaves a12px plus safe-area gap above the screen bottom.
+
+## Preview: quick playback menu and continuation
+Long press and Enter/Space open an original Rattil quick menu: current ayah only, continue from this ayah, or more options. Plain tap remains silent selection. Continue mode honors each ayah repeat before advancing, validates current/next Quran metadata sequential numbering, follows source page references and spotlight across pages and surahs, and stops at114:6. Manual navigation, new selection, mode/reciter change and leaving the reader stop playback. Automatic page loads preserve only the active playback sequence; failed page/metadata/audio loads never guess the next reference. Playback remains browser-dependent, especially background/Safari.
