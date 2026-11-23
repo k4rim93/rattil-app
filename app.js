@@ -36,10 +36,11 @@ function renderView(name,scrollY=0){
   requestAnimationFrame(()=>window.scrollTo({top:scrollY,behavior:'instant'}));
   if(name==='quran'){loadIndexData();if(!pageLoaded)loadPage(page)}
   if(name==='practice')loadRecitationCatalog();
-  if(name==='progress')renderProgress();
+  if(name==='today')renderProgress();
 }
 function scrollToTop(){const current=viewHistory.at(-1);if(current)current.scrollY=0;window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})}
 function showView(name){
+  if(name==='progress')name='today';
   if(!document.getElementById(`view-${name}`))return;
   const current=viewHistory.at(-1);
   if(current?.name===name){scrollToTop();return}
