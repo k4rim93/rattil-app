@@ -52,7 +52,7 @@ await copyFile(join(root, "manifest.webmanifest"), join(pub, "manifest.webmanife
 await copyFile(join(root, "icon.svg"), join(pub, "icon.svg"));
 await copyFile(join(root, "design-previews", "rattil-wordmark", "rattil-wordmark.svg"), join(pub, "rattil-wordmark.svg"));
 await copyFile(join(root, "design-previews", "rattil-wordmark", "rattil-wordmark-display.svg"), join(pub, "rattil-wordmark-display.svg"));
-for (const icon of ["apple-touch-icon.png", "icon-192.png", "icon-512.png", "favicon-64.png"]) {
+for (const icon of ["apple-touch-icon.png", "icon-192.png", "icon-512.png", "favicon-64.png", "sky-portrait.jpg", "cloud-drift.webp"]) {
   const encodedIcon = await readFile(join(root, "icon-assets", `${icon}.b64`), "utf8");
   await writeFile(join(pub, icon), Buffer.from(encodedIcon.trim(), "base64"));
 }
