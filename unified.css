@@ -23,3 +23,6 @@ body.light:not(.reader-view) .daily-focus h2,body.light:not(.reader-view) .daily
 
 /* Reader gestures: scrolling cancels the hold; no native text/callout menu. */
 .reader-view .mushaf-svg-host,.reader-view .mushaf-svg-host *{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}.reader-view .un-ayah-hit{touch-action:pan-y pinch-zoom}
+
+/* Keep the ayah sheet clear of the iPhone home indicator. */
+#verseTools{bottom:calc(12px + env(safe-area-inset-bottom));margin-bottom:0;max-height:calc(82dvh - env(safe-area-inset-bottom));border-radius:24px;padding-bottom:18px}#verseTools .un-repeat{padding-bottom:0}#verseTools .un-sheet-head button:focus:not(:focus-visible){outline:none;box-shadow:none}.un-reader-credits{margin:20px 0 0;padding:14px 16px;background:#ffffff0b;border:1px solid #c8bd8844;border-radius:14px}.un-reader-credits summary{cursor:pointer;font-size:13px;min-height:28px;line-height:28px}.un-reader-credits .un-source{font-size:11px}body.light .un-reader-credits .un-source{color:#40563d}body.light .un-reader-credits a{color:#79601e}
