@@ -67,3 +67,5 @@ body.recitation-session-active .recitation-controls #stopRec:not(:disabled),body
 .mistakes-log-entry .error{font-family:var(--quran);font-size:17px;color:#ff938e;background:#78272577;border-radius:3px;padding:1px 4px}
 .mistakes-log-entry small{flex:1;min-width:180px;color:var(--muted);font-size:11px;line-height:1.7}
 .mistakes-log-entry .quiet-link{flex-shrink:0}
+.mistakes-log-entry.reviewed{opacity:.72}
+.mistakes-log-entry.reviewed>span:first-child{font-family:var(--quran);font-size:17px;color:var(--muted)}
