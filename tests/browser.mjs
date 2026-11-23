@@ -19,7 +19,7 @@ try{
  assert.equal(await page.locator('#appManifest').getAttribute('href'),'http://127.0.0.1:4173/rattil-app/manifest.webmanifest');
  await page.locator('#pagePickerButton').click();await page.locator('#pageInput').fill('1');await page.locator('#goToPageButton').click();await page.waitForFunction(()=>document.querySelector('.mushaf-svg')?.getAttribute('aria-label')?.endsWith('١'));
  await page.screenshot({path:'/downloads/rattil-fatiha.png',fullPage:true});
- await page.locator('.tabbar [data-view=practice]').click();await page.locator('#loadAsr').click();
+ await page.locator('#readerHome').click();await page.locator('.tabbar [data-view=practice]').click();await page.locator('#loadAsr').click();
  await page.waitForFunction(()=>document.querySelector('#loadAsr').textContent==='المحرك جاهز',{timeout:process.env.REAL_ASR?180000:10000});
  if(process.env.REAL_ASR){console.log('REAL MODEL INITIALIZED at non-root path');await page.screenshot({path:'/downloads/rattil-model-ready.png',fullPage:true});}
  else{
@@ -30,13 +30,13 @@ try{
  await page.evaluate(()=>{window.__engine.emit({type:'verse_match',surah:1,ayah:1});window.__engine.emit({type:'word_progress',surah:1,ayah:1,matched_indices:[0,1],word_index:2});window.__engine.emit({type:'correction',state:{phase:'error',issue:{surah:1,ayah:1,word:2,words:1,kind:'possible_omission'}}});window.__engine.emit({type:'correction',state:{phase:'error',issue:{surah:1,ayah:1,word:3,words:1,kind:'possible_vowel'}}});});
  await page.screenshot({path:'/downloads/rattil-recite.png',fullPage:true});
  await page.locator('#stopRec').click();await page.waitForFunction(()=>JSON.parse(localStorage.getItem('rattil-recitation-history')||'[]').length===1);
- await page.locator('#exitRecitation').click();await page.locator('.recitation-history-entry').click();await page.screenshot({path:'/downloads/rattil-results.png',fullPage:true});
+ if(await page.locator('#sessionSummaryDialog').isVisible())await page.locator('#sessionSummaryDialog button[value=cancel]').click();await page.locator('#exitRecitation').click();await page.locator('.recitation-history-entry').click();await page.screenshot({path:'/downloads/rattil-results.png',fullPage:true});
  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('rattil-recitation-history')));assert.equal(saved.length,1);assert.equal(saved[0].words[0].hinted,true);assert.equal(saved[0].words.find(w=>w.index===2).status,'error');assert.equal(saved[0].words.find(w=>w.index===3).status,'uncertain');
  await page.reload();await page.locator('.tabbar [data-view=progress]').click();assert.equal(await page.locator('#progressSessions').textContent(),'١');await page.screenshot({path:'/downloads/rattil-progress.png',fullPage:true});
  // Regression: last two surahs are on page 604, not page 1.
  await page.locator('.tabbar [data-view=quran]').click();await page.locator('#indexButton').click();await page.waitForSelector('.surah-option');
  for(const name of ['الفلق','الناس']){await page.locator('#surahSearch').fill(name);const row=page.locator('#surahList .surah-option');await row.waitFor();assert.match(await row.textContent(),/٦٠٤/)}
- await page.locator('#closeMushafIndex').click();await page.locator('.tabbar [data-view=practice]').click();await page.locator('#clearSessionHistory').click();await page.locator('#clearHistoryDialog [value=cancel]').click();assert.equal(await page.locator('.recitation-history-entry').count(),1);await page.locator('#clearSessionHistory').click();await page.locator('#confirmClearHistory').click();assert.equal(await page.locator('.recitation-history-entry').count(),0);
+ await page.locator('#closeMushafIndex').click();await page.locator('#readerHome').click();await page.locator('.tabbar [data-view=practice]').click();await page.locator('#clearSessionHistory').click();await page.locator('#clearHistoryDialog [value=cancel]').click();assert.equal(await page.locator('.recitation-history-entry').count(),1);await page.locator('#clearSessionHistory').click();await page.locator('#confirmClearHistory').click();assert.equal(await page.locator('.recitation-history-entry').count(),0);
  // Follow mode: live heard transcript, location candidates, first-phrase backfill, no duplicate verse card
  assert.equal(await page.evaluate(()=>document.querySelector('#recitationFocus')),null);
  if(await page.locator('#loadAsr').isEnabled())await page.locator('#loadAsr').click();
@@ -57,7 +57,7 @@ try{
  const follow=await page.evaluate(()=>JSON.parse(localStorage.getItem('rattil-recitation-history'))[0]);
  const restored=follow.words.find(w=>w.surah===19&&w.ayah===1&&w.status==='uncertain');
  assert.ok(restored&&restored.text.includes('ك'),'opening words recited before the location lock are saved as heard/uncertain');
- await page.locator('#exitRecitation').click();await page.locator('#clearSessionHistory').click();await page.locator('#confirmClearHistory').click();
+ if(await page.locator('#sessionSummaryDialog').isVisible())await page.locator('#sessionSummaryDialog button[value=cancel]').click();await page.locator('#exitRecitation').click();await page.locator('#clearSessionHistory').click();await page.locator('#confirmClearHistory').click();
  }
  await page.evaluate(async()=>{await navigator.serviceWorker.ready});await page.reload();await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));await context.setOffline(true);await page.reload();await page.locator('.tabbar [data-view=quran]').click();await page.waitForSelector('.mushaf-svg');await context.setOffline(false);console.log('PASS: built shell and previously opened mushaf work offline.');
  assert.deepEqual(errors,[]);

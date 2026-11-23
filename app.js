@@ -24,6 +24,8 @@ const viewHistory=[{name:document.querySelector('.view.active')?.id.replace('vie
 function renderView(name,scrollY=0){
   const target=document.getElementById(`view-${name}`);if(!target)return;
   views.forEach(view=>view.classList.toggle('active',view===target));
+  document.body.dataset.view=name;document.body.classList.toggle('reader-view',name==='quran');if(name!=='quran'){document.body.classList.remove('immersive-reading');document.documentElement.classList.remove('immersive-reading')}
+  window.dispatchEvent(new CustomEvent('rattil-view',{detail:{name}}));
   document.getElementById('backButton').hidden=viewHistory.length<=1;
   document.querySelectorAll('.tabbar [data-view]').forEach(button=>{
     const active=button.dataset.view===name;button.classList.toggle('active',active);
@@ -32,7 +34,7 @@ function renderView(name,scrollY=0){
   document.title=`رتل — ${target.dataset.title||'رفيقك مع القرآن'}`;
   document.getElementById('mainContent').focus({preventScroll:true});
   requestAnimationFrame(()=>window.scrollTo({top:scrollY,behavior:'instant'}));
-  if(name==='quran'&&!pageLoaded)loadPage(page);
+  if(name==='quran'){loadIndexData();if(!pageLoaded)loadPage(page)}
   if(name==='practice')loadRecitationCatalog();
   if(name==='progress')renderProgress();
 }
@@ -409,6 +411,7 @@ function renderPageSvg(source,requestedPage){
   root.replaceChildren(mounted);
   document.getElementById('paperPageNumber').textContent=toArabic(requestedPage);pageLoaded=true;
   connectAyahMarkers(requestedPage,mounted);
+  window.dispatchEvent(new CustomEvent('rattil-page',{detail:{page:requestedPage,svg:mounted}}));
 }
 async function connectAyahMarkers(requestedPage,svg){
   try{
@@ -453,7 +456,7 @@ function renderSavedIndexes(){
   const ordering=(a,b)=>sort==='page'?a.page-b.page:b.updatedAt-a.updatedAt;
   notes.sort(ordering);bookmarks.sort(ordering);
   const noteList=document.getElementById('notesList'),bookmarkList=document.getElementById('bookmarksList');noteList.replaceChildren();bookmarkList.replaceChildren();
-  if(!notes.length)noteList.innerHTML='<div class="index-empty"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M19 3l2 2-9 9-3 1 1-3z"/></svg></span><strong>لا توجد ملاحظات</strong><small>اضغط مطولًا على علامة آية في صفحة المصحف لإضافة ملاحظة.</small></div>';
+  if(!notes.length)noteList.innerHTML='<div class="index-empty"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M19 3l2 2-9 9-3 1 1-3z"/></svg></span><strong>لا توجد ملاحظات</strong><small>اضغط على الآية في صفحة المصحف، ثم اختار ملاحظة.</small></div>';
   else notes.forEach(note=>noteList.append(makeIndexRow({title:`${note.surahName||getSurahName(note.surah)} · الآية ${toArabic(note.ayah)}`,detail:`صفحة ${toArabic(note.page)} · ${new Intl.DateTimeFormat('ar-EG',{dateStyle:'medium'}).format(note.updatedAt)}`,page:note.page,kind:'note',reference:note})));
   if(!bookmarks.length)bookmarkList.innerHTML='<div class="index-empty"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4.5A1.5 1.5 0 0 1 7.5 3h9A1.5 1.5 0 0 1 18 4.5V21l-6-4-6 4z"/></svg></span><strong>لا توجد صفحات محفوظة</strong><small>احفظ الصفحة من شريط المصحف للوصول إليها هنا.</small></div>';
   else bookmarks.forEach(item=>{const ref=indexData.meta?.pages?.references?.[item.page-1];const detail=ref?`${getSurahName(ref.surah)} · الآية ${toArabic(ref.ayah)} · حُفظت ${new Intl.DateTimeFormat('ar-EG',{dateStyle:'medium'}).format(item.updatedAt)}`:`حُفظت ${new Intl.DateTimeFormat('ar-EG',{dateStyle:'medium'}).format(item.updatedAt)}`;bookmarkList.append(makeIndexRow({title:`صفحة ${toArabic(item.page)}`,detail,page:item.page}))});
@@ -494,15 +497,15 @@ document.getElementById('surahSearch').addEventListener('input',renderSurahs);
 document.querySelectorAll('[data-sort]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-sort]').forEach(item=>item.classList.toggle('selected',item===button));renderSavedIndexes()}));
 document.getElementById('bookmarkButton').addEventListener('click',event=>{
   const button=event.currentTarget;let saved=getBookmarks();if(!saved.length){const legacy=Number(readStore('rattil-bookmarked-page','0'));if(legacy)saved=[{page:legacy,updatedAt:Date.now()}]}
-  if(saved.some(item=>item.page===page)){saved=saved.filter(item=>item.page!==page);announce('اتشالت الصفحة من المرجعيات')}else{saved.push({page,updatedAt:Date.now()});announce(`اتحفظت الصفحة ${toArabic(page)}`)}
+  if(saved.some(item=>item.page===page)){saved=saved.filter(item=>item.page!==page);announce('اتشال مرجع الصفحة')}else{saved.push({page,updatedAt:Date.now()});announce(`اتضاف مرجع للصفحة ${toArabic(page)}، مش تنزيل`)}
   writeStore('rattil-bookmarks',JSON.stringify(saved));syncBookmark();if(mushafIndex.open)renderSavedIndexes();
 });
 function syncBookmark(){let saved=getBookmarks();if(!saved.length){const legacy=Number(readStore('rattil-bookmarked-page','0'));if(legacy)saved=[{page:legacy}]}const active=saved.some(item=>item.page===page);const button=document.getElementById('bookmarkButton');button.classList.toggle('saved',active);button.setAttribute('aria-pressed',String(active));button.querySelector('span').textContent=active?'محفوظة':'حفظ الصفحة'}
-const previousSetPage=setPage;setPage=function(next){previousSetPage(next);syncBookmark()};syncBookmark();
+const previousSetPage=setPage;setPage=function(next){previousSetPage(next);syncBookmark();window.dispatchEvent(new CustomEvent('rattil-page-changing'))};syncBookmark();
 let touchStart=null;const mushafPaper=document.querySelector('.mushaf-paper');
 mushafPaper.addEventListener('touchstart',event=>{if(event.changedTouches.length)touchStart={x:event.changedTouches[0].clientX,y:event.changedTouches[0].clientY}},{passive:true});
 mushafPaper.addEventListener('touchend',event=>{if(!touchStart||!event.changedTouches.length)return;const touch=event.changedTouches[0],dx=touch.clientX-touchStart.x,dy=touch.clientY-touchStart.y;touchStart=null;if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.25)setPage(page+(dx>0?1:-1))},{passive:true});
-document.addEventListener('keydown',event=>{if(document.getElementById('view-quran').classList.contains('active')&&!pagePicker.open&&!mushafIndex.open&&!ayahNoteDialog.open){if(event.key==='ArrowLeft')setPage(page+1);if(event.key==='ArrowRight')setPage(page-1)}});
+document.addEventListener('keydown',event=>{if(document.getElementById('view-quran').classList.contains('active')&&!pagePicker.open&&!mushafIndex.open&&!ayahNoteDialog.open&&!document.querySelector('dialog[open]')){if(event.key==='ArrowLeft')setPage(page+1);if(event.key==='ArrowRight')setPage(page-1)}});
 
 let activeNote=null;
 function noteKey(reference){return `${reference.surah}:${reference.ayah}`}
@@ -512,9 +515,8 @@ document.getElementById('saveAyahNote').addEventListener('click',()=>{const text
 document.getElementById('deleteAyahNote').addEventListener('click',()=>{writeStore('rattil-ayah-notes',JSON.stringify(getNotes().filter(note=>noteKey(note)!==noteKey(activeNote))));ayahNoteDialog.close();announce('اتحذفت الملاحظة');if(mushafIndex.open)renderSavedIndexes()});
 
 const immersiveButton=document.getElementById('immersiveButton');
-function setImmersive(active){document.body.classList.toggle('immersive-reading',active);document.documentElement.classList.toggle('immersive-reading',active);immersiveButton.setAttribute('aria-pressed',String(active));immersiveButton.textContent=active?'إنهاء ملء الشاشة':'ملء الشاشة';immersiveButton.setAttribute('aria-label',active?'إنهاء وضع القراءة الغامر':'تفعيل وضع القراءة الغامر');if(!active&&document.fullscreenElement)document.exitFullscreen?.().catch(()=>{})}
-immersiveButton.addEventListener('click',async()=>{const active=!document.body.classList.contains('immersive-reading');setImmersive(active);if(active&&document.documentElement.requestFullscreen){try{await document.documentElement.requestFullscreen()}catch{/* يبقى وضع القراءة داخل الصفحة */}}});
-document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&document.body.classList.contains('immersive-reading'))setImmersive(false)});
+function setImmersive(active){document.body.classList.toggle('immersive-reading',active);document.documentElement.classList.toggle('immersive-reading',active);immersiveButton.setAttribute('aria-pressed',String(active));immersiveButton.textContent=active?'إظهار الأدوات':'إخفاء الأدوات';immersiveButton.setAttribute('aria-label',active?'إظهار أدوات القراءة':'إخفاء أدوات القراءة')}
+immersiveButton.addEventListener('click',()=>setImmersive(!document.body.classList.contains('immersive-reading')));
 
 const today=new Date();const dateText=new Intl.DateTimeFormat('ar-EG',{weekday:'long',day:'numeric',month:'long'}).format(today);
 document.querySelectorAll('#todayDate,#todayDate2').forEach(node=>node.textContent=dateText);
@@ -550,7 +552,7 @@ function formatTime(date){return new Intl.DateTimeFormat('ar-EG',{hour:'numeric'
 function formatCompactPrayerTime(date){return formatTime(date).replace(/\s*[صم]$/,'')}
 let nextPrayerAt=null;
 let skyPhase='';
-function applySkyPhase(phase){if(!phase||phase===skyPhase)return;skyPhase=phase;document.body.dataset.sky=phase;document.querySelectorAll('#view-home .sky-phase').forEach(img=>img.classList.toggle('active',img.dataset.phase===phase))}
+function applySkyPhase(phase){if(!phase||phase===skyPhase)return;skyPhase=phase;document.body.dataset.sky=phase;document.querySelectorAll('.sky-bg .sky-phase').forEach(img=>img.classList.toggle('active',img.dataset.phase===phase))}
 function skyPhaseFromTimes(times,now){const m=60000,at=value=>value instanceof Date?value.getTime():0,fajr=at(times.fajr),sunrise=at(times.sunrise),maghrib=at(times.maghrib),t=now.getTime();if(!fajr||!sunrise||!maghrib)return null;if(t>=fajr-30*m&&t<sunrise+45*m)return'dawn';if(t>=sunrise+45*m&&t<maghrib-45*m)return'day';if(t>=maghrib-45*m&&t<maghrib+30*m)return'sunset';return'night'}
 function skyPhaseFallback(now){const h=now.getHours()+now.getMinutes()/60;if(h>=4.5&&h<7)return'dawn';if(h>=7&&h<16.5)return'day';if(h>=16.5&&h<19)return'sunset';return'night'}
 function updatePrayerCountdown(){
@@ -664,4 +666,6 @@ try{renderDiagPanel()}catch{}
 window.addEventListener('pagehide',()=>{if(liveAudioContext)stopLiveRecording();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&liveAudioContext)stopLiveRecording();});
 
-installAppUpdate({button:document.getElementById('refreshApp'),status:document.getElementById('refreshAppStatus'),setApplying:value=>appUpdating=value,announce,isBusy:()=>Boolean(recitationStarting||liveMediaStream||liveAudioContext||recitationStopping||currentRecitationSession||settledUiTasks.size)});
+installAppUpdate({button:document.getElementById('refreshApp'),status:document.getElementById('refreshAppStatus'),setApplying:value=>appUpdating=value,announce:text=>{document.getElementById('refreshAppStatus').textContent=text},isBusy:()=>Boolean(recitationStarting||liveMediaStream||liveAudioContext||recitationStopping||currentRecitationSession||settledUiTasks.size)});
+
+import('./unified.js').then(({initUnified})=>initUnified({showView,setPage,getPage:()=>page,getSurahName,openAyahNote,announce,toArabic,readStore,writeStore,setImmersive}));

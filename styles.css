@@ -264,17 +264,17 @@ body.recitation-session-active .clear-asr-cache,body.recitation-session-active .
 #refreshAppStatus.update-alert::before{content:"⬆ "}
 body.light #refreshAppStatus.update-alert{background:#f6e9cd;border-color:#c0a259;color:#6d5722}
 /* Glass home preview: full-bleed moving sky behind fixed, readable controls. */
-#view-home>.sky-bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:#0a1524}
-#view-home>.sky-bg .sky-phase{position:absolute;left:0;top:-12%;width:100%;height:115%;object-fit:cover;opacity:0;transition:opacity 2.5s ease-in-out}
-#view-home>.sky-bg .sky-phase.active{opacity:1}
-body[data-sky=day] #view-home>.sky-bg .sky-phase[data-phase=day]{width:200%;left:-100%;object-position:center top}
-body[data-sky=night] #view-home>.sky-bg .sky-phase[data-phase=night]{width:180%;left:-80%}
-#view-home>.sky-bg .sky-clouds{position:absolute;top:0;left:0;width:125%;height:100%;object-fit:cover;opacity:.55;animation:skyCloudDrift 6.5s linear infinite alternate;will-change:transform;pointer-events:none}
-#view-home>.sky-bg .sky-tint{position:absolute;inset:0;background:linear-gradient(180deg,#0716294d 0%,#07162966 38%,#071522b8 100%);transition:background 2.5s ease-in-out}
+.app-shell>.sky-bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:#0a1524}
+.app-shell>.sky-bg .sky-phase{position:absolute;left:0;top:-12%;width:100%;height:115%;object-fit:cover;opacity:0;transition:opacity 2.5s ease-in-out}
+.app-shell>.sky-bg .sky-phase.active{opacity:1}
+body[data-sky=day] .app-shell>.sky-bg .sky-phase[data-phase=day]{width:200%;left:-100%;object-position:center top}
+body[data-sky=night] .app-shell>.sky-bg .sky-phase[data-phase=night]{width:180%;left:-80%}
+.app-shell>.sky-bg .sky-clouds{position:absolute;top:0;left:0;width:125%;height:100%;object-fit:cover;opacity:.55;animation:skyCloudDrift 6.5s linear infinite alternate;will-change:transform;pointer-events:none}
+.app-shell>.sky-bg .sky-tint{position:absolute;inset:0;background:linear-gradient(180deg,#0716294d 0%,#07162966 38%,#071522b8 100%);transition:background 2.5s ease-in-out}
 @keyframes skyCloudDrift{from{transform:translateX(-20%)}to{transform:translateX(0)}}
-body[data-sky=night] #view-home>.sky-bg .sky-tint{background:linear-gradient(180deg,#07162914 0%,#07162933 40%,#07152299 100%)}
-body[data-sky=sunset] #view-home>.sky-bg .sky-tint{background:linear-gradient(180deg,#11152530 0%,#1015224d 40%,#071522a6 100%)}
-body[data-sky=dawn] #view-home>.sky-bg .sky-tint{background:linear-gradient(180deg,#0a183033 0%,#0a18304d 42%,#071522a8 100%)}
+body[data-sky=night] .app-shell>.sky-bg .sky-tint{background:linear-gradient(180deg,#07162914 0%,#07162933 40%,#07152299 100%)}
+body[data-sky=sunset] .app-shell>.sky-bg .sky-tint{background:linear-gradient(180deg,#11152530 0%,#1015224d 40%,#071522a6 100%)}
+body[data-sky=dawn] .app-shell>.sky-bg .sky-tint{background:linear-gradient(180deg,#0a183033 0%,#0a18304d 42%,#071522a8 100%)}
 #view-home>*:not(.sky-bg){position:relative;z-index:1}
 #view-home .home-scene{background:none;border:0;box-shadow:none;border-radius:0;padding:26px 6px 10px;min-height:0}
 #view-home .home-scene .scene-sky{display:none}
@@ -310,4 +310,4 @@ body:has(#view-home.active) .tabbar button{text-shadow:0 1px 8px #000c}
 
 /* Static sky under Reduce Motion; unset location spans the prayer grid. */
 #view-home .prayer-time-row.prayer-unset{grid-column:1/-1;display:block;width:100%;text-align:center;padding:18px 8px;line-height:1.9}
-@media(prefers-reduced-motion:reduce){#view-home>.sky-bg .sky-clouds{animation:none!important;transform:translateX(-10%)}#view-home>.sky-bg .sky-phase{transition:none!important}}
+@media(prefers-reduced-motion:reduce){.app-shell>.sky-bg .sky-clouds{animation:none!important;transform:translateX(-10%)}.app-shell>.sky-bg .sky-phase{transition:none!important}}
