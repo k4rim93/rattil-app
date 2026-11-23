@@ -1,7 +1,8 @@
 // Manual version updates only. Never deletes user settings, history, models or Quran caches.
 export function installAppUpdate({button,status,isBusy,setApplying=()=>{},serviceWorker=navigator.serviceWorker,reload=()=>location.reload(),storage=sessionStorage,buildStorage=globalThis.localStorage,announce=()=>{},current=document.querySelector('meta[name="rattil-build"]')?.content}){
  const say=text=>{status.textContent=text};let running=false,sticky=false;
- const pending=storage.getItem('rattil-update-target');if(pending){storage.removeItem('rattil-update-target');const text=pending===current?'تم تحديث النسخة. نتائجك وإعداداتك محفوظة.':'لم يكتمل تحديث النسخة. حاول مرة أخرى عند الاتصال.';say(text);announce(text);}
+ const mark=on=>{status.classList?.toggle('update-alert',on);button.classList?.toggle('has-update',on)};
+ const pending=storage.getItem('rattil-update-target');if(pending){storage.removeItem('rattil-update-target');const done=pending===current;const text=done?'تم تحديث النسخة. نتائجك وإعداداتك محفوظة.':'لم يكتمل تحديث النسخة. حاول مرة أخرى عند الاتصال.';say(text);announce(text);mark(!done);}
  // Passive version status on every load: show the running build id and
  // whether it is the latest available. A plain reload is never proof of an
  // update — "latest" is only reported after an actual update check, and
@@ -16,10 +17,10 @@ export function installAppUpdate({button,status,isBusy,setApplying=()=>{},servic
    if(!serviceWorker||!navigator.onLine)throw Error('offline');
    const reg=await serviceWorker.getRegistration();if(!reg)throw Error('registration missing');
    await reg.update();const worker=await waitInstalled(reg);
-   if(worker){if(!running&&!sticky){say(`فيه نسخة أحدث جاهزة. اضغط تحديث النسخة لتثبيتها. النسخة الحالية: ${current}.`);announce('فيه نسخة أحدث جاهزة — من الإعدادات اضغط تحديث النسخة.')}return}
+   if(worker){if(!running&&!sticky){say(`فيه نسخة أحدث جاهزة. اضغط تحديث النسخة لتثبيتها. النسخة الحالية: ${current}.`);announce('فيه نسخة أحدث جاهزة — من الإعدادات اضغط تحديث النسخة.');mark(true)}return}
    const activeVersion=reg.active?await version(reg.active):null;
-   if(activeVersion&&activeVersion!==current){if(!running&&!sticky){say(`فيه نسخة أحدث جاهزة. اضغط تحديث النسخة لتثبيتها. النسخة الحالية: ${current}.`);announce('فيه نسخة أحدث جاهزة — من الإعدادات اضغط تحديث النسخة.')}return}
-   if(!running&&!sticky){say(justLoaded?`تم تحميل نسخة جديدة (${current}) — هي أحدث نسخة متاحة.`:`النسخة الحالية (${current}) هي أحدث نسخة متاحة.`);announce(justLoaded?`تم تحميل نسخة جديدة (${current}).`:`أنت على أحدث نسخة (${current}).`)}
+   if(activeVersion&&activeVersion!==current){if(!running&&!sticky){say(`فيه نسخة أحدث جاهزة. اضغط تحديث النسخة لتثبيتها. النسخة الحالية: ${current}.`);announce('فيه نسخة أحدث جاهزة — من الإعدادات اضغط تحديث النسخة.');mark(true)}return}
+   if(!running&&!sticky){say(justLoaded?`تم تحميل نسخة جديدة (${current}) — هي أحدث نسخة متاحة.`:`النسخة الحالية (${current}) هي أحدث نسخة متاحة.`);announce(justLoaded?`تم تحميل نسخة جديدة (${current}).`:`أنت على أحدث نسخة (${current}).`);mark(false)}
   })().catch(()=>{if(!running&&!sticky){say(`النسخة الحالية: ${current}. تعذّر التحقق من وجود نسخة أحدث.`);announce('تعذّر التحقق من وجود نسخة أحدث.')} });
  }
  const waitInstalled=reg=>new Promise((resolve,reject)=>{let timer;const check=()=>{if(reg.waiting){clearTimeout(timer);resolve(reg.waiting);return}const w=reg.installing;if(!w){clearTimeout(timer);resolve(null);return}if(w.state==='redundant'){clearTimeout(timer);reject(Error('install failed'));return}w.addEventListener('statechange',check,{once:true})};timer=setTimeout(()=>reject(Error('update timed out')),20000);check()});
@@ -31,8 +32,8 @@ export function installAppUpdate({button,status,isBusy,setApplying=()=>{},servic
    if(!serviceWorker||!navigator.onLine)throw Error('offline');
    const reg=await serviceWorker.getRegistration();if(!reg)throw Error('registration missing');
    await reg.update();const worker=await waitInstalled(reg);
-   if(isBusy()){say('التحديث جاهز. أوقف التسميع وانتظر حفظ النتيجة ثم اضغط تحديث النسخة.');return}
-   if(!worker){const activeVersion=reg.active?await version(reg.active):null;if(activeVersion&&activeVersion!==current){if(isBusy())return;setApplying(true);storage.setItem('rattil-update-target',activeVersion);reload();return}say('أنت على أحدث نسخة متاحة. نتائجك وإعداداتك محفوظة.');return}
+   if(isBusy()){say('التحديث جاهز. أوقف التسميع وانتظر حفظ النتيجة ثم اضغط تحديث النسخة.');mark(true);return}
+   if(!worker){const activeVersion=reg.active?await version(reg.active):null;if(activeVersion&&activeVersion!==current){if(isBusy())return;setApplying(true);storage.setItem('rattil-update-target',activeVersion);reload();return}say('أنت على أحدث نسخة متاحة. نتائجك وإعداداتك محفوظة.');mark(false);return}
    const target=await version(worker);if(!target)throw Error('unknown build');
    if(isBusy()){say('أوقف التسميع وانتظر حفظ النتيجة قبل التحديث.');return}
    setApplying(true);storage.setItem('rattil-update-target',target);say('جارٍ فتح النسخة الجديدة…');
