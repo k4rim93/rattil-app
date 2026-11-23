@@ -17,3 +17,6 @@ Streaming audio and tafsir require internet. Physical iPhone testing is still ne
 - The2:255 public source page corroborates the same start offset and recording: https://www.mp3quran.net/ar/yasser/2/255 .
 - Badr al-Turki is available whole-surah, but no timings were returned for read254 on23Nov2026. Not advertised as verse-capable.
 - Timings are source-provided navigation boundaries, not a guarantee of word-level precision. Streaming/seeking, background behavior and Safari may vary. The existing physical iPhone verification caveat remains.
+
+## Preview: explicit ayah playback gestures
+Plain tap selects the ayah only. A550ms primary-pointer hold opens the existing options sheet, cancelled by movement over10px, pointer cancellation, leaving the target, or scrolling. Keyboard Enter/Space opens options. No gesture or reciter selection starts audio; Play is explicit. Long-press generated clicks and native iOS callout/selection are suppressed in the reader. Physical Safari touch still needs user testing.
