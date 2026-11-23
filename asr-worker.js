@@ -64,10 +64,11 @@ const progressLog = [];
 // surah:ayah keys the live per-run rescore already posted verdicts for; the
 // final pass skips them.
 const postedVerdictAyahs = new Set();
+const postedVerdictWords = new Map();
 const flaggedWords = new Map(); // surah:ayah -> Set(engine word indices)
 let vadSpeech = false, vadRunStart = 0, vadLastSpeech = 0, vadEnergy = 0, vadHopCount = 0;
 const VAD_HOP = 800, VAD_GAP = 0.6 * 16000, VAD_THR = 0.01, VAD_PAD = 0.3 * 16000;
-function rescoreReset() { rescoreEpoch++; audioChunks = []; audioTotal = 0; matchLog.length = 0; progressLog.length = 0; postedVerdictAyahs.clear(); flaggedWords.clear(); vadSpeech = false; vadRunStart = 0; vadLastSpeech = 0; vadEnergy = 0; vadHopCount = 0; scorerAttempts = 0; rescoreUnavailablePosted = false; }
+function rescoreReset() { rescoreEpoch++; audioChunks = []; audioTotal = 0; matchLog.length = 0; progressLog.length = 0; postedVerdictAyahs.clear(); postedVerdictWords.clear(); flaggedWords.clear(); vadSpeech = false; vadRunStart = 0; vadLastSpeech = 0; vadEnergy = 0; vadHopCount = 0; scorerAttempts = 0; rescoreUnavailablePosted = false; }
 function audioSlice(from, to) {
   const out = new Float32Array(Math.max(0, to - from));
   let pos = 0, base = 0;
@@ -174,7 +175,11 @@ function postVerdicts(vs) {
     verdictAyahs.get(key).words.push({ w: v.word, state: v.state, gop: num(v.gop), gopNone: num(v.gopNone), repGain: num(v.repGain), vowelErrors: v.vowelErrors | 0 });
   }
   for (const cur of verdictAyahs.values()) {
-    postedVerdictAyahs.add(cur.surah + ":" + cur.ayah);
+    const key = cur.surah + ":" + cur.ayah;
+    postedVerdictAyahs.add(key);
+    let set = postedVerdictWords.get(key);
+    if (!set) { set = new Set(); postedVerdictWords.set(key, set); }
+    for (const word of cur.words) if (Number.isFinite(word?.w)) set.add(word.w);
     post("event", { event: { type: "word_verdicts", surah: cur.surah, ayah: cur.ayah, words: cur.words } });
   }
   return verdictAyahs.size;
@@ -192,7 +197,7 @@ function rescoreDone(reason, extra = {}) { post("event", { event: { type: "resco
 const FINAL_PASS_BUDGET_MS = 20000;
 async function finalPass(epoch) {
   if (epoch !== rescoreEpoch) return;
-  const groups = planFinalPass(progressLog, postedVerdictAyahs, audioTotal);
+  const groups = planFinalPass(progressLog, { ayahs: postedVerdictAyahs, words: postedVerdictWords }, audioTotal);
   let covered = 0, words = 0, budgetSkipped = 0;
   const deadline = Date.now() + FINAL_PASS_BUDGET_MS;
   for (const g of groups) {
@@ -283,7 +288,7 @@ async function init() {
     post("loading_status", { message: "بدء المحرك محليًا على الجهاز…" });
     session = await createRecognitionSession({
       ort, model: () => modelBuffer, io: () => io, corpus: () => corpus, quran: () => quran,
-      executionProviders: ["wasm"], ...(engineConfig ? { config: engineConfig } : {}), structural: { timing: "stop" }, onEvent: (event) => { if(["word_progress","verse_match"].includes(event?.type))settledDirty=true; if (event?.type === "verse_match") matchLog.push({ surah: Number(event.surah), ayah: Number(event.ayah), at: audioTotal }); if (event?.type === "word_progress") { progressLog.push({ surah: Number(event.surah), ayah: Number(event.ayah), at: audioTotal }); if (progressLog.length > 4000) progressLog.shift(); } try { diagEngine(event); } catch {} post("event", { event, wt: Date.now(), a: (audioTotal + feedingLen) / 16 }); },
+      executionProviders: ["wasm"], ...(engineConfig ? { config: engineConfig } : {}), structural: { timing: "stop" }, onEvent: (event) => { if(["word_progress","verse_match"].includes(event?.type))settledDirty=true; if (event?.type === "verse_match") matchLog.push({ surah: Number(event.surah), ayah: Number(event.ayah), at: audioTotal }); if (event?.type === "word_progress") { const wi = Number(event.word_index); progressLog.push({ surah: Number(event.surah), ayah: Number(event.ayah), at: audioTotal, w: Number.isFinite(wi) ? Math.trunc(wi) : null }); if (progressLog.length > 4000) progressLog.shift(); } try { diagEngine(event); } catch {} post("event", { event, wt: Date.now(), a: (audioTotal + feedingLen) / 16 }); },
     });
     diag.setStatic("init", { assetsMs: Math.round(tAssets - tInit0), createSessionMs: Math.round(performance.now() - tAssets) });
     session.zipformer.correction.thresholds = { ...session.zipformer.correction.thresholds, gopFlag: -5 };
