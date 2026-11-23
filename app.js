@@ -196,7 +196,6 @@ function renderRecitationHistory(){
     const caption=document.createElement('p');caption.textContent=`${toArabic(stats.followed)} تابعها المحرك · ${toArabic(stats.hints)} تلميح · ${toArabic(stats.review)} للمراجعة`;
     const review=buildSessionSummary(session);
     if(review.counts.touched){
-      details.append(sessionSummaryCountsNode(review));
       const open=document.createElement('button');open.type='button';open.className='quiet-link';open.textContent='عرض ملخص الجلسة';open.addEventListener('click',()=>openSessionSummary(session));details.append(open);
     }
     const caveat=document.createElement('small');caveat.textContent='دي نتيجة متابعة آلية، مش حكم على صحة التلاوة. المواضع تشمل تلميحاتك وما لم يتابعه المحرك بوضوح.';
@@ -211,21 +210,6 @@ function renderRecitationHistory(){
       group.append(label,body,retry);details.append(group);
     });list.append(details);
   });
-}
-function sessionSummaryCountsNode(summary){
-  const counts=summary.counts,row=document.createElement('p');row.className='session-summary-counts';
-  const parts=[`${toArabic(counts.correct)} صح`,`${toArabic(counts.wrong)} غلط محتمل`,`${toArabic(counts.unsure)} غير مؤكدة`];
-  if(counts.hinted)parts.push(`${toArabic(counts.hinted)} صح بتلميح`);
-  if(counts.unreviewed)parts.push(summary.savedVerdicts?`${toArabic(counts.unreviewed)} لم تُفحص صوتيًا`:`${toArabic(counts.unreviewed)} من غير نتائج محفوظة`);
-  row.textContent=parts.join(' · ');return row;
-}
-function sessionSummaryLegendNode(summary){
-  const legend=document.createElement('small');legend.className='session-summary-caveat';
-  let text='صح = المحرك فحص الكلمة صوتيًا وما رصدش فيها غلط واضح · صح بتلميح = اتساعدت بتلميح · غير مؤكدة = المحرك شك من غير تأكيد';
-  if(summary?.counts?.unreviewed)text+=summary.savedVerdicts?' · لم تُفحص = المتابعة وصلتلها من غير فحص صوتي.':' · من غير نتائج محفوظة = مفيش نتائج فحص متخزنة للجلسة دي، فمش معروف من السجل لو المحرك راجع الكلمات وقتها ولا لأ.';
-  else text+='.';
-  legend.textContent=text;
-  return legend;
 }
 function rescoreSkipReason(summary){
   const stats=summary?.rescoreStats;if(!stats)return '';
@@ -268,10 +252,9 @@ function openSessionSummary(session){
   const dialog=document.getElementById('sessionSummaryDialog'),content=document.getElementById('sessionSummaryContent');
   if(!dialog||!content)return;
   const summary=buildSessionSummary(session);content.replaceChildren();
-  content.append(sessionSummaryCountsNode(summary));
   const headline=document.createElement('p');headline.className='session-summary-headline';
-  headline.textContent=summary.rescoreUnavailable?'الفحص الصوتي ما كانش متاح في الجلسة دي؛ الأرقام من المتابعة الحية بس.':(summary.counts.wrong?`رصد المحرك ${toArabic(summary.counts.wrong)} موضع محتاج مراجعة:`:(summary.counts.judged?'المحرك ما رصدش غلطات واضحة في الكلمات اللي فحصها صوتيًا.':(summary.savedVerdicts?'مفيش فحص غلطات للجلسة دي.':'مفيش نتائج فحص محفوظة للجلسة دي.')));
-  content.append(headline,sessionMistakesNode(summary,true),sessionSummaryLegendNode(summary),sessionSummaryCaveatNode(summary));
+  headline.textContent=summary.rescoreUnavailable?'الفحص الصوتي ما كانش متاح في الجلسة دي؛ النتيجة دي من المتابعة الحية بس.':(summary.counts.wrong?`رصد المحرك ${toArabic(summary.counts.wrong)} موضع محتاج مراجعة:`:(summary.counts.judged?'المحرك ما رصدش غلطات واضحة في الكلمات اللي فحصها صوتيًا.':(summary.savedVerdicts?'مفيش فحص غلطات للجلسة دي.':'مفيش نتائج فحص محفوظة للجلسة دي.')));
+  content.append(headline,sessionMistakesNode(summary,true),sessionSummaryCaveatNode(summary));
   content.onclick=event=>{if(event.target?.classList?.contains('quiet-link'))dialog.close()};
   if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');
 }
