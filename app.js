@@ -544,6 +544,10 @@ function prayerIconSvg(key){return `<svg class="prayer-icon-svg" viewBox="0 0 24
 function formatTime(date){return new Intl.DateTimeFormat('ar-EG',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:activeTz()}).format(date)}
 function formatCompactPrayerTime(date){return formatTime(date).replace(/\s*[صم]$/,'')}
 let nextPrayerAt=null;
+let skyPhase='';
+function applySkyPhase(phase){if(!phase||phase===skyPhase)return;skyPhase=phase;document.body.dataset.sky=phase;document.querySelectorAll('#view-home .sky-phase').forEach(img=>img.classList.toggle('active',img.dataset.phase===phase))}
+function skyPhaseFromTimes(times,now){const m=60000,at=value=>value instanceof Date?value.getTime():0,fajr=at(times.fajr),sunrise=at(times.sunrise),maghrib=at(times.maghrib),t=now.getTime();if(!fajr||!sunrise||!maghrib)return null;if(t>=fajr-30*m&&t<sunrise+45*m)return'dawn';if(t>=sunrise+45*m&&t<maghrib-45*m)return'day';if(t>=maghrib-45*m&&t<maghrib+30*m)return'sunset';return'night'}
+function skyPhaseFallback(now){const h=now.getHours()+now.getMinutes()/60;if(h>=4.5&&h<7)return'dawn';if(h>=7&&h<16.5)return'day';if(h>=16.5&&h<19)return'sunset';return'night'}
 function updatePrayerCountdown(){
   if(!nextPrayerAt)return;
   const seconds=Math.max(0,Math.floor((nextPrayerAt-new Date())/1000)),hours=Math.floor(seconds/3600),minutes=Math.floor(seconds%3600/60),remaining=seconds%60;
@@ -560,7 +564,7 @@ function updatePrayerTimes(){
     document.getElementById('nextPrayerGlyph').innerHTML=prayerIconSvg('fajr');
     document.getElementById('prayerProgressFill').style.width='0%';
     document.getElementById('prayerProgressFrom').textContent='';document.getElementById('prayerProgressTo').textContent='اختر مدينتك أولًا';
-    nextPrayerAt=null;return;
+    nextPrayerAt=null;applySkyPhase(skyPhaseFallback(new Date()));return;
   }
   try{
     const now=new Date(),times=prayerTimesFor(now),rows=Object.entries(prayerNames).map(([key,name])=>({key,name,time:times[key]}));
@@ -580,8 +584,8 @@ function updatePrayerTimes(){
     document.querySelector('.prayer-progress-track').setAttribute('aria-valuenow',String(Math.round(progress)));
     document.getElementById('prayerProgressFrom').textContent=`${previous.name} ${formatTime(previous.time)}`;
     document.getElementById('prayerProgressTo').textContent=`${next.name} ${formatTime(nextAt)}`;
-    nextPrayerAt=nextAt;updatePrayerCountdown();
-  }catch(error){console.error('Prayer times calculation failed:',error);document.getElementById('prayerCountdownDashboard').textContent='—';document.getElementById('prayerTimesList').textContent='تعذّر حساب المواقيت على هذا الجهاز.'}
+    nextPrayerAt=nextAt;updatePrayerCountdown();applySkyPhase(skyPhaseFromTimes(times,now)||skyPhaseFallback(now));
+  }catch(error){console.error('Prayer times calculation failed:',error);document.getElementById('prayerCountdownDashboard').textContent='—';document.getElementById('prayerTimesList').textContent='تعذّر حساب المواقيت على هذا الجهاز.';applySkyPhase(skyPhaseFallback(new Date()))}
 }
 setLocationLabels();updatePrayerTimes();setInterval(updatePrayerTimes,60000);setInterval(updatePrayerCountdown,1000);
 function applyGpsFix(position,silent){
