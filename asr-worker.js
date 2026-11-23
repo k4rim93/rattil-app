@@ -1,4 +1,5 @@
 import { createSettledWordBridge } from './settled-words.js';
+import { planFinalPass } from './final-pass.js';
 import { downloadModel } from "./model-download.js";
 import * as ort from "onnxruntime-web/wasm";
 import { createRecognitionSession } from "@tilawa/core";
@@ -34,9 +35,14 @@ let sessionMode = "tracking";
 // run ends (natural pause) or the session stops, the run's audio is re-scored
 // against the ayahs the tracker matched inside it, in a separate correction
 // session whose posteriors give per-word GOP. Only settled words with strong
-// acoustic evidence (wrong/unsure AND GOP <= -5) are flagged. Interim live
+// acoustic evidence are flagged: engine doubt (wrong/unsure) AND GOP <= -5,
+// or the tracker-skip omission evidence (skipped AND gopNone beats gop by
+// OMISSION_MARGIN), or the repetition evidence (repGain > 0 with GOP <= -5).
+// Interim live
 // verdicts are never flagged (they oscillate; measured on clean takes).
+// Keep in sync with isFlagged() in mistake-core.js.
 const GOP_FLAG = -5;
+const OMISSION_MARGIN = 1;
 let scorer = null;
 let scorerPromise = null;
 let scorerAttempts = 0;
@@ -49,10 +55,20 @@ function queueRescore(a, b) { const e = rescoreEpoch; rescoreChain = rescoreChai
 let audioChunks = [];
 let audioTotal = 0;
 const matchLog = [];
+// word_progress trail, stamped with the audio offset the tracker had consumed
+// when each event fired. The stop-time final pass derives the real audio
+// segment of each recited ayah from this, so persisted verdict coverage does
+// not depend on verse_match landing inside a VAD window (it can lag on slow
+// devices). Capped; entries are tiny.
+const progressLog = [];
+// surah:ayah keys the live per-run rescore already posted verdicts for; the
+// final pass skips them.
+const postedVerdictAyahs = new Set();
+const postedVerdictWords = new Map();
 const flaggedWords = new Map(); // surah:ayah -> Set(engine word indices)
 let vadSpeech = false, vadRunStart = 0, vadLastSpeech = 0, vadEnergy = 0, vadHopCount = 0;
 const VAD_HOP = 800, VAD_GAP = 0.6 * 16000, VAD_THR = 0.01, VAD_PAD = 0.3 * 16000;
-function rescoreReset() { rescoreEpoch++; audioChunks = []; audioTotal = 0; matchLog.length = 0; flaggedWords.clear(); vadSpeech = false; vadRunStart = 0; vadLastSpeech = 0; vadEnergy = 0; vadHopCount = 0; scorerAttempts = 0; rescoreUnavailablePosted = false; }
+function rescoreReset() { rescoreEpoch++; audioChunks = []; audioTotal = 0; matchLog.length = 0; progressLog.length = 0; postedVerdictAyahs.clear(); postedVerdictWords.clear(); flaggedWords.clear(); vadSpeech = false; vadRunStart = 0; vadLastSpeech = 0; vadEnergy = 0; vadHopCount = 0; scorerAttempts = 0; rescoreUnavailablePosted = false; }
 function audioSlice(from, to) {
   const out = new Float32Array(Math.max(0, to - from));
   let pos = 0, base = 0;
@@ -104,13 +120,14 @@ async function rescoreRun(runStart, runEnd, epoch) {
       console.warn("rescore unavailable after", scorerAttempts, "attempts");
       post("event", { event: { type: "rescore_unavailable" } });
     }
+    rescoreDone("no_scorer");
     return;
   }
   const lo = Math.max(0, runStart - VAD_PAD), hi = Math.min(audioTotal, runEnd + VAD_PAD);
   const inRun = matchLog.filter(m => m.at >= lo && m.at <= hi);
-  if (!inRun.length) return;
+  if (!inRun.length) { rescoreDone("no_match"); return; }
   const surah = inRun[0].surah, from = inRun[0].ayah, to = inRun[inRun.length - 1].ayah;
-  if (!inRun.every(m => m.surah === surah)) return;
+  if (!inRun.every(m => m.surah === surah)) { rescoreDone("cross_surah"); return; }
   try {
     diag.mark("rescore_start", { samples: hi - lo });
     scorer.zipformer?.reset();
@@ -121,7 +138,13 @@ async function rescoreRun(runStart, runEnd, epoch) {
     const vs = (scorer.zipformer?.engine?.tracer?.verdicts?.(true) || []).filter(v => v.surah === surah && v.ayah >= from && v.ayah <= to);
     const byAyah = new Map();
     for (const v of vs) {
-      const bad = (v.state === "wrong" || v.state === "unsure") && typeof v.gop === "number" && Number.isFinite(v.gop) && v.gop <= GOP_FLAG;
+      const gopOk = typeof v.gop === "number" && Number.isFinite(v.gop) && v.gop <= GOP_FLAG;
+      const gopNone = typeof v.gopNone === "number" && Number.isFinite(v.gopNone) ? v.gopNone : null;
+      const bad = gopOk && (
+        v.state === "wrong" || v.state === "unsure"
+        || (v.state === "skipped" && gopNone !== null && gopNone > v.gop + OMISSION_MARGIN)
+        || (v.state === "ok" && typeof v.repGain === "number" && Number.isFinite(v.repGain) && v.repGain > 0)
+      );
       const key = v.surah + ":" + v.ayah;
       if (!byAyah.has(key)) byAyah.set(key, { surah: v.surah, ayah: v.ayah, flagged: new Set() });
       if (bad) byAyah.get(key).flagged.add(v.word);
@@ -134,7 +157,74 @@ async function rescoreRun(runStart, runEnd, epoch) {
       if (cleared.length) post("event", { event: { type: "word_issues", surah: cur.surah, ayah: cur.ayah, cleared } });
       flaggedWords.set(key, cur.flagged);
     }
-  } catch (error) { diag.mark("rescore_end", { err: true }); console.warn("rescore failed", error); }
+    // Full per-word verdicts for the rescored range, so the app can build an
+    // honest session summary (correct/wrong-kind/unsure/coverage). These never
+    // change live highlighting; word_issues above owns the paint.
+    if (!postVerdicts(vs)) rescoreDone("empty");
+  } catch (error) { diag.mark("rescore_end", { err: true }); console.warn("rescore failed", error); rescoreDone("error"); }
+}
+
+// Persist per-word verdicts for scored verdict rows. Returns how many rows
+// were posted. Never touches live highlighting.
+function postVerdicts(vs) {
+  const num = (x) => (typeof x === "number" && Number.isFinite(x) ? Math.round(x * 100) / 100 : null);
+  const verdictAyahs = new Map();
+  for (const v of vs) {
+    const key = v.surah + ":" + v.ayah;
+    if (!verdictAyahs.has(key)) verdictAyahs.set(key, { surah: v.surah, ayah: v.ayah, words: [] });
+    verdictAyahs.get(key).words.push({ w: v.word, state: v.state, gop: num(v.gop), gopNone: num(v.gopNone), repGain: num(v.repGain), vowelErrors: v.vowelErrors | 0 });
+  }
+  for (const cur of verdictAyahs.values()) {
+    const key = cur.surah + ":" + cur.ayah;
+    postedVerdictAyahs.add(key);
+    let set = postedVerdictWords.get(key);
+    if (!set) { set = new Set(); postedVerdictWords.set(key, set); }
+    for (const word of cur.words) if (Number.isFinite(word?.w)) set.add(word.w);
+    post("event", { event: { type: "word_verdicts", surah: cur.surah, ayah: cur.ayah, words: cur.words } });
+  }
+  return verdictAyahs.size;
+}
+
+// Provenance for the saved session: why a rescore produced nothing. 'final'
+// is the stop-time summary; the rest are live-run failure exits.
+function rescoreDone(reason, extra = {}) { post("event", { event: { type: "rescore_done", reason, ...extra } }); }
+
+// Stop-time persistence pass: re-score every recited ayah the live per-run
+// rescore did not cover, using the audio segment bounded by the tracker's own
+// progress trail (see final-pass.js). Persist-only: no word_issues paint.
+// Bounded by FINAL_PASS_BUDGET_MS so saving the session never hangs; anything
+// cut by the budget is reported, and those words stay honestly unreviewed.
+const FINAL_PASS_BUDGET_MS = 20000;
+async function finalPass(epoch) {
+  if (epoch !== rescoreEpoch) return;
+  const groups = planFinalPass(progressLog, { ayahs: postedVerdictAyahs, words: postedVerdictWords }, audioTotal);
+  let covered = 0, words = 0, budgetSkipped = 0;
+  const deadline = Date.now() + FINAL_PASS_BUDGET_MS;
+  for (const g of groups) {
+    if (epoch !== rescoreEpoch) return;
+    if (Date.now() > deadline) { budgetSkipped++; continue; }
+    const posted = await finalPassGroup(g, epoch);
+    if (posted > 0) { covered += posted; }
+  }
+  rescoreDone("final", { planned: groups.length, coveredAyahs: covered, budgetSkipped });
+}
+
+// Score one planned group; returns the number of ayahs that got verdicts.
+async function finalPassGroup(g, epoch) {
+  try {
+    await ensureScorer();
+    if (epoch !== rescoreEpoch) return 0;
+    if (!scorer) return 0;
+    scorer.zipformer?.reset();
+    scorer.zipformer?.setExpected({ surah: g.surah, ayah: g.from, ayahEnd: g.to });
+    const slice = audioSlice(g.audioFrom, g.audioTo);
+    if (!slice.length) return 0;
+    diag.mark("final_pass_start", { surah: g.surah, from: g.from, to: g.to, samples: slice.length });
+    for (let i = 0; i < slice.length; i += RESCORE_SLICE) { await scorer.feed(slice.subarray(i, Math.min(slice.length, i + RESCORE_SLICE))); await yieldToQueue(); if (epoch !== rescoreEpoch) { diag.mark("final_pass_end", { aborted: true }); return 0; } }
+    diag.mark("final_pass_end");
+    const vs = (scorer.zipformer?.engine?.tracer?.verdicts?.(true) || []).filter(v => v.surah === g.surah && v.ayah >= g.from && v.ayah <= g.to);
+    return postVerdicts(vs);
+  } catch (error) { diag.mark("final_pass_end", { err: true }); console.warn("final pass failed", error); return 0; }
 }
 
 function post(type, data = {}) { self.postMessage({ type, ...data }); }
@@ -198,7 +288,7 @@ async function init() {
     post("loading_status", { message: "بدء المحرك محليًا على الجهاز…" });
     session = await createRecognitionSession({
       ort, model: () => modelBuffer, io: () => io, corpus: () => corpus, quran: () => quran,
-      executionProviders: ["wasm"], ...(engineConfig ? { config: engineConfig } : {}), structural: { timing: "stop" }, onEvent: (event) => { if(["word_progress","verse_match"].includes(event?.type))settledDirty=true; if (event?.type === "verse_match") matchLog.push({ surah: Number(event.surah), ayah: Number(event.ayah), at: audioTotal }); try { diagEngine(event); } catch {} post("event", { event, wt: Date.now(), a: (audioTotal + feedingLen) / 16 }); },
+      executionProviders: ["wasm"], ...(engineConfig ? { config: engineConfig } : {}), structural: { timing: "stop" }, onEvent: (event) => { if(["word_progress","verse_match"].includes(event?.type))settledDirty=true; if (event?.type === "verse_match") matchLog.push({ surah: Number(event.surah), ayah: Number(event.ayah), at: audioTotal }); if (event?.type === "word_progress") { const wi = Number(event.word_index); progressLog.push({ surah: Number(event.surah), ayah: Number(event.ayah), at: audioTotal, w: Number.isFinite(wi) ? Math.trunc(wi) : null }); if (progressLog.length > 4000) progressLog.shift(); } try { diagEngine(event); } catch {} post("event", { event, wt: Date.now(), a: (audioTotal + feedingLen) / 16 }); },
     });
     diag.setStatic("init", { assetsMs: Math.round(tAssets - tInit0), createSessionMs: Math.round(performance.now() - tAssets) });
     session.zipformer.correction.thresholds = { ...session.zipformer.correction.thresholds, gopFlag: -5 };
@@ -226,7 +316,15 @@ async function handle(message) {
     if (closed) queueRescore(closed[0], closed[1]); }
   if (message.type === "stop" && session) { await session.stop(); settledDirty=true; flushSettledWords();
     if (vadSpeech) { vadSpeech = false; queueRescore(vadRunStart, vadLastSpeech); }
+    { const e = rescoreEpoch; rescoreChain = rescoreChain.then(() => finalPass(e)).catch(() => {}); }
     await rescoreChain;
+    // Honesty at save time: the tracker did recite something this session but
+    // no acoustic scoring could run at all (scorer never initialised, short
+    // of the live retry cap) — the record must say unavailable, not nothing.
+    if (!postedVerdictAyahs.size && progressLog.length && !scorer && !rescoreUnavailablePosted) {
+      rescoreUnavailablePosted = true;
+      post("event", { event: { type: "rescore_unavailable" } });
+    }
     post("diag", { log: diag.snapshot() });
     post("stopped"); }
 }

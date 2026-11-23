@@ -388,8 +388,9 @@ function bounds(records) {
 export class QvpLitePage {
   #paths
   #decorationPaths
+  #ayahMarkerPaths
 
-  constructor({ width, height, number, paths, words }) {
+  constructor({ width, height, number, paths, words, ayahs = [], decorations = [] }) {
     this.width = width
     this.height = height
     this.number = number
@@ -402,8 +403,39 @@ export class QvpLitePage {
         wordPaths[path] = 1
       }
     }
+    // Ayah end markers are decorations, but in the masked follow view they must only
+    // appear once their ayah has visible words, so keep them out of the always-drawn
+    // decoration set and let callers draw them per ayah via drawAyahMarkers().
+    this.#ayahMarkerPaths = new Map()
+    for (const ayah of ayahs) {
+      if (!Number.isInteger(ayah.ayahMarkDecoration) || ayah.ayahMarkDecoration < 0) continue
+      const marker = decorations[ayah.ayahMarkDecoration]
+      if (!marker || marker.firstPath < 0 || marker.firstPath + marker.nPaths > this.#paths.length) continue
+      const key = `${ayah.surah}:${ayah.ayah}`
+      if (this.#ayahMarkerPaths.has(key)) continue
+      const indices = []
+      for (let path = marker.firstPath; path < marker.firstPath + marker.nPaths; path++) indices.push(path)
+      this.#ayahMarkerPaths.set(key, indices)
+    }
+    const markerPaths = new Uint8Array(this.#paths.length)
+    for (const indices of this.#ayahMarkerPaths.values()) {
+      for (const path of indices) markerPaths[path] = 1
+    }
     this.#decorationPaths = Array.from(wordPaths, (owned, path) => owned ? -1 : path)
-      .filter(path => path >= 0)
+      .filter(path => path >= 0 && !markerPaths[path])
+  }
+
+  get ayahMarkerKeys() {
+    return [...this.#ayahMarkerPaths.keys()]
+  }
+
+  drawAyahMarkers(ctx, keys, options = {}) {
+    const pathIndices = []
+    for (const key of keys) {
+      const indices = this.#ayahMarkerPaths.get(key)
+      if (indices) pathIndices.push(...indices)
+    }
+    this.#drawPaths(ctx, pathIndices, options)
   }
 
   fit(canvas, padding = 0) {

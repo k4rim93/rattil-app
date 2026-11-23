@@ -46,7 +46,7 @@ const r0 = v => v == null ? null : Math.round(v);
 const dist = values => values && values.length ? { n: values.length, p50: r1(pct(values, .5)), p95: r1(pct(values, .95)), max: r1(Math.max(...values)) } : null;
 
 // Builds the phase report. main/worker are diag snapshots (worker may be null).
-export function buildDiagReport(main, worker) {
+export function buildDiagReport(main, worker, saved = null) {
   const me = main?.events || [], we = worker?.events || [];
   const firstChunk = me.find(e => e.k === 'chunk_first');
   const t0 = firstChunk ? firstChunk.t : (main?.t0 || 0);
@@ -68,7 +68,9 @@ export function buildDiagReport(main, worker) {
     if (e.k === 'scorer_init_start') open = { kind: 'scorer_init', from: e.t };
     else if (e.k === 'scorer_init_end' && open) { windows.push({ ...open, to: e.t, ok: e.ok }); open = null; }
     else if (e.k === 'rescore_start') open = { kind: 'rescore', from: e.t, audioSec: r1(e.samples / 16000) };
-    else if (e.k === 'rescore_end' && open) { windows.push({ ...open, to: e.t }); open = null; }
+    else if (e.k === 'rescore_end' && open) { windows.push({ ...open, to: e.t, err: e.err || undefined }); open = null; }
+    else if (e.k === 'final_pass_start') open = { kind: 'final_pass', from: e.t, audioSec: r1(e.samples / 16000), surah: e.surah, ayahFrom: e.from, ayahTo: e.to };
+    else if (e.k === 'final_pass_end' && open) { windows.push({ ...open, to: e.t, aborted: e.aborted || undefined, err: e.err || undefined }); open = null; }
   }
   if (open) windows.push({ ...open, to: null, open: true });
   const scorer = windows.map(w => {
@@ -102,6 +104,9 @@ export function buildDiagReport(main, worker) {
     appReveal: (() => { const first = k => { const e = me.find(x => x.k === k && x.t >= t0); return e ? rel(e.t) : null; }; return { revealStartMs: first('reveal_start'), surahListReadyMs: first('reveal_verses'), pageLoadStartMs: first('page_load_start'), pageLoadedMs: first('page_loaded') }; })(),
     scorer,
     wordProgress: wpList,
+    // Counters of the last saved (or just-finished) session, passed in by the
+    // app from its local record: digits and reason keys only, never text.
+    savedSession: saved,
     unobservable: [
       'per-word reveal delay against the actual spoken word (no ground-truth timing of speech)',
       'engine confirmation wait versus decoder wait (the engine reports no internal state)',
@@ -135,7 +140,17 @@ export function renderDiagLines(report) {
   L.push(`الصفحة: توقف الحلقة ${d(report.page.loopLagMs)} · من وصول تقدّم الكلمة إلى ظهورها ${d(report.page.paintMs)}`);
   const ar = report.appReveal; if (ar) L.push(`تجهيز المصحف بعد تحديد الآية: بدء ${s(ar.revealStartMs)} · قائمة الآيات جاهزة ${s(ar.surahListReadyMs)} · بدء تحميل الصفحة ${s(ar.pageLoadStartMs)} · الصفحة جاهزة ${s(ar.pageLoadedMs)}`);
   if (!report.scorer.length) L.push('المصحّح الصوتي: لم يعمل في هذه الجلسة');
-  for (const w of report.scorer) L.push(`المصحّح ${w.kind === 'scorer_init' ? 'تهيئة' : 'إعادة تقييم'} عند ${s(w.atMs)} لمدة ${w.durMs} م.ث${w.ok === false ? ' (فشل)' : ''} · أقصى انتظار للصوت الحي خلالها ${f(w.liveMaxQueueMs)} · توقف ${f(w.liveMaxLoopLagMs)} م.ث`);
+  for (const w of report.scorer) L.push(`المصحّح ${w.kind === 'scorer_init' ? 'تهيئة' : w.kind === 'final_pass' ? 'فحص ختامي' : 'إعادة تقييم'} عند ${s(w.atMs)} لمدة ${w.durMs} م.ث${w.ok === false || w.err ? ' (فشل)' : ''}${w.aborted ? ' (أُجهض)' : ''} · أقصى انتظار للصوت الحي خلالها ${f(w.liveMaxQueueMs)} · توقف ${f(w.liveMaxLoopLagMs)} م.ث`);
+  const ss = report.savedSession;
+  if (ss) {
+    if (ss.unavailable) L.push('الفحص المحفوظ: غير متاح في هذه الجلسة');
+    const fin = ss.stats?.final;
+    if (fin) L.push(`الفحص الختامي المحفوظ: خُطّط ${fin.planned} · غطّى ${fin.coveredAyahs} · تجاوز الميزانية ${fin.budgetSkipped}`);
+    const fails = ss.stats?.fails || {};
+    const failKeys = Object.keys(fails);
+    if (failKeys.length) L.push(`خروجات الفحص المباشر المحفوظة: ${failKeys.map(k => `${k}×${fails[k]}`).join(' · ')}`);
+    if (ss.unreviewed) L.push(`كلمات بلا فحص محفوظ: ${ss.unreviewed}${ss.unreviewedWords?.length ? ` (${ss.unreviewedWords.join('، ')})` : ''}`);
+  }
   L.push('غير قابل للقياس هنا: تأخر ظهور كل كلمة مقارنة بنطقها الفعلي؛ وسبب انتظار التأكيد داخل المحرك.');
   return L;
 }

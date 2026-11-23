@@ -62,3 +62,33 @@ test('bookkeeping overhead per chunk is far below the 50 ms chunk period', () =>
   assert.ok(perChunkUs < 100);
   assert.equal(pct([1, 2, 3, 4], .5), 3);
 });
+
+test('report includes final-pass windows and saved-session counters', () => {
+  const { main, worker } = fake();
+  worker.events.push({ k: 'final_pass_start', t: 1006000, surah: 19, from: 5, to: 7, samples: 32000 });
+  worker.events.push({ k: 'final_pass_end', t: 1006800 });
+  const saved = {
+    unavailable: false,
+    stats: { fails: { empty: 2 }, final: { planned: 3, coveredAyahs: 2, budgetSkipped: 1 } },
+    unreviewed: 6,
+    unreviewedWords: ['19:5:3', '19:5:4', '19:6:0', '19:6:1', '19:7:10', '19:7:11'],
+  };
+  const r = buildDiagReport(main, worker, saved);
+  const fp = r.scorer.find(w => w.kind === 'final_pass');
+  assert.ok(fp, 'final-pass window present');
+  assert.equal(fp.durMs, 800);
+  assert.equal(fp.audioSec, 2);
+  assert.deepEqual(r.savedSession, saved);
+  const lines = renderDiagLines(r).join('\n');
+  assert.match(lines, /الفحص الختامي المحفوظ/);
+  assert.match(lines, /تجاوز الميزانية 1/);
+});
+
+test('exported JSON stays numeric/ASCII: no recited text, no audio, no Arabic', () => {
+  const { main, worker } = fake();
+  worker.events.push({ k: 'ev', type: 'raw_transcript', a: 900, chars: 25, t: 1000900 });
+  const saved = { unavailable: false, stats: { fails: {}, final: { planned: 1, coveredAyahs: 1, budgetSkipped: 0 } }, unreviewed: 2, unreviewedWords: ['19:5:3', '19:6:0'] };
+  const json = JSON.stringify(buildDiagReport(main, worker, saved));
+  assert.ok(!/[؀-ۿ]/.test(json), 'no Arabic text in the export');
+  assert.ok(!json.includes('samples":['), 'no raw audio sample arrays');
+});
