@@ -166,3 +166,55 @@ test('a word flagged twice in one session counts once; limit applies', () => {
   assert.equal(aggregateMistakes(sessions, { limit: 0 }).length, 0);
   assert.equal(aggregateMistakes(null).length, 0);
 });
+
+test('a fresh session with an empty verdicts object is known-zero-coverage, not legacy', () => {
+  const words = [{ key: '55:1:0', surah: 55, ayah: 1, index: 0, text: 'x', status: 'correct' }];
+  assert.equal(buildSessionSummary({ words, verdicts: {}, startedAt: 1 }).savedVerdicts, true);
+  assert.equal(buildSessionSummary({ words, startedAt: 1 }).savedVerdicts, false);
+});
+
+test('remediation: a later session with an acoustically-correct verdict marks the mistake reviewed', () => {
+  const flagSession = { startedAt: 1000, endedAt: 2000, words: [
+    { key: '55:2:1', surah: 55, ayah: 2, index: 1, text: 'ٱلْقُرْءَانَ', status: 'error' },
+  ], verdicts: {} };
+  const reviewSession = { startedAt: 5000, endedAt: 6000, words: [
+    { key: '55:2:1', surah: 55, ayah: 2, index: 1, text: 'ٱلْقُرْءَانَ', status: 'correct' },
+  ], verdicts: { '55:2:1': { state: 'ok', gop: -0.3, gopNone: -40, repGain: -1, vowelErrors: 0 } } };
+  const [item] = aggregateMistakes([flagSession, reviewSession]);
+  assert.equal(item.sessions, 1, 'the historical flag is preserved, not rewritten');
+  assert.equal(item.reviewed, 6000);
+});
+
+test('remediation requires a verdict: tracker-correct paint alone never reviews a mistake', () => {
+  const flagSession = { startedAt: 1000, endedAt: 2000, words: [
+    { key: '55:2:1', surah: 55, ayah: 2, index: 1, text: 'x', status: 'error' },
+  ], verdicts: {} };
+  const trackerOnly = { startedAt: 5000, endedAt: 6000, words: [
+    { key: '55:2:1', surah: 55, ayah: 2, index: 1, text: 'x', status: 'correct' },
+  ], verdicts: {} };
+  const [item] = aggregateMistakes([flagSession, trackerOnly]);
+  assert.equal(item.reviewed, 0);
+});
+
+test('remediation requires a LATER session and a correct verdict, not doubt', () => {
+  const flagSession = { startedAt: 1000, endedAt: 2000, words: [
+    { key: '55:2:1', surah: 55, ayah: 2, index: 1, text: 'x', status: 'error' },
+  ], verdicts: {} };
+  const unsureLater = { startedAt: 5000, endedAt: 6000, words: [], verdicts: { '55:2:1': { state: 'unsure', gop: -1.2, gopNone: -30, repGain: 0, vowelErrors: 0 } } };
+  const correctEarlier = { startedAt: 100, endedAt: 200, words: [], verdicts: { '55:2:1': { state: 'ok', gop: -0.3, gopNone: -40, repGain: -1, vowelErrors: 0 } } };
+  assert.equal(aggregateMistakes([flagSession, unsureLater])[0].reviewed, 0);
+  assert.equal(aggregateMistakes([flagSession, correctEarlier])[0].reviewed, 0, 'an earlier session cannot remediate a later flag');
+});
+
+test('reviewed mistakes sort after open ones, history intact', () => {
+  const flagBoth = { startedAt: 1000, endedAt: 2000, words: [
+    { key: '55:2:1', surah: 55, ayah: 2, index: 1, text: 'a', status: 'error' },
+    { key: '55:3:0', surah: 55, ayah: 3, index: 0, text: 'b', status: 'error' },
+  ], verdicts: {} };
+  const reviewOne = { startedAt: 5000, endedAt: 6000, words: [], verdicts: { '55:2:1': { state: 'ok', gop: -0.3, gopNone: -40, repGain: -1, vowelErrors: 0 } } };
+  const items = aggregateMistakes([flagBoth, reviewOne]);
+  assert.equal(items.length, 2);
+  assert.equal(items[0].key ?? items[0].text, 'b');
+  assert.equal(items[0].reviewed, 0);
+  assert.equal(items[1].reviewed, 6000);
+});
