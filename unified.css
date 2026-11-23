@@ -26,3 +26,7 @@ body.light:not(.reader-view) .daily-focus h2,body.light:not(.reader-view) .daily
 
 /* Keep the ayah sheet clear of the iPhone home indicator. */
 #verseTools{bottom:calc(12px + env(safe-area-inset-bottom));margin-bottom:0;max-height:calc(82dvh - env(safe-area-inset-bottom));border-radius:24px;padding-bottom:18px}#verseTools .un-repeat{padding-bottom:0}#verseTools .un-sheet-head button:focus:not(:focus-visible){outline:none;box-shadow:none}.un-reader-credits{margin:20px 0 0;padding:14px 16px;background:#ffffff0b;border:1px solid #c8bd8844;border-radius:14px}.un-reader-credits summary{cursor:pointer;font-size:13px;min-height:28px;line-height:28px}.un-reader-credits .un-source{font-size:11px}body.light .un-reader-credits .un-source{color:#40563d}body.light .un-reader-credits a{color:#79601e}
+
+#verseMode{width:100%;min-height:46px;margin-bottom:12px}
+
+#verseQuick{width:min(86vw,340px);margin:auto;padding:18px;border-radius:24px;background:#faf4e5;color:#304c39;border:1px solid #c4aa6d}#verseQuick h2{font:16px var(--sans);color:#304c39;text-align:center;margin:0 0 14px}#verseQuick button{display:block;width:100%;min-height:50px;border:1px solid #cbb982;border-radius:14px;background:#eee4cf;color:#37513c;margin-top:10px;font:14px var(--sans)}#verseQuick::backdrop{background:#0c1b1340;backdrop-filter:none;-webkit-backdrop-filter:none}
