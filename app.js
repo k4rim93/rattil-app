@@ -321,6 +321,7 @@ async function applySettledWords(message){
  const verse=reciteVerseCache.get(surah)?.find(v=>v.numberInSurah===ayah),map=engineTokenMap(String(verse?.text||'').split(/\s+/).filter(Boolean));
  for(const w of message.matched_indices||[]){const index=map[Number(w)];if(!Number.isInteger(index))continue;const key=`${surah}:${ayah}:${index}`;if(recitationWordStates.has(key))continue;saveRecitationWord(surah,ayah,index,'correct','revealed',0,false)}drawRecitationQvpPage();
 }
+function deferRecitationEvidence(message){const surah=Number(message.surah);if(reciteVerseCache.has(surah))return false;const epoch=settledUiEpoch,session=currentRecitationSession;trackRecognizedTask((async()=>{await ensureRecitationSurah(surah);if(epoch!==settledUiEpoch||!session||currentRecitationSession!==session)return;handleRecitationEvent(message)})());return true}
 function handleRecitationEvent(message){
  if(message.type==='settled_words'){trackRecognizedTask(applySettledWords(message));return;}
  if(message.type==='raw_transcript'){const waiting=document.getElementById('recitationWaiting');if(!liveCurrentVerse&&waiting&&!waiting.hidden){waiting.classList.add('hearing');waiting.querySelector('strong').textContent='سمعتك، بحدد المكان…';}if(!liveCurrentVerse){heardTranscript=String(message.text||'').slice(-400);showProvisionalSpeech(message.text)}else if(heardBackfillTarget&&!heardBackfillDone){heardTranscript=String(message.text||'').slice(-400);backfillHeardWords()}return}
@@ -339,12 +340,12 @@ function handleRecitationEvent(message){
   const issueStatus=['possible_substitution','possible_omission'].includes(issue.kind)?'error':'uncertain';indices.forEach(index=>{if(state.phase==='corrected')saveRecitationWord(issue.surah,issue.ayah,index,'correct','correct',850);else saveRecitationWord(issue.surah,issue.ayah,index,issueStatus,issueStatus,0,true,'correction')});
   const labels={possible_omission:'كلمة لم يتابعها المحرك بوضوح',possible_substitution:'احتمال اختلاف في الكلمة',possible_vowel:'اختلاف محتمل في الحركة',possible_repetition:'احتمال تكرار كلمة',possible_skipped_ayah:'احتمال تخطي آية',unclear_ayah:'لم يستطع المحرك متابعة الآية'};document.getElementById('reciteCorrectionTitle').textContent=labels[issue.kind]||'موضع يحتاج مراجعة';document.getElementById('reciteCorrectionText').textContent='رُصد احتمال في الآية '+toArabic(issue.ayah)+'. المحرك قد يخطئ، ولا يقيّم أحكام التجويد.';panel.hidden=!['error','retrying'].includes(state.phase);panel.querySelectorAll('[data-correction-action]').forEach(button=>button.hidden=state.phase==='retrying'?button.dataset.correctionAction!=='stop_retry':button.dataset.correctionAction==='stop_retry');if(state.phase==='retrying')document.getElementById('reciteCorrectionText').textContent='أعد قراءة المقطع المحدد؛ يراجعه المحرك الآن.';if(state.phase==='corrected'){document.getElementById('reciteCorrectionText').textContent='انتهت مراجعة هذا الموضع.';panel.hidden=true;}
  }else if(message.type==='word_issues'){
+  if(deferRecitationEvidence(message))return;
   const surah=Number(message.surah),ayah=Number(message.ayah),verse=reciteVerseCache.get(surah)?.find(item=>item.numberInSurah===ayah),tokens=String(verse?.text||'').split(/\s+/).filter(Boolean),engineMap=engineTokenMap(tokens);
   for(const w of message.words||[]){const index=engineMap[Number(w)];if(Number.isInteger(index)&&index>=0&&(!tokens.length||index<tokens.length))saveRecitationWord(surah,ayah,index,'error','error',0,true,'rescore')}
   for(const w of message.cleared||[]){const index=engineMap[Number(w)],key=`${surah}:${ayah}:${index}`;if(recitationWordStates.get(key)==='error')saveRecitationWord(surah,ayah,index,'uncertain','uncertain')}
  }else if(message.type==='word_verdicts'){
-  const surah=Number(message.surah);
-  if(!reciteVerseCache.has(surah)){const sessionAtDefer=currentRecitationSession;ensureRecitationSurah(surah).then(()=>{if(currentRecitationSession&&currentRecitationSession===sessionAtDefer)handleWordVerdicts(message)}).catch(()=>{});return}
+  if(deferRecitationEvidence(message))return;
   handleWordVerdicts(message);
  }else if(message.type==='rescore_done'){
   if(currentRecitationSession){const rs=currentRecitationSession.rescoreStats=currentRecitationSession.rescoreStats||{fails:{},final:null};if(message.reason==='final')rs.final={planned:Number(message.planned)||0,coveredAyahs:Number(message.coveredAyahs)||0,budgetSkipped:Number(message.budgetSkipped)||0};else rs.fails[message.reason]=(rs.fails[message.reason]||0)+1;}
