@@ -121,11 +121,16 @@ async function openRecitationSurah(number,range=null){
 async function ensureRecitationSurah(number){if(reciteVerseCache.has(Number(number)))return;if(pendingReciteSurah===number&&pendingReciteLoad)return pendingReciteLoad;pendingReciteSurah=number;pendingReciteLoad=(async()=>{const result=await getQuranJson(`${quranApi}/surah/${number}/quran-uthmani`);reciteVerseCache.set(Number(number),result.data.ayahs);activeReciteSurah=Number(number)})();try{await pendingReciteLoad}finally{pendingReciteSurah=0;pendingReciteLoad=null}}
 function handleWordVerdicts(message){
   const surah=Number(message.surah),ayah=Number(message.ayah),verse=reciteVerseCache.get(surah)?.find(item=>item.numberInSurah===ayah),engineMap=engineTokenMap(String(verse?.text||'').split(/\s+/).filter(Boolean));
-  if(currentRecitationSession){if(!currentRecitationSession.verdicts)currentRecitationSession.verdicts={};for(const wv of message.words||[]){const index=engineMap[Number(wv.w)];if(!Number.isInteger(index))continue;currentRecitationSession.verdicts[`${surah}:${ayah}:${index}`]={state:wv.state,gop:wv.gop,gopNone:wv.gopNone,repGain:wv.repGain,vowelErrors:wv.vowelErrors};}}
+  if(currentRecitationSession){if(!currentRecitationSession.verdicts)currentRecitationSession.verdicts={};for(const wv of message.words||[]){const index=engineMap[Number(wv.w)];if(!Number.isInteger(index))continue;currentRecitationSession.verdicts[`${surah}:${ayah}:${index}`]={state:wv.state,gop:wv.gop,gopNone:wv.gopNone,repGain:wv.repGain,vowelErrors:wv.vowelErrors};const prior=currentRecitationSession.words.find(item=>item.key===`${surah}:${ayah}:${index}`);if(prior?.errorSource==='rescore'&&wv.state==='ok'&&!isFlagged(wv))saveRecitationWord(surah,ayah,index,'correct','correct',850,true,'verified-rescore');}}
 }
 function saveRecitationWord(surah,ayah,index,status,displayStatus=status,transientMs=0,redraw=true,errorSource){
   const verse=reciteVerseCache.get(Number(surah))?.find(item=>item.numberInSurah===Number(ayah)),text=String(verse?.text||'').split(/\s+/).filter(Boolean)[index]||'';if(!text)return;
-  const key=`${surah}:${ayah}:${index}`;recitationWordStates.set(key,displayStatus);if(transientMs){const expires=Date.now()+transientMs;recitationWordExpiry.set(key,expires);setTimeout(()=>{if(recitationWordExpiry.get(key)===expires){recitationWordStates.set(key,'revealed');recitationWordExpiry.delete(key);drawRecitationQvpPage()}},transientMs+20)}else recitationWordExpiry.delete(key);
+  const key=`${surah}:${ayah}:${index}`;
+  // Tracker progress is not acoustic correction evidence. Keep a rescore flag
+  // until a fresh acoustic pass explicitly clears it.
+  const prior=currentRecitationSession?.words.find(item=>item.key===key);
+  if(prior?.status==='error'&&prior.errorSource==='rescore'&&status==='correct'&&errorSource!=='verified-rescore')return;
+  recitationWordStates.set(key,displayStatus);if(transientMs){const expires=Date.now()+transientMs;recitationWordExpiry.set(key,expires);setTimeout(()=>{if(recitationWordExpiry.get(key)===expires){recitationWordStates.set(key,'revealed');recitationWordExpiry.delete(key);drawRecitationQvpPage()}},transientMs+20)}else recitationWordExpiry.delete(key);
   if(currentRecitationSession){const existing=currentRecitationSession.words.find(item=>item.key===key);const incoming={key,surah:Number(surah),ayah:Number(ayah),index,text,status};if(status==='error')incoming.errorSource=(existing?.errorSource==='rescore'||errorSource==='rescore')?'rescore':(errorSource||existing?.errorSource);if(existing)Object.assign(existing,mergeWord(existing,incoming));else currentRecitationSession.words.push(mergeWord(null,incoming));}
   if(redraw)drawRecitationQvpPage();
 }
