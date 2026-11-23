@@ -11,7 +11,6 @@
     <meta name="description" content="رتل — رفيقك الهادئ للقراءة والحفظ والمراجعة." />
     <link rel="manifest" id="appManifest" />
     <link rel="icon" href="./icon-192.png" type="image/png" sizes="192x192" />
-    <link rel="icon" href="./icon.svg" type="image/svg+xml" sizes="any" />
     <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
     <link rel="stylesheet" href="styles.css" /><link rel="stylesheet" href="prototype.css" />
     <title>رتل — رفيقك مع القرآن</title>
@@ -31,6 +30,7 @@
 
       <main id="mainContent" tabindex="-1">
         <section class="view active" id="view-home" data-title="الرئيسية">
+          <div class="sky-bg" aria-hidden="true"><img class="sky-phase" data-phase="dawn" src="./sky-dawn.webp" alt=""><img class="sky-phase" data-phase="day" src="./sky-day.webp" alt=""><img class="sky-phase" data-phase="sunset" src="./sky-sunset.webp" alt=""><img class="sky-phase" data-phase="night" src="./sky-night.webp" alt=""><img class="sky-clouds" src="./cloud-alpha.webp" alt=""><div class="sky-tint"></div></div>
           <div class="home-scene">
             <div class="scene-sky" aria-hidden="true"><span class="moon"></span><span class="star s1">✦</span><span class="star s2">✧</span><span class="star s3">✦</span><span class="mosque"><i></i><i></i><b></b></span></div>
             <div class="scene-copy"><p class="date-line" id="todayDate">الخميس، ١٢ نوفمبر</p><h1>السكينة تبدأ<br />بآية.</h1><p>مساحة هادئة لوردك، قراءتك، ومراجعتك.</p></div>
@@ -132,7 +132,7 @@
 
         <section class="view" id="view-settings" data-title="الإعدادات">
           <header class="page-heading"><h1>الإعدادات</h1><p>خلّي رتل مناسب لطريقتك.</p></header>
-          <div class="simple-list"><button class="list-row" id="themeToggle"><span class="list-icon">☾</span><span><strong>موجة الليل</strong><small>الواجهة الداكنة الهادئة</small></span><span class="state-pill">مفعّل</span></button><button class="list-row" id="locationButton"><span class="list-icon">⌖</span><span><strong>الموقع ومواقيت الصلاة</strong><small id="settingsLocationLabel">القاهرة (افتراضي) · اضغط لتحديد موقعك</small></span><span class="chevron">‹</span></button><button class="list-row" id="offlineButton"><span class="list-icon">⇩</span><span><strong>العمل دون إنترنت</strong><small>واجهة التطبيق والصفحات المفتوحة تُحفظ</small></span><span class="state-pill">جاهز</span></button></div>
+          <div class="simple-list"><button class="list-row" id="themeToggle"><span class="list-icon">☾</span><span><strong>موجة الليل</strong><small>الواجهة الداكنة الهادئة</small></span><span class="state-pill">مفعّل</span></button><button class="list-row" id="locationButton"><span class="list-icon">⌖</span><span><strong>الموقع ومواقيت الصلاة</strong><small id="settingsLocationLabel">القاهرة (افتراضي) · اضغط لتحديد موقعك</small></span><span class="chevron">‹</span></button><div class="list-row city-row"><span class="list-icon">◈</span><span><strong>اختيار المدينة يدويًا</strong><small>للمشاركة مع من يسكن مدينة أخرى</small></span><select id="citySelect" aria-label="اختيار المدينة"><option value="">تحديد الموقع تلقائيًا…</option><option value="cairo">القاهرة</option><option value="alexandria">الإسكندرية</option><option value="makkah">مكة المكرمة</option><option value="jeddah">جدة</option><option value="riyadh">الرياض</option><option value="dammam">الدمام</option><option value="doha">الدوحة</option><option value="kuwait">الكويت</option><option value="dubai">دبي</option></select></div><div class="list-row city-row"><span class="list-icon">۩</span><span><strong>طريقة حساب المواقيت</strong><small>تلقائية حسب المنطقة ما لم تُغيّرها</small></span><select id="methodSelect" aria-label="طريقة حساب المواقيت"><option value="">تلقائي حسب المنطقة</option><option value="Egyptian">الهيئة المصرية</option><option value="UmmAlQura">أم القرى</option><option value="MuslimWorldLeague">رابطة العالم الإسلامي</option><option value="Kuwait">الكويت</option><option value="Qatar">قطر</option><option value="NorthAmerica">أمريكا الشمالية</option></select></div><button class="list-row" id="offlineButton"><span class="list-icon">⇩</span><span><strong>العمل دون إنترنت</strong><small>واجهة التطبيق والصفحات المفتوحة تُحفظ</small></span><span class="state-pill">جاهز</span></button></div>
           <button class="list-row" id="refreshApp"><span class="list-icon">↻</span><span><strong>تحديث النسخة</strong><small>من غير حذف نتائجك أو إعداداتك أو المحرك</small></span><span class="chevron">‹</span></button><p id="refreshAppStatus" class="local-note" role="status" aria-live="polite"></p>
         </section>
       </main>

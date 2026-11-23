@@ -1,6 +1,7 @@
 import {installAppUpdate} from './app-update.js';
 import { referencePage, sessionStats, nextHint, mergeWord, backfillFromHeard, backfillMatchedAyah, bismillahOffset, engineTokenMap, hasRecitationLetters } from './recall-core.js';
 import './vendor/adhan.umd.min.js';
+import {lookupRegion} from './location-regions.js';
 import { startCapture } from './audio-capture.js';
 import { createLatencyStats } from './latency-stats.js';
 import { splitPending } from './pending-progress.js';
@@ -120,11 +121,16 @@ async function openRecitationSurah(number,range=null){
 async function ensureRecitationSurah(number){if(reciteVerseCache.has(Number(number)))return;if(pendingReciteSurah===number&&pendingReciteLoad)return pendingReciteLoad;pendingReciteSurah=number;pendingReciteLoad=(async()=>{const result=await getQuranJson(`${quranApi}/surah/${number}/quran-uthmani`);reciteVerseCache.set(Number(number),result.data.ayahs);activeReciteSurah=Number(number)})();try{await pendingReciteLoad}finally{pendingReciteSurah=0;pendingReciteLoad=null}}
 function handleWordVerdicts(message){
   const surah=Number(message.surah),ayah=Number(message.ayah),verse=reciteVerseCache.get(surah)?.find(item=>item.numberInSurah===ayah),engineMap=engineTokenMap(String(verse?.text||'').split(/\s+/).filter(Boolean));
-  if(currentRecitationSession){if(!currentRecitationSession.verdicts)currentRecitationSession.verdicts={};for(const wv of message.words||[]){const index=engineMap[Number(wv.w)];if(!Number.isInteger(index))continue;currentRecitationSession.verdicts[`${surah}:${ayah}:${index}`]={state:wv.state,gop:wv.gop,gopNone:wv.gopNone,repGain:wv.repGain,vowelErrors:wv.vowelErrors};}}
+  if(currentRecitationSession){if(!currentRecitationSession.verdicts)currentRecitationSession.verdicts={};for(const wv of message.words||[]){const index=engineMap[Number(wv.w)];if(!Number.isInteger(index))continue;currentRecitationSession.verdicts[`${surah}:${ayah}:${index}`]={state:wv.state,gop:wv.gop,gopNone:wv.gopNone,repGain:wv.repGain,vowelErrors:wv.vowelErrors};const prior=currentRecitationSession.words.find(item=>item.key===`${surah}:${ayah}:${index}`);if(prior?.errorSource==='rescore'&&wv.state==='ok'&&!isFlagged(wv))saveRecitationWord(surah,ayah,index,'correct','correct',850,true,'verified-rescore');}}
 }
 function saveRecitationWord(surah,ayah,index,status,displayStatus=status,transientMs=0,redraw=true,errorSource){
   const verse=reciteVerseCache.get(Number(surah))?.find(item=>item.numberInSurah===Number(ayah)),text=String(verse?.text||'').split(/\s+/).filter(Boolean)[index]||'';if(!text)return;
-  const key=`${surah}:${ayah}:${index}`;recitationWordStates.set(key,displayStatus);if(transientMs){const expires=Date.now()+transientMs;recitationWordExpiry.set(key,expires);setTimeout(()=>{if(recitationWordExpiry.get(key)===expires){recitationWordStates.set(key,'revealed');recitationWordExpiry.delete(key);drawRecitationQvpPage()}},transientMs+20)}else recitationWordExpiry.delete(key);
+  const key=`${surah}:${ayah}:${index}`;
+  // Tracker progress is not acoustic correction evidence. Keep a rescore flag
+  // until a fresh acoustic pass explicitly clears it.
+  const prior=currentRecitationSession?.words.find(item=>item.key===key);
+  if(prior?.status==='error'&&prior.errorSource==='rescore'&&status==='correct'&&errorSource!=='verified-rescore')return;
+  recitationWordStates.set(key,displayStatus);if(transientMs){const expires=Date.now()+transientMs;recitationWordExpiry.set(key,expires);setTimeout(()=>{if(recitationWordExpiry.get(key)===expires){recitationWordStates.set(key,'revealed');recitationWordExpiry.delete(key);drawRecitationQvpPage()}},transientMs+20)}else recitationWordExpiry.delete(key);
   if(currentRecitationSession){const existing=currentRecitationSession.words.find(item=>item.key===key);const incoming={key,surah:Number(surah),ayah:Number(ayah),index,text,status};if(status==='error')incoming.errorSource=(existing?.errorSource==='rescore'||errorSource==='rescore')?'rescore':(errorSource||existing?.errorSource);if(existing)Object.assign(existing,mergeWord(existing,incoming));else currentRecitationSession.words.push(mergeWord(null,incoming));}
   if(redraw)drawRecitationQvpPage();
 }
@@ -195,7 +201,6 @@ function renderRecitationHistory(){
     const caption=document.createElement('p');caption.textContent=`${toArabic(stats.followed)} تابعها المحرك · ${toArabic(stats.hints)} تلميح · ${toArabic(stats.review)} للمراجعة`;
     const review=buildSessionSummary(session);
     if(review.counts.touched){
-      details.append(sessionSummaryCountsNode(review));
       const open=document.createElement('button');open.type='button';open.className='quiet-link';open.textContent='عرض ملخص الجلسة';open.addEventListener('click',()=>openSessionSummary(session));details.append(open);
     }
     const caveat=document.createElement('small');caveat.textContent='دي نتيجة متابعة آلية، مش حكم على صحة التلاوة. المواضع تشمل تلميحاتك وما لم يتابعه المحرك بوضوح.';
@@ -210,21 +215,6 @@ function renderRecitationHistory(){
       group.append(label,body,retry);details.append(group);
     });list.append(details);
   });
-}
-function sessionSummaryCountsNode(summary){
-  const counts=summary.counts,row=document.createElement('p');row.className='session-summary-counts';
-  const parts=[`${toArabic(counts.correct)} صح`,`${toArabic(counts.wrong)} غلط محتمل`,`${toArabic(counts.unsure)} غير مؤكدة`];
-  if(counts.hinted)parts.push(`${toArabic(counts.hinted)} صح بتلميح`);
-  if(counts.unreviewed)parts.push(summary.savedVerdicts?`${toArabic(counts.unreviewed)} لم تُفحص صوتيًا`:`${toArabic(counts.unreviewed)} من غير نتائج محفوظة`);
-  row.textContent=parts.join(' · ');return row;
-}
-function sessionSummaryLegendNode(summary){
-  const legend=document.createElement('small');legend.className='session-summary-caveat';
-  let text='صح = المحرك فحص الكلمة صوتيًا وما رصدش فيها غلط واضح · صح بتلميح = اتساعدت بتلميح · غير مؤكدة = المحرك شك من غير تأكيد';
-  if(summary?.counts?.unreviewed)text+=summary.savedVerdicts?' · لم تُفحص = المتابعة وصلتلها من غير فحص صوتي.':' · من غير نتائج محفوظة = مفيش نتائج فحص متخزنة للجلسة دي، فمش معروف من السجل لو المحرك راجع الكلمات وقتها ولا لأ.';
-  else text+='.';
-  legend.textContent=text;
-  return legend;
 }
 function rescoreSkipReason(summary){
   const stats=summary?.rescoreStats;if(!stats)return '';
@@ -267,10 +257,9 @@ function openSessionSummary(session){
   const dialog=document.getElementById('sessionSummaryDialog'),content=document.getElementById('sessionSummaryContent');
   if(!dialog||!content)return;
   const summary=buildSessionSummary(session);content.replaceChildren();
-  content.append(sessionSummaryCountsNode(summary));
   const headline=document.createElement('p');headline.className='session-summary-headline';
-  headline.textContent=summary.rescoreUnavailable?'الفحص الصوتي ما كانش متاح في الجلسة دي؛ الأرقام من المتابعة الحية بس.':(summary.counts.wrong?`رصد المحرك ${toArabic(summary.counts.wrong)} موضع محتاج مراجعة:`:(summary.counts.judged?'المحرك ما رصدش غلطات واضحة في الكلمات اللي فحصها صوتيًا.':(summary.savedVerdicts?'مفيش فحص غلطات للجلسة دي.':'مفيش نتائج فحص محفوظة للجلسة دي.')));
-  content.append(headline,sessionMistakesNode(summary,true),sessionSummaryLegendNode(summary),sessionSummaryCaveatNode(summary));
+  headline.textContent=summary.rescoreUnavailable?'الفحص الصوتي ما كانش متاح في الجلسة دي؛ النتيجة دي من المتابعة الحية بس.':(summary.counts.wrong?`رصد المحرك ${toArabic(summary.counts.wrong)} موضع محتاج مراجعة:`:(summary.counts.judged?'المحرك ما رصدش غلطات واضحة في الكلمات اللي فحصها صوتيًا.':(summary.savedVerdicts?'مفيش فحص غلطات للجلسة دي.':'مفيش نتائج فحص محفوظة للجلسة دي.')));
+  content.append(headline,sessionMistakesNode(summary,true),sessionSummaryCaveatNode(summary));
   content.onclick=event=>{if(event.target?.classList?.contains('quiet-link'))dialog.close()};
   if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');
 }
@@ -530,11 +519,23 @@ document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement
 const today=new Date();const dateText=new Intl.DateTimeFormat('ar-EG',{weekday:'long',day:'numeric',month:'long'}).format(today);
 document.querySelectorAll('#todayDate,#todayDate2').forEach(node=>node.textContent=dateText);
 
-const locations={cairo:{lat:30.0444,lon:31.2357,name:'القاهرة'}};
-let userLocation={...locations.cairo,name:`${locations.cairo.name} (افتراضي)`};
-try{const saved=JSON.parse(readStore('rattil-location','null'));if(saved&&Number.isFinite(saved.lat)&&Number.isFinite(saved.lon))userLocation=saved}catch{}
-function setLocationLabels(){const shortName=userLocation.name.replace(' (افتراضي)','');document.getElementById('prayerCityName').textContent=shortName;document.getElementById('settingsLocationLabel').textContent=`${userLocation.name} · اضغط لتغيير الموقع`;document.getElementById('prayerMethodNote').textContent=`طريقة الحساب المصرية · ${userLocation.name}`}
-function prayerTimesFor(date){const coordinates=new window.adhan.Coordinates(userLocation.lat,userLocation.lon);const params=window.adhan.CalculationMethod.Egyptian();params.madhab=window.adhan.Madhab.Shafi;return new window.adhan.PrayerTimes(coordinates,date,params)}
+const locations={cairo:{lat:30.0444,lon:31.2357,name:'القاهرة',tz:'Africa/Cairo',method:'Egyptian'},alexandria:{lat:31.2001,lon:29.9187,name:'الإسكندرية',tz:'Africa/Cairo',method:'Egyptian'},makkah:{lat:21.3891,lon:39.8579,name:'مكة المكرمة',tz:'Asia/Riyadh',method:'UmmAlQura'},jeddah:{lat:21.4858,lon:39.1925,name:'جدة',tz:'Asia/Riyadh',method:'UmmAlQura'},riyadh:{lat:24.7136,lon:46.6753,name:'الرياض',tz:'Asia/Riyadh',method:'UmmAlQura'},dammam:{lat:26.4207,lon:50.0888,name:'الدمام',tz:'Asia/Riyadh',method:'UmmAlQura'},doha:{lat:25.2854,lon:51.5310,name:'الدوحة',tz:'Asia/Qatar',method:'Qatar'},kuwait:{lat:29.3759,lon:47.9774,name:'الكويت',tz:'Asia/Kuwait',method:'Kuwait'},dubai:{lat:25.2048,lon:55.2708,name:'دبي',tz:'Asia/Dubai',method:'MuslimWorldLeague'}};
+const methodNames={Egyptian:'الهيئة المصرية',UmmAlQura:'أم القرى',MuslimWorldLeague:'رابطة العالم الإسلامي',Kuwait:'الكويت',Qatar:'قطر',NorthAmerica:'أمريكا الشمالية',MoonsightingCommittee:'لجنة رؤية الهلال',Singapore:'سنغافورة',Tehran:'طهران',Karachi:'كراتشي'};
+let userLocation=null; // nothing shown until the person picks a city or grants location
+try{const saved=JSON.parse(readStore('rattil-location','null'));if(saved&&Number.isFinite(saved.lat)&&Number.isFinite(saved.lon)){userLocation=saved;if(!userLocation.method||!userLocation.tz){const region=lookupRegion(saved.lat,saved.lon);if(region&&!region.uncertain){userLocation.method=region.method;userLocation.tz=region.tz}else{userLocation.method=userLocation.method||'Egyptian';userLocation.tz=userLocation.tz||'Africa/Cairo'}}}}catch{}
+function methodOverride(){const m=readStore('rattil-method','');return m&&methodNames[m]?m:''}
+function activeMethod(){return methodOverride()||(userLocation&&userLocation.method)||'Egyptian'}
+function activeTz(){return (userLocation&&userLocation.tz)||Intl.DateTimeFormat().resolvedOptions().timeZone||'Africa/Cairo'}
+function setLocationLabels(){
+  const cityEl=document.getElementById('prayerCityName'),labelEl=document.getElementById('settingsLocationLabel'),noteEl=document.getElementById('prayerMethodNote');
+  if(!userLocation){cityEl.textContent='لم تُحدد المدينة';labelEl.textContent='اختر مدينتك أو فعّل التحديد التلقائي';noteEl.textContent='حدد مدينتك لتظهر المواقيت';return}
+  const shortName=userLocation.name.replace(' (افتراضي)','');
+  cityEl.textContent=shortName;
+  labelEl.textContent=`${userLocation.name} · اضغط لتحديد موقعك تلقائيًا`;
+  const override=methodOverride();
+  noteEl.textContent=`طريقة ${methodNames[activeMethod()]||activeMethod()}${override?' (يدوي)':''} · ${userLocation.name}`;
+}
+function prayerTimesFor(date){const coordinates=new window.adhan.Coordinates(userLocation.lat,userLocation.lon);const factory=window.adhan.CalculationMethod[activeMethod()]||window.adhan.CalculationMethod.MuslimWorldLeague;const params=factory();params.madhab=window.adhan.Madhab.Shafi;return new window.adhan.PrayerTimes(coordinates,date,params)}
 const prayerNames={fajr:'الفجر',sunrise:'الشروق',dhuhr:'الظهر',asr:'العصر',maghrib:'المغرب',isha:'العشاء'};
 const prayerIconPaths={
   fajr:'<path d="M3 19h18M6 14l2 1.4M12 11v3M18 14l-2 1.4M4.5 10.5l1.2 1.2M19.5 10.5l-1.2 1.2"/>',
@@ -545,9 +546,13 @@ const prayerIconPaths={
   isha:'<path d="M18.5 15.5A8 8 0 0 1 8.4 5.4a8.5 8.5 0 1 0 10.1 10.1Z"/><path d="M17.5 4v3M16 5.5h3M21 10v2M20 11h2"/>'
 };
 function prayerIconSvg(key){return `<svg class="prayer-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${prayerIconPaths[key]||prayerIconPaths.fajr}</svg>`}
-function formatTime(date){return new Intl.DateTimeFormat('ar-EG',{hour:'numeric',minute:'2-digit',hour12:true}).format(date)}
+function formatTime(date){return new Intl.DateTimeFormat('ar-EG',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:activeTz()}).format(date)}
 function formatCompactPrayerTime(date){return formatTime(date).replace(/\s*[صم]$/,'')}
 let nextPrayerAt=null;
+let skyPhase='';
+function applySkyPhase(phase){if(!phase||phase===skyPhase)return;skyPhase=phase;document.body.dataset.sky=phase;document.querySelectorAll('#view-home .sky-phase').forEach(img=>img.classList.toggle('active',img.dataset.phase===phase))}
+function skyPhaseFromTimes(times,now){const m=60000,at=value=>value instanceof Date?value.getTime():0,fajr=at(times.fajr),sunrise=at(times.sunrise),maghrib=at(times.maghrib),t=now.getTime();if(!fajr||!sunrise||!maghrib)return null;if(t>=fajr-30*m&&t<sunrise+45*m)return'dawn';if(t>=sunrise+45*m&&t<maghrib-45*m)return'day';if(t>=maghrib-45*m&&t<maghrib+30*m)return'sunset';return'night'}
+function skyPhaseFallback(now){const h=now.getHours()+now.getMinutes()/60;if(h>=4.5&&h<7)return'dawn';if(h>=7&&h<16.5)return'day';if(h>=16.5&&h<19)return'sunset';return'night'}
 function updatePrayerCountdown(){
   if(!nextPrayerAt)return;
   const seconds=Math.max(0,Math.floor((nextPrayerAt-new Date())/1000)),hours=Math.floor(seconds/3600),minutes=Math.floor(seconds%3600/60),remaining=seconds%60;
@@ -555,6 +560,17 @@ function updatePrayerCountdown(){
   document.getElementById('prayerCountdownDashboard').textContent=value;
 }
 function updatePrayerTimes(){
+  const list0=document.getElementById('prayerTimesList');
+  if(!userLocation){
+    list0.replaceChildren();
+    const line=document.createElement('div');line.className='prayer-time-row prayer-unset';line.textContent='حدد مدينتك من الإعدادات أو فعّل تحديد الموقع لتظهر مواقيت الصلاة.';list0.append(line);
+    document.getElementById('prayerCountdownDashboard').textContent='--:--:--';
+    document.getElementById('prayerDashboardNextName').textContent='المواقيت';
+    document.getElementById('nextPrayerGlyph').innerHTML=prayerIconSvg('fajr');
+    document.getElementById('prayerProgressFill').style.width='0%';
+    document.getElementById('prayerProgressFrom').textContent='';document.getElementById('prayerProgressTo').textContent='اختر مدينتك أولًا';
+    nextPrayerAt=null;applySkyPhase(skyPhaseFallback(new Date()));return;
+  }
   try{
     const now=new Date(),times=prayerTimesFor(now),rows=Object.entries(prayerNames).map(([key,name])=>({key,name,time:times[key]}));
     const list=document.getElementById('prayerTimesList');list.replaceChildren();
@@ -573,17 +589,33 @@ function updatePrayerTimes(){
     document.querySelector('.prayer-progress-track').setAttribute('aria-valuenow',String(Math.round(progress)));
     document.getElementById('prayerProgressFrom').textContent=`${previous.name} ${formatTime(previous.time)}`;
     document.getElementById('prayerProgressTo').textContent=`${next.name} ${formatTime(nextAt)}`;
-    nextPrayerAt=nextAt;updatePrayerCountdown();
-  }catch(error){console.error('Prayer times calculation failed:',error);document.getElementById('prayerCountdownDashboard').textContent='—';document.getElementById('prayerTimesList').textContent='تعذّر حساب المواقيت على هذا الجهاز.'}
+    nextPrayerAt=nextAt;updatePrayerCountdown();applySkyPhase(skyPhaseFromTimes(times,now)||skyPhaseFallback(now));
+  }catch(error){console.error('Prayer times calculation failed:',error);document.getElementById('prayerCountdownDashboard').textContent='—';document.getElementById('prayerTimesList').textContent='تعذّر حساب المواقيت على هذا الجهاز.';applySkyPhase(skyPhaseFallback(new Date()))}
 }
 setLocationLabels();updatePrayerTimes();setInterval(updatePrayerTimes,60000);setInterval(updatePrayerCountdown,1000);
-document.getElementById('locationButton').addEventListener('click',()=>{
-  if(!navigator.geolocation){announce('تحديد الموقع غير مدعوم. ستظل المواقيت محسوبة للقاهرة.');return}
-  announce('اسمح للموقع بالوصول لموقعك لحساب المواقيت الأقرب.');
-  navigator.geolocation.getCurrentPosition(position=>{
-    userLocation={lat:position.coords.latitude,lon:position.coords.longitude,name:'موقعي الحالي'};writeStore('rattil-location',JSON.stringify(userLocation));setLocationLabels();updatePrayerTimes();announce('تم تحديث الموقع وحساب مواقيت الصلاة.');
-  },error=>{const message=error.code===1?'لم تسمح بالوصول للموقع. غيّر الإذن من إعدادات المتصفح.':error.code===3?'انتهت مهلة تحديد الموقع. حاول مرة أخرى.':'تعذر تحديد الموقع. تأكد من تشغيل خدمات الموقع.';announce(`${message} المواقيت الحالية للقاهرة.`)},{enableHighAccuracy:false,timeout:12000,maximumAge:300000});
-});
+function applyGpsFix(position,silent){
+  const lat=position.coords.latitude,lon=position.coords.longitude,region=lookupRegion(lat,lon);
+  if(region&&!region.uncertain){
+    userLocation={lat,lon,name:'موقعي الحالي',method:region.method,tz:region.tz,source:'gps'};
+    writeStore('rattil-location',JSON.stringify(userLocation));setLocationLabels();updatePrayerTimes();
+    if(!silent)announce(`تم تحديد موقعك (${region.name}) وحساب مواقيت الصلاة.`);
+  }else{
+    userLocation=null;setLocationLabels();updatePrayerTimes();
+    announce(region&&region.uncertain?'موقعك قريب من حدود منطقتين مدعومتين. اختر مدينتك يدويًا لضمان دقة المواقيت.':'منطقتك خارج المناطق المدعومة تلقائيًا. اختر مدينتك من الإعدادات.');
+  }
+}
+function detectLocation(silent){
+  if(!navigator.geolocation){if(!silent)announce('تحديد الموقع غير مدعوم على هذا الجهاز. اختر مدينتك من القائمة.');return}
+  if(!silent)announce('اسمح للموقع بالوصول لموقعك لحساب المواقيت الأقرب.');
+  navigator.geolocation.getCurrentPosition(position=>applyGpsFix(position,silent),
+    error=>{if(silent)return;const message=error.code===1?'لم تسمح بالوصول للموقع. غيّر الإذن من إعدادات المتصفح.':error.code===3?'انتهت مهلة تحديد الموقع. حاول مرة أخرى.':'تعذر تحديد الموقع. تأكد من تشغيل خدمات الموقع.';announce(`${message} يمكنك اختيار المدينة يدويًا.`)},{enableHighAccuracy:false,timeout:12000,maximumAge:300000});
+}
+document.getElementById('locationButton').addEventListener('click',()=>detectLocation(false));
+const citySelect=document.getElementById('citySelect');
+if(citySelect){citySelect.addEventListener('change',()=>{const key=citySelect.value;if(key&&locations[key]){userLocation={...locations[key],source:'city'};writeStore('rattil-location',JSON.stringify(userLocation));announce(`تم اختيار ${locations[key].name} وحساب المواقيت.`);setLocationLabels();updatePrayerTimes()}else if(!key){detectLocation(false)}});}
+const methodSelect=document.getElementById('methodSelect');
+if(methodSelect){methodSelect.value=methodOverride();methodSelect.addEventListener('change',()=>{writeStore('rattil-method',methodSelect.value);setLocationLabels();updatePrayerTimes();announce('تم تحديث طريقة حساب المواقيت.')});}
+if(!userLocation){detectLocation(true)}
 
 const themeToggle=document.getElementById('themeToggle');
 function applyTheme(){const light=readStore('rattil-theme','night')==='light';document.body.classList.toggle('light',light);themeToggle.querySelector('small').textContent=light?'الواجهة الفاتحة الهادئة':'الواجهة الداكنة الهادئة';themeToggle.querySelector('.state-pill').textContent=light?'مفعّل':'مفعّل'}
