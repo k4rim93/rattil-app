@@ -89,6 +89,25 @@ export function mistakeKindLabel(kind) {
 // property at all predates persistence — the record cannot say whether the
 // words were inspected live, so coverage is honestly unknown.
 // "correct" never means tajweed-valid and never covers unexamined words.
+// Keys (surah:ayah:index, digits only) of the words that land in the
+// summary's unreviewed bucket: touched by the tracker, never an error/hint
+// paint, and no usable acoustic verdict. Mirrors buildSessionSummary's
+// unreviewed condition exactly so diagnostics can name the same words the
+// summary counts.
+export function unreviewedWordKeys(session) {
+  const words = Array.isArray(session?.words) ? session.words : [];
+  const verdicts = session?.verdicts && typeof session.verdicts === 'object' ? session.verdicts : {};
+  const keys = [];
+  for (const word of words) {
+    if (!word || typeof word.key !== 'string') continue;
+    if (word.status === 'error' || word.hinted || word.status === 'hint') continue;
+    const verdict = verdicts[word.key] || null;
+    if (verdict && classifyVerdict(verdict).bucket !== 'unclear') continue;
+    keys.push(word.key);
+  }
+  return keys;
+}
+
 export function buildSessionSummary(session) {
   const words = Array.isArray(session?.words) ? session.words : [];
   const verdicts = session?.verdicts && typeof session.verdicts === 'object' ? session.verdicts : {};
