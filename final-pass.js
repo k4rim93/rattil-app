@@ -32,7 +32,29 @@ export function planFinalPass(progressLog, coveredAyahs, audioTotal, opts = {}) 
   const lead = opts.lead ?? LEAD, trail = opts.trail ?? TRAIL, joinGap = opts.joinGap ?? JOIN_GAP;
   const total = Number.isFinite(audioTotal) ? audioTotal : 0;
   if (!Array.isArray(progressLog) || !progressLog.length || total <= 0) return [];
-  const covered = coveredAyahs instanceof Set ? coveredAyahs : new Set(coveredAyahs || []);
+  // coveredAyahs may be a plain Set of ayah keys (fully covered) or
+  // { ayahs: Set, words: Map<key, Set<wordIndex>> }: a live rescore can post
+  // a partial word set for an ayah it was cut off in, and that ayah must NOT
+  // count as covered — the remaining words still deserve their attempt.
+  const coveredSet = coveredAyahs instanceof Set ? coveredAyahs : new Set(coveredAyahs?.ayahs || []);
+  const coveredWords = coveredAyahs instanceof Set ? null : (coveredAyahs?.words || null);
+  const maxWord = new Map();
+  if (coveredWords) for (const p of progressLog) {
+    const w = Number(p?.w);
+    if (!Number.isFinite(w)) continue;
+    const key = `${Number(p?.surah)}:${Number(p?.ayah)}`;
+    if (w > (maxWord.get(key) ?? -1)) maxWord.set(key, Math.trunc(w));
+  }
+  const covered = { has(key) {
+    if (!coveredSet.has(key)) return false;
+    if (!coveredWords) return true;
+    const mw = maxWord.get(key);
+    if (mw == null) return true;
+    const set = coveredWords.get(key);
+    if (!set) return false;
+    for (let w = 0; w <= mw; w++) if (!set.has(w)) return false;
+    return true;
+  } };
   // One stretch per recited ayah. Consecutive entries for the same ayah
   // extend its stretch; an ayah that reappears after another one was
   // re-recited, so it keeps only its latest stretch and moves to the back of
