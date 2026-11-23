@@ -32,7 +32,7 @@ try{
  await page.locator('#stopRec').click();await page.waitForFunction(()=>JSON.parse(localStorage.getItem('rattil-recitation-history')||'[]').length===1);
  if(await page.locator('#sessionSummaryDialog').isVisible())await page.locator('#sessionSummaryDialog button[value=cancel]').click();await page.locator('#exitRecitation').click();await page.locator('.recitation-history-entry').click();await page.screenshot({path:'/downloads/rattil-results.png',fullPage:true});
  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('rattil-recitation-history')));assert.equal(saved.length,1);assert.equal(saved[0].words[0].hinted,true);assert.equal(saved[0].words.find(w=>w.index===2).status,'error');assert.equal(saved[0].words.find(w=>w.index===3).status,'uncertain');
- await page.reload();await page.locator('.tabbar [data-view=progress]').click();assert.equal(await page.locator('#progressSessions').textContent(),'١');await page.screenshot({path:'/downloads/rattil-progress.png',fullPage:true});
+ await page.reload();await page.locator('.tabbar [data-view=today]').click();assert.equal(await page.locator('#progressSessions').textContent(),'١');await page.screenshot({path:'/downloads/rattil-progress.png',fullPage:true});
  // Regression: last two surahs are on page 604, not page 1.
  await page.locator('.tabbar [data-view=quran]').click();await page.locator('#indexButton').click();await page.waitForSelector('.surah-option');
  for(const name of ['الفلق','الناس']){await page.locator('#surahSearch').fill(name);const row=page.locator('#surahList .surah-option');await row.waitFor();assert.match(await row.textContent(),/٦٠٤/)}

@@ -24,7 +24,6 @@
         <div class="top-actions">
           <button class="icon-button back-button" id="backButton" aria-label="رجوع" title="رجوع" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5 7.5 12l7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
           <button class="icon-button" id="installButton" aria-label="تثبيت رتل على الشاشة الرئيسية" hidden title="تثبيت رتل">⇧</button>
-          <button class="icon-button" data-view="settings" aria-label="الإعدادات" title="الإعدادات">⚙</button>
         </div>
       </header>
 
@@ -66,14 +65,18 @@
         </section>
 
         <section class="view" id="view-today" data-title="اليوم">
-          <header class="page-heading"><p class="date-line" id="todayDate2"></p><h1>وردك اليوم</h1><p>اختر وقتًا يناسبك، وخلي وردك قابلًا للاستمرار.</p></header>
-          <div class="daily-focus"><span class="focus-mark">۞</span><div><small>وردك</small><h2>كمّل من حيث وصلت</h2><p id="todayContinuePage">آخر صفحة فتحتها على هذا الجهاز</p></div><button class="gold-button" data-view="quran">ابدأ القراءة</button></div>
+          <header class="page-heading"><p class="date-line" id="todayDate2"></p><h1>اليوم</h1><p>اختر وقتًا يناسبك، وخلي وردك قابلًا للاستمرار.</p></header>
+          <div class="daily-focus"><span class="focus-mark">۞</span><div><h2>كمّل من حيث وصلت</h2><p><span id="todayContinuePage">آخر صفحة فتحتها على هذا الجهاز</span><span id="todayReadingPosition" hidden></span></p></div><button class="gold-button" data-view="quran">ابدأ القراءة</button></div>
           <div class="simple-list">
-            <button class="list-row" data-view="quran"><span class="list-icon">◫</span><span><strong>القراءة</strong><small id="todayReadingPosition">متابعة آخر صفحة</small></span><span class="state-pill done-pill">متابعة</span></button>
+
             <button class="list-row" data-view="practice"><span class="list-icon">◉</span><span><strong>التسميع</strong><small>اختار ما تريد مراجعته</small></span><span class="state-pill">ابدأ</span></button>
             <button class="list-row" data-view="azkar"><span class="list-icon">۞</span><span><strong>أذكار اليوم</strong><small>افتح عداد التسبيح والتحميد والتكبير</small></span><span class="state-pill">فتح</span></button>
           </div>
-          <p class="sample-note wide-note">اختار القراءة أو التسميع. التقدم بيتسجل من استخدامك على الجهاز ده.</p>
+          <section class="un-today-progress" aria-labelledby="todayProgressTitle"><header class="un-section-title"><h2 id="todayProgressTitle">على طريقك</h2><span>متابعتك على هذا الجهاز</span></header>
+          <div class="progress-week"><span>آخر ٧ أيام</span><strong id="progressDays">٠ أيام تسميع</strong><div class="week-dots" id="progressDots" aria-label="أيام جلسات التسميع خلال آخر سبعة أيام"></div><small>من جلساتك المحفوظة على هذا الجهاز، مش نسبة الحفظ.</small></div>
+          <div class="progress-metrics"><div><strong id="progressSessions">٠</strong><span>جلسات مسجلة</span></div><div><strong id="progressReview">٠</strong><span>مواضع في سجل المراجعة</span></div></div><p class="local-note" id="progressLastPage"></p><button class="gold-button" data-view="practice">الجلسات والملخصات وسجل المراجعة</button>
+
+          </section>
         </section>
 
         <section class="view" id="view-quran" data-title="المصحف">
@@ -123,13 +126,6 @@
           <div class="recitation-controls" hidden><span id="reciteLiveIndicator">جاهز</span><button class="gold-button" id="startRec" type="button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4m-4 0h8"/></svg><span id="recitationStartLabel">ابدأ من أي مكان</span></button><button class="quiet-link" id="stopRec" type="button" disabled aria-label="إيقاف التسميع"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="3"/></svg><span>إيقاف</span></button></div>
         </section>
 
-        <section class="view" id="view-progress" data-title="التقدم">
-          <header class="page-heading"><h1>على طريقك</h1><p>تابع الاستمرار من غير ضغط أو مقارنة.</p></header>
-          <div class="progress-week"><span>آخر ٧ أيام</span><strong id="progressDays">٠ أيام تسميع</strong><div class="week-dots" id="progressDots" aria-label="أيام جلسات التسميع خلال آخر سبعة أيام"></div><small>من جلساتك المحفوظة على هذا الجهاز، مش نسبة الحفظ.</small></div>
-          <div class="progress-metrics"><div><strong id="progressSessions">٠</strong><span>جلسات مسجلة</span></div><div><strong id="progressReview">٠</strong><span>مواضع في سجل المراجعة</span></div></div><p class="local-note" id="progressLastPage"></p><button class="gold-button" data-view="practice">افتح جلساتك للمراجعة</button>
-
-        </section>
-
         <section class="view" id="view-settings" data-title="الإعدادات">
           <header class="page-heading"><h1>الإعدادات</h1><p>خلّي رتل مناسب لطريقتك.</p></header>
           <div class="simple-list"><button class="list-row" id="themeToggle"><span class="list-icon">☾</span><span><strong>مظهر الواجهة</strong><small>اختيار المظهر الداكن أو الفاتح</small></span><span class="state-pill">مفعّل</span></button><button class="list-row" id="locationButton"><span class="list-icon">⌖</span><span><strong>الموقع ومواقيت الصلاة</strong><small id="settingsLocationLabel">القاهرة (افتراضي) · اضغط لتحديد موقعك</small></span><span class="chevron">‹</span></button><div class="list-row city-row"><span class="list-icon">◈</span><span><strong>اختيار المدينة يدويًا</strong><small>للمشاركة مع من يسكن مدينة أخرى</small></span><select id="citySelect" aria-label="اختيار المدينة"><option value="">تحديد الموقع تلقائيًا…</option><option value="cairo">القاهرة</option><option value="alexandria">الإسكندرية</option><option value="makkah">مكة المكرمة</option><option value="jeddah">جدة</option><option value="riyadh">الرياض</option><option value="dammam">الدمام</option><option value="doha">الدوحة</option><option value="kuwait">الكويت</option><option value="dubai">دبي</option></select></div><div class="list-row city-row"><span class="list-icon">۩</span><span><strong>طريقة حساب المواقيت</strong><small>تلقائية حسب المنطقة ما لم تُغيّرها</small></span><select id="methodSelect" aria-label="طريقة حساب المواقيت"><option value="">تلقائي حسب المنطقة</option><option value="Egyptian">الهيئة المصرية</option><option value="UmmAlQura">أم القرى</option><option value="MuslimWorldLeague">رابطة العالم الإسلامي</option><option value="Kuwait">الكويت</option><option value="Qatar">قطر</option><option value="NorthAmerica">أمريكا الشمالية</option></select></div><button class="list-row" id="offlineButton"><span class="list-icon">⇩</span><span><strong>العمل دون إنترنت</strong><small>واجهة التطبيق والصفحات المفتوحة تُحفظ</small></span><span class="state-pill">جاهز</span></button></div>
@@ -142,7 +138,7 @@
         <button data-view="quran"><span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10 4.8 7.2 4.3 4 4.5v13.7c3.2-.2 6 .3 8 2 2-1.7 4.8-2.2 8-2V4.5c-3.2-.2-6 .3-8 2z"/><path d="M12 6.5v13.7"/></svg></span><small>المصحف</small></button>
         <button class="home-tab active" data-view="home" aria-current="page"><span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9.5h12V10"/><path d="M10 19.5v-5h4v5"/></svg></span><small>الرئيسية</small></button>
         <button data-view="practice"><span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="10.5" rx="3"/><path d="M6.5 11.5a5.5 5.5 0 0 0 11 0M12 17v3.5M9 20.5h6"/></svg></span><small>التسميع</small></button>
-        <button data-view="progress"><span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M7 20v-6M12 20V9M17 20V4.5"/></svg></span><small>التقدم</small></button>
+        <button data-view="settings"><span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m9 3 .7-1h4.6l.7 2 1.7 1 2.2-.3 2.1 3.6-1.3 1.8v2l1.3 1.8-2.1 3.6-2.2-.3-1.7 1-.7 2H9.7l-.7-2-1.7-1-2.2.3L3 13.9l1.3-1.8v-2L3 8.3l2.1-3.6 2.2.3z"/><circle cx="12" cy="11.5" r="3"/></svg></span><small>الإعدادات</small></button>
       </nav>
     </div>
     <button class="back-to-top" id="backToTop" aria-label="الرجوع إلى أعلى الصفحة" title="إلى الأعلى" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6.5 10.5 12 5l5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></button>

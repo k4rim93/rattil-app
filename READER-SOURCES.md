@@ -9,3 +9,20 @@ Catalogue: https://api.alquran.cloud/v1/edition/format/audio . The chosen editio
 The app displays unchanged Al-Tafsir Al-Muyassar by the King Fahd Complex via QuranEnc.com, version 1.0.1 as listed at https://quranenc.com/en/home on 23 Nov 2026. Each tafsir is fetched when requested with no persistent copy. Provider: https://quranenc.com/en/browse/arabic_moyassar . API: https://quranenc.com/en/home/api/ . QuranEnc's Terms and Policies permit download and republication subject to no additions/deletions/modification, publisher/source and version credit, preservation of document information, correction feedback, updating to current editions, and no inappropriate ads. Publisher, source, version and source link accompany the content. No tafsir corpus is bundled in this repository. Reading notes remain private on this device, never sent to QuranEnc.
 
 Streaming audio and tafsir require internet. Physical iPhone testing is still needed for Safari user-activation and interruption behaviour. This change does not claim parity with any native app or a general improvement in recitation accuracy.
+
+## Preview: Yasser ad-Dossari timed playback
+- MP3Quran v3 lists Yasser (read92), Hafs, with timings for114surahs: https://mp3quran.net/api/v3/ayat_timing/reads .
+- Per-surah timing endpoint: https://mp3quran.net/api/v3/ayat_timing?surah=2&read=92 . The app checks exactly one matching ayah and a valid bounded millisecond interval, streams the matching full-surah recording, seeks to that interval and stops/repeats inside it. No inferred alignment or audio editing.
+- MP3Quran's first-party copyright section permits visitor/developer use of its material or links: https://www.mp3quran.net/eng/privacy . Source credit/rights link stays in the player.
+- The2:255 public source page corroborates the same start offset and recording: https://www.mp3quran.net/ar/yasser/2/255 .
+- Badr al-Turki is available whole-surah, but no timings were returned for read254 on23Nov2026. Not advertised as verse-capable.
+- Timings are source-provided navigation boundaries, not a guarantee of word-level precision. Streaming/seeking, background behavior and Safari may vary. The existing physical iPhone verification caveat remains.
+
+## Preview: explicit ayah playback gestures
+Plain tap selects the ayah only. A550ms primary-pointer hold opens the existing options sheet, cancelled by movement over10px, pointer cancellation, leaving the target, or scrolling. Keyboard Enter/Space opens options. No gesture or reciter selection starts audio; Play is explicit. Long-press generated clicks and native iOS callout/selection are suppressed in the reader. Physical Safari touch still needs user testing.
+
+## Preview: cleaner ayah sheet
+Provider credits, both provider rights links and streaming caveats are retained under Settings > Recitation sources and usage rights, outside the ayah sheet. The redundant gesture hint was removed from the sheet. The sheet ends after repeat unless tafsir is explicitly expanded; it leaves a12px plus safe-area gap above the screen bottom.
+
+## Preview: quick playback menu and continuation
+Long press and Enter/Space open an original Rattil quick menu: current ayah only, continue from this ayah, or more options. Plain tap remains silent selection. Continue mode honors each ayah repeat before advancing, validates current/next Quran metadata sequential numbering, follows source page references and spotlight across pages and surahs, and stops at114:6. Manual navigation, new selection, mode/reciter change and leaving the reader stop playback. Automatic page loads preserve only the active playback sequence; failed page/metadata/audio loads never guess the next reference. Playback remains browser-dependent, especially background/Safari.
