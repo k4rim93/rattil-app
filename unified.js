@@ -23,7 +23,7 @@ function drawVerse(ref){clearSpotlight();const svg=document.querySelector('.mush
 
 let continuation=false,sequence=0,advancing=false,autoPage=null,loadingAudio=false;let segment=null,segmentEnding=false;const audio=new Audio();audio.preload='none';let segmentTimer=null;audio.addEventListener('play',()=>{clearInterval(segmentTimer);if(segment)segmentTimer=setInterval(()=>{if(segment&&!audio.seeking&&!audio.paused&&audio.currentTime>=segment.end-.025)finishVerse()},30)});audio.addEventListener('pause',()=>clearInterval(segmentTimer));let selected=null,request=0,repeats=0,swipeAt=0,point=null;
 const reciters={'7':{edition:'ar.alafasy',name:'مشاري راشد العفاسي'},'6':{edition:'ar.husary',name:'محمود خليل الحصري'},'9':{edition:'ar.minshawi',name:'محمد صديق المنشاوي · مرتل'},'mp3-yasser':{name:'ياسر الدوسري',timed:true}};
-const chosen=readStore('rattil-reader-reciter','');if(reciters[chosen])$('reciterChoice').value=chosen;
+const defaultReciter=readStore('rattil-default-reciter',''),chosen=reciters[defaultReciter]?defaultReciter:readStore('rattil-reader-reciter','');if(reciters[chosen])$('reciterChoice').value=chosen;
 function status(text){$('verseStatus').textContent=text}
 function stopAudio(){loadingAudio=false;continuation=false;sequence++;advancing=false;autoPage=null;segment=null;segmentEnding=false;request++;audio.pause();audio.removeAttribute('src');audio.load();$('readerMiniPlayer').hidden=true;body.classList.remove('reader-audio-active');$('versePlay').textContent='استمع للآية';$('miniPlay').textContent='▶'}
 function duration(){return segment?segment.end-segment.start:audio.duration}function elapsed(){return segment?Math.max(0,Math.min(duration(),audio.currentTime-segment.start)):audio.currentTime}
@@ -58,6 +58,13 @@ const locationGroup=document.createElement('details');locationGroup.className='u
 const locationSummary=document.createElement('summary');locationSummary.textContent='الموقع ومواقيت الصلاة';locationGroup.append(locationSummary);
 for(const el of [$('locationButton'),$('citySelect').closest('.city-row'),$('methodSelect').closest('.city-row')])locationGroup.append(el);
 settingsList.insertBefore(locationGroup,$('offlineButton'));
+// Default reciter: used whenever the verse sheet opens after a fresh start. Empty = keep the last reciter used (old behavior).
+const reciterRow=document.createElement('label');reciterRow.className='list-row city-row';reciterRow.innerHTML='<span class="list-icon">♪</span><span><strong>القارئ الافتراضي</strong><small>القارئ اللي يبدأ بيه الاستماع للآيات</small></span><select id="defaultReciter" aria-label="القارئ الافتراضي"></select>';
+const defaultSelect=reciterRow.querySelector('select'),lastOption=document.createElement('option');lastOption.value='';lastOption.textContent='آخر قارئ استخدمته';defaultSelect.append(lastOption);
+for(const opt of $('reciterChoice').options){const o=document.createElement('option');o.value=opt.value;o.textContent=opt.textContent;defaultSelect.append(o)}
+defaultSelect.value=reciters[defaultReciter]?defaultReciter:'';
+defaultSelect.addEventListener('change',()=>{const id=defaultSelect.value;writeStore('rattil-default-reciter',id);if(reciters[id]){$('reciterChoice').value=id;$('reciterCredit').textContent=reciters[id].name;announce?.('تم تغيير القارئ الافتراضي')}});
+settingsList.insertBefore(reciterRow,locationGroup);
 const aboutTitle=document.createElement('h2');aboutTitle.className='un-settings-title';aboutTitle.textContent='عن رتل';settings.insertBefore(aboutTitle,$('refreshApp'));
 $('readerCredits').querySelector('summary').textContent='مصادر التلاوة وحقوق الاستخدام';
 updateDismiss.hidden=!$('refreshAppStatus').textContent.trim();
