@@ -54,6 +54,7 @@ let rescoreEpoch = 0; // bumped on reset so a run still slicing from an earlier 
 function queueRescore(a, b) { const e = rescoreEpoch; rescoreChain = rescoreChain.then(() => rescoreRun(a, b, e)).catch(() => {}); }
 let audioChunks = [];
 let audioTotal = 0;
+let audioDropped = 0; // samples trimmed off the front of audioChunks; chunk offsets are absolute (audioTotal based)
 const matchLog = [];
 // word_progress trail, stamped with the audio offset the tracker had consumed
 // when each event fired. The stop-time final pass derives the real audio
@@ -68,10 +69,10 @@ const postedVerdictWords = new Map();
 const flaggedWords = new Map(); // surah:ayah -> Set(engine word indices)
 let vadSpeech = false, vadRunStart = 0, vadLastSpeech = 0, vadEnergy = 0, vadHopCount = 0;
 const VAD_HOP = 800, VAD_GAP = 0.6 * 16000, VAD_THR = 0.01, VAD_PAD = 0.3 * 16000;
-function rescoreReset() { rescoreEpoch++; audioChunks = []; audioTotal = 0; matchLog.length = 0; progressLog.length = 0; postedVerdictAyahs.clear(); postedVerdictWords.clear(); flaggedWords.clear(); vadSpeech = false; vadRunStart = 0; vadLastSpeech = 0; vadEnergy = 0; vadHopCount = 0; scorerAttempts = 0; rescoreUnavailablePosted = false; }
+function rescoreReset() { rescoreEpoch++; audioChunks = []; audioTotal = 0; audioDropped = 0; matchLog.length = 0; progressLog.length = 0; postedVerdictAyahs.clear(); postedVerdictWords.clear(); flaggedWords.clear(); vadSpeech = false; vadRunStart = 0; vadLastSpeech = 0; vadEnergy = 0; vadHopCount = 0; scorerAttempts = 0; rescoreUnavailablePosted = false; }
 function audioSlice(from, to) {
   const out = new Float32Array(Math.max(0, to - from));
-  let pos = 0, base = 0;
+  let pos = 0, base = audioDropped;
   for (const c of audioChunks) {
     const cEnd = base + c.length;
     if (cEnd > from && base < to) { const a = Math.max(from, base) - base, b = Math.min(to, cEnd) - base; out.set(c.subarray(a, b), pos); pos += b - a; }
@@ -321,7 +322,7 @@ async function handle(message) {
     if (!onsetSeen) { let e = 0; for (let i = 0; i < message.samples.length; i++) e += message.samples[i] * message.samples[i]; if (Math.sqrt(e / message.samples.length) > VAD_THR) { onsetSeen = true; diag.mark("onset", { a: audioTotal / 16 }); } }
     await session.feed(message.samples); flushSettledWords(); const feedMs = performance.now() - began; feedingLen = 0; diag.sample("feed", feedMs); diag.sample("samples", message.samples.length); diag.bucket(Date.now(), "feed", feedMs); post("perf", { ms: feedMs, samples: message.samples.length, lagMs: Date.now() - (message.sentAt || Date.now()) });
     audioTotal += message.samples.length; audioChunks.push(message.samples);
-    if (audioTotal > 5 * 60 * 16000) { let drop = audioTotal - 5 * 60 * 16000; while (drop > 0 && audioChunks.length) { const c = audioChunks[0]; if (c.length <= drop) { audioChunks.shift(); drop -= c.length; } else { audioChunks[0] = c.subarray(drop); drop = 0; } } }
+    if (audioTotal - audioDropped > 5 * 60 * 16000) { let drop = audioTotal - audioDropped - 5 * 60 * 16000; while (drop > 0 && audioChunks.length) { const c = audioChunks[0]; if (c.length <= drop) { audioChunks.shift(); drop -= c.length; audioDropped += c.length; } else { audioChunks[0] = c.subarray(drop); audioDropped += drop; drop = 0; } } }
     const closed = feedVad(message.samples);
     if (closed) queueRescore(closed[0], closed[1]); }
   if (message.type === "stop" && session) { await session.stop(); settledDirty=true; flushSettledWords();
