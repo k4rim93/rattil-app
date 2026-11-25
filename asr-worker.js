@@ -54,6 +54,7 @@ let rescoreEpoch = 0; // bumped on reset so a run still slicing from an earlier 
 function queueRescore(a, b) { const e = rescoreEpoch; rescoreChain = rescoreChain.then(() => rescoreRun(a, b, e)).catch(() => {}); }
 let audioChunks = [];
 let audioTotal = 0;
+let audioDropped = 0; // samples trimmed off the front of audioChunks; chunk offsets are absolute (audioTotal based)
 const matchLog = [];
 // word_progress trail, stamped with the audio offset the tracker had consumed
 // when each event fired. The stop-time final pass derives the real audio
@@ -68,10 +69,10 @@ const postedVerdictWords = new Map();
 const flaggedWords = new Map(); // surah:ayah -> Set(engine word indices)
 let vadSpeech = false, vadRunStart = 0, vadLastSpeech = 0, vadEnergy = 0, vadHopCount = 0;
 const VAD_HOP = 800, VAD_GAP = 0.6 * 16000, VAD_THR = 0.01, VAD_PAD = 0.3 * 16000;
-function rescoreReset() { rescoreEpoch++; audioChunks = []; audioTotal = 0; matchLog.length = 0; progressLog.length = 0; postedVerdictAyahs.clear(); postedVerdictWords.clear(); flaggedWords.clear(); vadSpeech = false; vadRunStart = 0; vadLastSpeech = 0; vadEnergy = 0; vadHopCount = 0; scorerAttempts = 0; rescoreUnavailablePosted = false; }
+function rescoreReset() { rescoreEpoch++; audioChunks = []; audioTotal = 0; audioDropped = 0; matchLog.length = 0; progressLog.length = 0; postedVerdictAyahs.clear(); postedVerdictWords.clear(); flaggedWords.clear(); vadSpeech = false; vadRunStart = 0; vadLastSpeech = 0; vadEnergy = 0; vadHopCount = 0; scorerAttempts = 0; rescoreUnavailablePosted = false; }
 function audioSlice(from, to) {
   const out = new Float32Array(Math.max(0, to - from));
-  let pos = 0, base = 0;
+  let pos = 0, base = audioDropped;
   for (const c of audioChunks) {
     const cEnd = base + c.length;
     if (cEnd > from && base < to) { const a = Math.max(from, base) - base, b = Math.min(to, cEnd) - base; out.set(c.subarray(a, b), pos); pos += b - a; }
@@ -313,6 +314,7 @@ async function init() {
 async function handle(message) {
   if (message.type === "init") { if(message.baseUrl) appBase = new URL("./", message.baseUrl); engineConfig = message.config || null; return init(); }
   if (message.type === "reset") { session?.reset(); settledBridge.reset(); settledDirty=false; rescoreReset(); diag.reset(); seenDecode = seenCand = onsetSeen = false; lastWpKey = ""; }
+  if (message.type === "get_audio") { const n = audioChunks.reduce((t, c) => t + c.length, 0), pcm = new Int16Array(n); let o = 0; for (const c of audioChunks) for (let i = 0; i < c.length; i++) pcm[o++] = Math.max(-32768, Math.min(32767, Math.round(c[i] * 32767))); const head = new DataView(new ArrayBuffer(44)); const W = (p, t) => { for (let i = 0; i < t.length; i++) head.setUint8(p + i, t.charCodeAt(i)); }; W(0, "RIFF"); head.setUint32(4, 36 + n * 2, true); W(8, "WAVE"); W(12, "fmt "); head.setUint32(16, 16, true); head.setUint16(20, 1, true); head.setUint16(22, 1, true); head.setUint32(24, 16000, true); head.setUint32(28, 32000, true); head.setUint16(32, 2, true); head.setUint16(34, 16, true); W(36, "data"); head.setUint32(40, n * 2, true); post("audio_export", { blob: n ? new Blob([head.buffer, pcm.buffer], { type: "audio/wav" }) : null }); return; }
   if (message.type === "set_expected") { session?.zipformer?.setExpected(message.passage || null); return; }
   if (message.type === "set_mode") { sessionMode = message.mode === "correction" ? "correction" : "tracking"; session?.zipformer?.setMode(sessionMode); return; }
   if (message.type === "correction_action") { session?.zipformer?.correct(message.action); return; }
@@ -320,7 +322,7 @@ async function handle(message) {
     if (!onsetSeen) { let e = 0; for (let i = 0; i < message.samples.length; i++) e += message.samples[i] * message.samples[i]; if (Math.sqrt(e / message.samples.length) > VAD_THR) { onsetSeen = true; diag.mark("onset", { a: audioTotal / 16 }); } }
     await session.feed(message.samples); flushSettledWords(); const feedMs = performance.now() - began; feedingLen = 0; diag.sample("feed", feedMs); diag.sample("samples", message.samples.length); diag.bucket(Date.now(), "feed", feedMs); post("perf", { ms: feedMs, samples: message.samples.length, lagMs: Date.now() - (message.sentAt || Date.now()) });
     audioTotal += message.samples.length; audioChunks.push(message.samples);
-    if (audioTotal > 5 * 60 * 16000) { let drop = audioTotal - 5 * 60 * 16000; while (drop > 0 && audioChunks.length) { const c = audioChunks[0]; if (c.length <= drop) { audioChunks.shift(); drop -= c.length; } else { audioChunks[0] = c.subarray(drop); drop = 0; } } }
+    if (audioTotal - audioDropped > 5 * 60 * 16000) { let drop = audioTotal - audioDropped - 5 * 60 * 16000; while (drop > 0 && audioChunks.length) { const c = audioChunks[0]; if (c.length <= drop) { audioChunks.shift(); drop -= c.length; audioDropped += c.length; } else { audioChunks[0] = c.subarray(drop); audioDropped += drop; drop = 0; } } }
     const closed = feedVad(message.samples);
     if (closed) queueRescore(closed[0], closed[1]); }
   if (message.type === "stop" && session) { await session.stop(); settledDirty=true; flushSettledWords();
