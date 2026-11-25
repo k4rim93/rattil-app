@@ -193,3 +193,14 @@ body.light #gqVCard,body.light #gqVSheet{background:#fbf3df;color:#3b2f17;border
 #gqMore button{width:100%;display:flex;align-items:center;gap:12px;border:0;background:transparent;color:inherit;font:500 17px var(--sans);padding:14px 10px;text-align:right}#gqMore svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}#gqMore small{margin-inline-start:auto;font-size:11px;color:#d8b96a}#gqMore button:disabled{opacity:.55}
 body.light #gqMore{background:#fbf3df;color:#3b2f17;box-shadow:0 8px 30px #0003}
 body.gq-browse #gqBrowseBottom{position:absolute}.gq-actions{flex-wrap:wrap}
+
+/* page look: ink, paper, banner, header contrast, page-number rosette */
+body.light #view-quran .mushaf-svg #content path{fill:#0b0b0b!important}
+body.reader-view.light,body.reader-view.light .app-shell,body.reader-view.light #view-quran.active{background:#fdf7e9!important}
+.mushaf-svg .gq-b-out{fill:#f3e3bb;stroke:#a9802f;stroke-width:1.1}.mushaf-svg .gq-b-in{fill:none;stroke:#c9a455;stroke-width:.6}.mushaf-svg .gq-b-dot{fill:#c9a455;stroke:#a9802f;stroke-width:.4}.mushaf-svg .gq-b-dot2{fill:#f3e3bb}
+body:not(.light) .mushaf-svg .gq-b-out{fill:#1a211f;stroke:#826c38}body:not(.light) .mushaf-svg .gq-b-in{stroke:#6a5a30}body:not(.light) .mushaf-svg .gq-b-dot{fill:#9c8340;stroke:#826c38}body:not(.light) .mushaf-svg .gq-b-dot2{fill:#1a211f}
+body.light .reader-view .un-reader-header,body.light.reader-view .un-reader-header{opacity:1}
+body.light.reader-view .un-reader-header .gq-strip-btn,body.light .reader-view .un-reader-header .gq-strip-btn,body.light .gq-juz,body.light #readerSub{color:#5a4519!important;opacity:1!important}
+body.light.reader-view .un-reader-header .gq-title,body.light .reader-view .un-reader-header .gq-title{color:#2a2415!important;font-weight:700}
+.reader-view .page-number{left:auto!important;right:14px!important;width:58px!important;height:34px!important;border-radius:18px!important;border:1.5px solid #b08a3a!important;box-shadow:inset 0 0 0 3px #0000,inset 0 0 0 4px #b08a3a66;font-size:14px!important;font-weight:700!important;background:transparent!important}
+body.light.reader-view .page-number,body.light .reader-view .page-number{color:#7a5a1a!important;background:#f6ebcc!important}
