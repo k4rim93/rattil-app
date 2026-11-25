@@ -147,3 +147,19 @@ body.light #gqFontSize,body.light .gq-pill2,body.light #gqBMenu{background:#e7dc
 .tabbar button>span svg{width:26px!important;height:26px!important}
 .tabbar button small{font-size:11px!important}
 .tabbar button.home-tab.active>span{width:46px!important;height:32px!important}
+
+#gqBrowseTop #gqBTitle{font-size:24px;font-weight:700;transition:font-size .2s}#gqBrowseTop.gq-small #gqBTitle{font-size:16px;color:#d8b96a}
+#gqVerseText{margin:6px 0 10px;padding:12px 14px;border-radius:14px;background:#0000000f;font:400 21px/1.9 var(--quran,'Amiri Quran',serif);text-align:center;max-height:22dvh;overflow:auto}
+body:not(.light) #gqVerseText{background:#ffffff0d;color:#f1ead6}
+#gqVerseCopy,#gqVerseShare{width:44px;height:44px;border:0;background:transparent;color:inherit;display:grid;place-items:center;padding:0}#verseTools svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}#gqVerseCopy.gq-done{color:#d8b96a}
+body:not(.light) #verseTools{background:#161b1a;color:#f1ead6;border-color:#826c38}body:not(.light) #verseTools h2{color:#f1ead6}
+body:not(.light) #verseTools .un-sheet-head{background:transparent!important}
+body:not(.light) #verseTools .un-sheet-head button,body:not(.light) #verseTools .un-verse-actions button{background:#232a29!important;color:#f1ead6!important;border:1px solid #3a4240!important}
+body:not(.light) #verseTools select,body:not(.light) #verseTools .un-repeat select{background:#232a29!important;color:#f1ead6!important;border-color:#3a4240!important}
+body:not(.light) #verseTools .un-label,body:not(.light) #verseTools p,body:not(.light) #verseTools .un-repeat span{color:#b9b49f!important}
+body:not(.light) #verseTools #gqVerseText{color:#f1ead6!important}
+body:not(.light) #verseTools .gold-button{background:#d8b96a!important;color:#1a1f1d!important}
+body:not(.light) #verseTools hr,body:not(.light) #verseTools .un-verse-actions{border-color:#3a4240!important}
+body:not(.light) #verseTools header,body:not(.light) #verseTools .un-sheet-head,body:not(.light) #verseTools .un-sheet-head *:not(button){background:transparent!important;background-image:none!important}
+body:not(.light) #verseTools h2,body:not(.light) #verseTools #verseTitle{color:#f1ead6!important}
+body:not(.light) #verseTools .un-sheet-head:before,body:not(.light) #verseTools .un-sheet-head:after{background:transparent!important;background-image:none!important}
