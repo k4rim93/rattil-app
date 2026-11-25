@@ -209,3 +209,14 @@ body.gq-browse #gqBrowseTop,body.gq-browse #gqBrowseBottom{pointer-events:none}
 body.gq-browse #gqBrowseTop>*,body.gq-browse #gqBrowseBottom>*{pointer-events:auto}
 body.gq-browse #gqBrowseTop strong,body.gq-browse #gqBrowseTop #gqBTitle{pointer-events:none}
 .mushaf-svg.un-muted-page{opacity:.5!important}
+/* light mode, non-reader tabs: plain cream page (sky only on Home), readable links and top button */
+body.light:not(.reader-view):not([data-view=home]),body.light:not(.reader-view):not([data-view=home]) .app-shell{background:#f6efdc}
+body.light:not(.reader-view):not([data-view=home]) .app-shell>.sky-bg{display:none}
+body.light:not(.reader-view):not([data-view=home]) .app-shell:after{background:#f6efdc;opacity:1}
+body.light:not(.reader-view) .back-button,body.light:not(.reader-view) .top-actions .icon-button{background:#fffaf0;border:1px solid #cdb77a;color:#6b5a2c;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:0 1px 3px #6b5a2c1f}
+body.light:not(.reader-view) .asr-limits a,body.light:not(.reader-view) .asr-download-notice a,body.light:not(.reader-view) .local-note a{color:#7a5f1d;text-decoration:underline;text-underline-offset:3px}
+.asr-limits a,.asr-download-notice a,.local-note a{color:#e5c97a}
+body.light:not(.reader-view) .quiet-link,body.light:not(.reader-view) .text-button{color:#7a5f1d}
+body.light:not(.reader-view) .practice-engine-setup .quiet-link[id*=elete],body.light:not(.reader-view) .practice-engine-setup .danger{color:#9a4a35}
+body.light:not(.reader-view) .un-section-title h2,body.light:not(.reader-view) .un-settings-title,body.light:not(.reader-view) .un-section-title+*+h2{color:#6b5a2c}
+body.light:not(.reader-view) .un-section-title span,body.light:not(.reader-view) .progress-week small,body.light:not(.reader-view) .progress-week>span,body.light:not(.reader-view) .progress-metrics span,body.light:not(.reader-view) .page-heading .date-line{color:#4d5f4a}
