@@ -180,4 +180,41 @@ window.addEventListener('rattil-page',()=>{hideV();updMini()});window.addEventLi
 const _sb=setBrowse;
 body.addEventListener('transitionend',()=>{},{once:true});
 let wasB=false;new MutationObserver(()=>{const b=isBrowse();if(b===wasB)return;wasB=b;if(b){updMini();if(!sheet.hidden)hideV()}}).observe(body,{attributes:true,attributeFilter:['class']});
+
+// ---- page look: spread the 15 lines over the screen height (positions only, glyph shapes stay), bigger ayah markers, ornamented surah banner
+const NS='http://www.w3.org/2000/svg',NUM='(-?\\d*\\.?\\d+(?:e-?\\d+)?)';
+const mkSvg=(t,a)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e};
+function stylePage(svg){
+ if(svg.dataset.gq||svg.classList.contains('un-spotlight'))return;const c=svg.querySelector('#content path'),host=svg.parentElement;if(!c||!host)return;svg.dataset.gq='1';
+ const W=host.clientWidth,H=host.clientHeight;if(!W||!H)return;
+ const Hv=345*H/W;let s=1;if(Hv>560){s=Math.max(1,Math.min(1.2,(0.86*Hv)/526))}
+ const off=-(Hv-550)/2;if(Hv>550)svg.setAttribute('viewBox',`0 ${off.toFixed(2)} 345 ${Hv.toFixed(2)}`);
+ const k=s-1;
+ if(k>0.005){
+  // content: shift each outline's start (relative path commands, so only the moves change)
+  const d=c.getAttribute('d'),parts=d.split(/(?=m)/),re=new RegExp('^m\\s*'+NUM+'[ ,]?'+NUM);let prevShift=0,sy=0,out=[];
+  for(const p of parts){const m=re.exec(p);if(!m){out.push(p);continue}const dx=+m[1],dy=+m[2];sy+=dy;const sh=k*(sy+227.01-273.75);const ndy=dy+sh-prevShift;prevShift=sh;out.push('m'+dx+' '+ndy.toFixed(3)+p.slice(m[0].length))}
+  c.setAttribute('d',out.join(''));
+  // markers
+  svg.querySelectorAll('.ayah-mark').forEach(g=>{for(const ch of g.children){const t=ch.getAttribute('transform')||'';const m=/^translate\(\s*(-?[\d.]+)[ ,]\s*(-?[\d.]+)\)/.exec(t);if(m){const Y=+m[2];ch.setAttribute('transform',`translate(${m[1]} ${(Y+k*(Y-273.75)).toFixed(3)})`+t.slice(m[0].length))}}});
+  // hit areas
+  svg.querySelectorAll('.ayahPolygon').forEach(p=>{p.setAttribute('d',p.getAttribute('d').replace(new RegExp(NUM+' '+NUM,'g'),(a,x,y)=>x+' '+(275+(y-275)*s).toFixed(2)))});
+ }
+ // bigger ring markers (about their centre)
+ svg.querySelectorAll('.ayah-mark').forEach(g=>{const o=g.querySelector('.ayah-mark-ornament'),n=[...g.children].find(x=>x!==o);if(!o||!n)return;const m=/^translate\(\s*(-?[\d.]+)[ ,]\s*(-?[\d.]+)\)/.exec(o.getAttribute('transform')||'');if(!m)return;const cx=+m[1],cy=+m[2],f=1.32;
+  o.setAttribute('transform',`translate(${cx} ${cy}) scale(${f}) translate(${-cx} ${-cy}) `+o.getAttribute('transform'));
+  n.setAttribute('transform',`translate(${cx} ${cy}) scale(${f}) translate(${-cx} ${-cy}) `+n.getAttribute('transform'))});
+ // surah banner: the band between the previous ayah and the first ayah of a surah
+ const polys=[...svg.querySelectorAll('.ayahPolygon')].map(p=>({a:+p.getAttribute('ayah'),s:+p.getAttribute('surah'),ys:[...p.getAttribute('d').matchAll(new RegExp(NUM+' '+NUM,'g'))].map(m=>+m[2])}));
+ const first=polys.find(p=>p.a===1&&p.s!==1&&p.ys.length);
+ if(first){const y0=Math.min(...first.ys);const above=polys.filter(p=>p!==first).flatMap(p=>p.ys).filter(y=>y<y0-1);const top=above.length?Math.max(...above):(k>0.005?275+(0-275)*s:0);const gap=y0-top;
+  if(gap>40){const bh=s>1?gap/(s>1?2:2):gap/2;const y1=top+3,y2=top+gap/2-3;const g=mkSvg('g',{class:'gq-banner'});
+   const x1=3,x2=334.5,r=(y2-y1)/2;
+   g.append(mkSvg('rect',{x:x1,y:y1,width:x2-x1,height:y2-y1,rx:r*0.45,class:'gq-b-out'}),mkSvg('rect',{x:x1+3,y:y1+3,width:x2-x1-6,height:y2-y1-6,rx:r*0.35,class:'gq-b-in'}));
+   for(const side of [0,1]){const cx=side?x2-r*1.5:x1+r*1.5,cy=(y1+y2)/2,dir=side?-1:1;g.append(mkSvg('circle',{cx,cy,r:r*0.42,class:'gq-b-dot'}),mkSvg('circle',{cx,cy,r:r*0.2,class:'gq-b-dot2'}),mkSvg('path',{d:`M${cx+dir*r*0.7} ${cy} l${dir*r*0.55} ${-r*0.35} l${dir*r*0.55} ${r*0.35} l${dir*-r*0.55} ${r*0.35} z`,class:'gq-b-dot'}))}
+   svg.insertBefore(g,svg.firstElementChild)}}
+}
+const pageObs=new MutationObserver(()=>{for(const s of document.querySelectorAll('#view-quran .mushaf-svg:not([data-gq])'))stylePage(s)});
+pageObs.observe(view,{childList:true,subtree:true});
+window.addEventListener('resize',()=>{for(const s of document.querySelectorAll('#view-quran .mushaf-svg[data-gq]'))s.removeAttribute('data-gq')});
 }
