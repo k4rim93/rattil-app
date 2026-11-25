@@ -134,3 +134,9 @@ body.gq-browse .un-reader-header,body.gq-browse .page-number{visibility:hidden}
 body.reader-view.gq-browse .tabbar{display:flex!important;z-index:7}
 body.light #gqBrowseTop,body.light #gqBrowseTop strong{color:#243e31}body.light .gq-pill2,body.light #gqBMenu,body.light .gq-chip{background:#e9e1cc;color:#243e31}body.light .gq-pill2 button,body.light #gqBMenu{color:#243e31}
 body.light .gq-reciter span{background:#efe7d1;border-color:#a8903f;color:#7a6530}
+
+#gqFontSize{display:none}body.gq-browse #gqFontSize{display:flex;position:absolute;left:14px;bottom:calc(env(safe-area-inset-bottom) + 130px);z-index:6;width:46px;height:62px;border:1px solid #826c38;border-radius:24px;background:#1d2220;color:#d8b96a;flex-direction:column;align-items:center;justify-content:center;padding:0;line-height:1}#gqFontSize b{font-size:20px}#gqFontSize i{font-style:normal;font-size:11px;opacity:.7}
+body.light #gqFontSize,body.light .gq-pill2,body.light #gqBMenu{background:#e7dcc2;color:#5b613d}
+.reader-view.gq-zoomed .mushaf-paper{overflow:auto!important;align-items:flex-start!important;-webkit-overflow-scrolling:touch}
+.reader-view.gq-zoomed .mushaf-svg-host{width:calc(100% * var(--gq-zoom,1))!important;height:auto!important;min-height:100%!important;flex:none}
+.reader-view.gq-zoomed .mushaf-svg{width:100%!important;height:auto!important}
