@@ -488,15 +488,19 @@ async function loadIndexData(){
     const [meta,surahs]=await Promise.all([getQuranJson(`${quranApi}/meta`),getQuranJson(`${quranApi}/surah`)]);indexData.meta=meta.data;indexData.surahs=surahs.data;renderSurahs();renderJuz();renderSavedIndexes();
   }catch{surahList.innerHTML='<p class="quran-error">تعذر تحميل الفهرس. اتصل بالإنترنت ثم أعد فتحه.</p>';juzList.innerHTML='<p class="quran-error">تعذر تحميل فهرس الأجزاء.</p>'}
 }
+const shortSurahName=(name)=>String(name||'').replace(/[\u064b-\u065f\u0670\u06d6-\u06ed]/g,'').replace(/\u0671/g,'\u0627').replace(/^\s*سورة\s+/u,'').trim();
+function currentSurahNumber(){return indexData.meta?.pages?.references?.[page-1]?.surah||0}
 function renderSurahs(){
   if(!indexData.surahs)return;
   const list=document.getElementById('surahList'),query=normalizeRecitationWord(document.getElementById('surahSearch').value.trim()).toLocaleLowerCase('ar');list.replaceChildren();
   const matches=indexData.surahs.filter(s=>normalizeRecitationWord(s.name).toLocaleLowerCase('ar').includes(query)||String(s.number).includes(query));
-  let activeJuz=0;
+  const current=currentSurahNumber(),refs=indexData.meta.juzs.references;let activeJuz=0,card=null;
   matches.forEach(surah=>{
     const targetPage=pageForReference(surah.number,1),juz=juzForReference(surah.number,1);
-    if(juz!==activeJuz){const heading=document.createElement('h3');heading.className='index-group-heading';heading.textContent=`الجزء ${toArabic(juz)}`;list.append(heading);activeJuz=juz}
-    list.append(makeIndexRow({title:`${toArabic(surah.number)}. ${surah.name}`,detail:`${toArabic(surah.numberOfAyahs)} آية · ${surah.revelationType==='Meccan'?'مكية':'مدنية'}`,page:targetPage}));
+    if(juz!==activeJuz){const heading=document.createElement('button');heading.type='button';heading.className='gq-juz-head';const label=document.createElement('span');label.textContent=`الجزء ${toArabic(juz)}`;const chevron=document.createElement('i');chevron.textContent='‹';chevron.setAttribute('aria-hidden','true');heading.append(label,chevron);const ref=refs[juz-1];heading.addEventListener('click',()=>{mushafIndex.close();showView('quran');setPage(pageForReference(ref.surah,ref.ayah))});list.append(heading);card=document.createElement('div');card.className='gq-card';list.append(card);activeJuz=juz}
+    const row=makeIndexRow({title:shortSurahName(surah.name),detail:`رقمها ${toArabic(surah.number)} · آياتها ${toArabic(surah.numberOfAyahs)} · ${surah.revelationType==='Meccan'?'مكّيّة':'مدنيّة'}`,page:surah.number===current?page:targetPage});
+    if(surah.number===current){row.classList.add('gq-current');row.setAttribute('aria-current','true')}
+    card.append(row);
   });
   if(!list.children.length)list.innerHTML='<p class="quran-error">لا توجد سورة بهذا الاسم.</p>';
 }
@@ -509,7 +513,7 @@ function renderJuz(){
   });
 }
 function selectIndexTab(name){document.querySelectorAll('[data-index-tab]').forEach(tab=>{const selected=tab.dataset.indexTab===name;tab.classList.toggle('selected',selected);tab.setAttribute('aria-selected',String(selected))});document.querySelectorAll('.index-panel').forEach(panel=>{const selected=panel.id===`indexPanel-${name}`;panel.hidden=!selected;panel.classList.toggle('active',selected)});document.getElementById('surahSearchWrap').hidden=name!=='surahs';document.getElementById('indexSort').hidden=!['notes','bookmarks'].includes(name);if(name==='notes'||name==='bookmarks')renderSavedIndexes()}
-document.getElementById('indexButton').addEventListener('click',()=>{selectIndexTab('surahs');mushafIndex.showModal();loadIndexData()});
+document.getElementById('indexButton').addEventListener('click',async()=>{selectIndexTab('surahs');document.getElementById('surahSearch').value='';mushafIndex.showModal();await loadIndexData();requestAnimationFrame(()=>document.querySelector('#surahList .gq-current')?.scrollIntoView({block:'center'}))});
 document.getElementById('closeMushafIndex').addEventListener('click',()=>mushafIndex.close());
 document.querySelectorAll('[data-index-tab]').forEach(tab=>tab.addEventListener('click',()=>selectIndexTab(tab.dataset.indexTab)));
 document.getElementById('surahSearch').addEventListener('input',renderSurahs);
@@ -689,4 +693,4 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&liveAudioC
 
 installAppUpdate({button:document.getElementById('refreshApp'),status:document.getElementById('refreshAppStatus'),setApplying:value=>appUpdating=value,announce:text=>{document.getElementById('refreshAppStatus').textContent=text},isBusy:()=>Boolean(recitationStarting||liveMediaStream||liveAudioContext||recitationStopping||currentRecitationSession||settledUiTasks.size)});
 
-import('./unified.js').then(({initUnified})=>initUnified({showView,setPage,getPage:()=>page,getSurahName,openAyahNote,announce,toArabic,readStore,writeStore,setImmersive}));
+import('./unified.js').then(({initUnified})=>{initUnified({showView,setPage,getPage:()=>page,getSurahName,openAyahNote,announce,toArabic,readStore,writeStore,setImmersive});import('./golden-nav.js').then(({initGoldenNav})=>initGoldenNav({showView,setPage,getPage:()=>page,toArabic,readStore,writeStore,announce,setImmersive,normalize:normalizeRecitationWord,indexData,loadIndexData,pageForReference,juzForReference,shortSurahName,quranApi,mushafIndex}))});
