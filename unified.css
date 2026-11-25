@@ -220,3 +220,7 @@ body.light:not(.reader-view) .quiet-link,body.light:not(.reader-view) .text-butt
 body.light:not(.reader-view) .practice-engine-setup .quiet-link[id*=elete],body.light:not(.reader-view) .practice-engine-setup .danger{color:#9a4a35}
 body.light:not(.reader-view) .un-section-title h2,body.light:not(.reader-view) .un-settings-title,body.light:not(.reader-view) .un-section-title+*+h2{color:#6b5a2c}
 body.light:not(.reader-view) .un-section-title span,body.light:not(.reader-view) .progress-week small,body.light:not(.reader-view) .progress-week>span,body.light:not(.reader-view) .progress-metrics span,body.light:not(.reader-view) .page-heading .date-line{color:#4d5f4a}
+/* heavier ink, closer to Golden's print weight */
+body.light #view-quran .mushaf-svg #content path{stroke:#0b0b0b;stroke-width:.3;stroke-linejoin:round}
+body:not(.light) #view-quran .mushaf-svg #content path{stroke:#ebe4d0;stroke-width:.3;stroke-linejoin:round}
+.un-verse-ink #content path{stroke:#243e31!important;stroke-width:.3}
