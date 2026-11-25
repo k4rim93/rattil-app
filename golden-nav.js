@@ -110,7 +110,7 @@ $('gqBSearch').addEventListener('click',()=>{setBrowse(false);openSearch()});
 $('gqBMenu').addEventListener('click',()=>{setBrowse(false);$('indexButton').click()});
 $('gqBSurah').addEventListener('click',()=>{setBrowse(false);$('indexButton').click()});
 $('gqBPage').addEventListener('click',()=>{setBrowse(false);$('pagePickerButton').click()});
-const more=document.createElement('div');more.id='gqMore';more.hidden=true;more.innerHTML='<button type="button" id="gqMoreBm"><svg viewBox="0 0 24 24"><path d="M7 3h10v18l-5-4-5 4z"/></svg>المرجعيات</button><button type="button" id="gqMoreScroll" disabled aria-disabled="true"><svg viewBox="0 0 24 24"><path d="M4 7h10M4 12h10M4 17h10M19 5v14M16 8l3-3 3 3M16 16l3 3 3-3"/></svg>التمرير العمودي للصفحات<small>قريبًا</small></button>';bottom.append(more);
+const more=document.createElement('div');more.id='gqMore';more.hidden=true;more.innerHTML='<button type="button" id="gqMoreBm"><svg viewBox="0 0 24 24"><path d="M7 3h10v18l-5-4-5 4z"/></svg>المرجعيات</button>';bottom.append(more);
 $('gqBMore').addEventListener('click',e=>{e.stopPropagation();more.hidden=!more.hidden});
 document.addEventListener('click',e=>{if(!more.hidden&&!e.target.closest('#gqMore,#gqBMore'))more.hidden=true},true);
 $('gqMoreBm').addEventListener('click',()=>{more.hidden=true;setBrowse(false);$('indexButton').click();setTimeout(()=>document.querySelector('[data-index-tab=bookmarks]')?.click(),60)});
