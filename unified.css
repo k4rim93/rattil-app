@@ -50,3 +50,87 @@ body.reader-view:not(.light) .un-reader-header,body.reader-view:not(.light) .un-
 body:not(.light) .recitation-mushaf-paper,body:not(.light).recitation-session-active .recitation-mushaf-paper,body:not(.light) .recitation-mushaf-host{background:#0e1514!important;border-color:#826c3855}
 body:not(.light) .recitation-mushaf-paper,body:not(.light) .recitation-mushaf-host{box-shadow:inset 0 0 0 3px #17211f!important}
 body:not(.light) .recitation-qvp-canvas{background:#0e1514}
+/* ===== Golden-Quran-style mushaf chrome: thin top strip, pull-down search sheet, tabbed index sheet, hizb pill ===== */
+.reader-view .un-reader-header{height:40px;min-height:40px;padding:0 6px;border:0;background:transparent;gap:4px}
+.reader-view .un-reader-header .gq-strip-btn{width:40px;height:40px;min-height:40px;padding:0;background:transparent;border-radius:12px;display:grid;place-items:center;color:#b79f62}
+.gq-strip-btn svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linejoin:round}
+.gq-strip-btn.saved svg{fill:currentColor}.gq-strip-btn.saved{color:#d8b96a}
+.gq-juz{font-size:13px;color:#b79f62}.gq-spacer{flex:1}
+.reader-view .un-reader-header .gq-title{width:auto;min-width:44px;padding:0 10px;display:flex;align-items:center;gap:6px;background:transparent;color:#d8cfae;font:inherit}
+.gq-title strong{font-size:15px;font-weight:600}.gq-title i{font-style:normal;color:#b79f62;font-size:17px;line-height:1}
+.reader-view .mushaf-toolbar,.reader-view .mushaf-controls{display:none!important}
+
+#gqProgress{display:none}.reader-view #gqProgress{display:flex;position:absolute;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom) + 4px);height:24px;align-items:center;gap:10px;z-index:3}
+.reader-view.immersive-reading #gqProgress{display:none}
+.gq-bar{flex:1;height:3px;border-radius:3px;background:#826c3844;overflow:hidden;direction:rtl}.gq-bar i{display:block;height:100%;background:#b79f62;border-radius:3px}
+#gqPill{min-height:24px;padding:0 10px;border:1px solid #826c3855;border-radius:12px;background:#826c3822;color:#d8b96a;font:11px var(--sans);display:flex;gap:8px;align-items:center}#gqPill b{font-weight:600}
+.reader-view .mushaf-paper{transform:translateY(var(--gq-pull,0px))}
+#view-quran.gq-pulling:before{content:'اسحب لتحت للبحث';position:absolute;top:calc(env(safe-area-inset-top) + 2px);left:0;right:0;text-align:center;font-size:12px;color:#b79f62;z-index:1}
+#view-quran.gq-ready:before{content:'سيب للبحث';color:#d8b96a}
+/* search sheet */
+dialog.gq-search{position:fixed;inset:0;margin:0 auto;width:100%;max-width:620px;height:100dvh;max-height:none;padding:calc(env(safe-area-inset-top) + 10px) 14px 14px;border:0;border-radius:0;background:#050808;color:#f1ead6;overflow:hidden;box-shadow:none}
+dialog.gq-search[open]{display:flex;flex-direction:column;animation:gqDown .26s ease-out}
+dialog.gq-search::backdrop{background:#000c}
+@keyframes gqDown{from{transform:translateY(-35%);opacity:.3}to{transform:none;opacity:1}}
+@keyframes gqUp{from{transform:translateY(30%);opacity:.3}to{transform:none;opacity:1}}
+.gq-search-top{display:flex;gap:10px;align-items:center}
+.gq-x{flex:none;width:48px;height:48px;border-radius:50%;border:1px solid #826c3877;background:#141b19;color:#d8b96a;font-size:26px;line-height:1;display:grid;place-items:center}
+.gq-field{flex:1;display:flex;align-items:center;gap:10px;height:48px;padding:0 16px;border-radius:26px;background:#1a2220;color:#8d978f}
+.gq-field input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:#f1ead6;font:16px var(--sans);text-align:right}.gq-field input::placeholder{color:#8d978f}
+.gq-field svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round}
+.gq-chips{display:flex;gap:8px;overflow-x:auto;padding:14px 0 6px;scrollbar-width:none}.gq-chips::-webkit-scrollbar{display:none}
+.gq-chips button{flex:none;padding:8px 16px;border-radius:18px;border:0;background:#1a2220;color:#d8cfae;font:600 13px var(--sans)}.gq-chips button.on{background:#d8b96a;color:#14201b}
+.gq-search-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:30px}
+.gq-h{display:flex;justify-content:space-between;align-items:center;margin:20px 2px 8px;font-size:16px;font-weight:700;color:#f1ead6}
+.gq-clear{border:0;background:none;color:#d8b96a;font:13px var(--sans);padding:6px}
+.gq-recents{display:flex;flex-direction:column}.gq-recent{display:flex;align-items:center;gap:12px;min-height:50px;padding:0 4px;border:0;border-bottom:1px solid #26332f;background:none;color:#f1ead6;font:16px var(--sans);text-align:right}.gq-recent svg{width:20px;height:20px;fill:none;stroke:#8d978f;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.gq-scroller{display:flex;gap:14px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:none}.gq-scroller::-webkit-scrollbar{display:none}
+.gq-reciter{flex:none;width:86px;display:flex;flex-direction:column;align-items:center;gap:8px;border:0;background:none;color:#f1ead6}.gq-reciter span{width:62px;height:62px;border-radius:50%;border:1px solid #826c38;background:#141b19;color:#d8b96a;display:grid;place-items:center;font:600 24px var(--sans)}.gq-reciter small{font-size:12px;line-height:1.35;text-align:center}
+.gq-juzs button{flex:none;padding:10px 16px;border-radius:20px;border:0;background:#1a2220;color:#f1ead6;font:14px var(--sans);white-space:nowrap}
+.gq-row{display:flex;align-items:center;gap:12px;width:100%;padding:12px 8px;border:0;border-bottom:1px solid #26332f;background:none;color:#f1ead6;text-align:right}.gq-row span{flex:1;min-width:0}.gq-row strong{display:block;font-size:16px;font-weight:600;line-height:1.7}.gq-row small{display:block;color:#8d978f;font-size:12px;margin-top:2px}.gq-row em{font-style:normal;color:#d8b96a;font-size:14px;min-width:34px;text-align:center}
+.gq-note{margin:18px 4px;color:#8d978f;font-size:14px}
+/* index sheet */
+dialog.mushaf-index-dialog{background:#17191a;color:#f1eee7;border:0}
+@media(max-width:620px){dialog.mushaf-index-dialog{width:100vw;max-width:100vw;height:calc(100dvh - env(safe-area-inset-top) - 36px);max-height:none;margin:auto 0 0;border-radius:28px 28px 0 0}}
+@media(min-width:621px){dialog.mushaf-index-dialog{margin:auto auto 0;height:calc(100dvh - 40px);border-radius:28px 28px 0 0}}
+dialog.mushaf-index-dialog[open]{animation:gqUp .26s ease-out}
+.mushaf-index-header{padding:18px 56px 10px!important;border:0!important}.mushaf-index-header h2{font-size:19px!important;color:#d8b96a!important}
+.mushaf-index-header .dialog-close{inset-inline-start:auto!important;inset-inline-end:14px;top:10px!important;width:46px!important;height:46px!important;border:1px solid #4b4b4e!important;background:#2b2c2e!important;color:#d8b96a!important;font-size:26px}
+.gq-edition{display:flex;align-items:center;gap:12px;margin:2px 14px 8px;padding:10px 14px;border-radius:26px;background:#2a2b2d}.gq-edition strong{flex:1;font-size:15px;font-weight:600}.gq-edition button{border:0;background:none;color:#d8b96a;font:600 14px var(--sans)}
+.gq-edition-icon{width:34px;height:34px;border-radius:9px;background:#2d3a37;display:grid;place-items:center;color:#d8b96a}.gq-edition-icon svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linejoin:round}
+.mushaf-index-tabs{padding:4px 12px 8px!important;gap:6px;border-bottom:1px solid #ffffff10!important}
+.mushaf-index-tabs button{border-radius:24px!important;min-height:58px!important;color:#b9b6ab}
+.mushaf-index-tabs button.selected{background:#3a3320!important;color:#e8c968!important}
+.index-search{background:#2a2b2d!important;border:0!important;height:46px!important;border-radius:26px!important}
+.gq-juz-head{display:flex;justify-content:space-between;align-items:center;width:100%;margin:18px 0 8px;padding:0 6px 0 4px;border:0;background:none;color:#d8b96a;font:600 15px var(--sans)}.gq-juz-head i{font-style:normal;font-size:20px;color:#a5894a}
+.gq-card{border-radius:22px;background:#26272a;overflow:hidden}
+.gq-card .index-entry{display:flex;align-items:center;gap:12px;width:100%;min-height:72px;padding:12px 18px;border:0;border-bottom:1px solid #ffffff12;border-radius:0;background:transparent;color:inherit;text-align:right}.gq-card .index-entry:last-child{border-bottom:0}
+.gq-card .index-entry-copy strong{font-size:18px;color:#f6f2e8}.gq-card .index-entry-copy small{font-size:12px;color:#9a978e}
+.gq-card .index-entry-page{color:#ece6d6;font-size:16px;min-width:46px}
+.gq-card .gq-current{background:#2d2819}.gq-card .gq-current .index-entry-page{width:46px;height:46px;border-radius:50%;background:#d8b96a;color:#20180a;display:grid;place-items:center;font-weight:700;min-width:46px}
+.gq-actions{display:flex;gap:8px;padding:10px 14px calc(env(safe-area-inset-bottom) + 12px);border-top:1px solid #ffffff10;background:#17191a}.gq-actions button{flex:1;min-height:54px;border-radius:14px;border:1px solid #ffffff14;background:#222426;color:#d8cfae;font:11.5px var(--sans);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}.gq-actions b{font-size:17px;color:#d8b96a;font-weight:400}
+body:not(.reader-view) .gq-actions{display:none}
+/* light */
+body.light .gq-juz,body.light .gq-strip-btn,body.light .gq-title i{color:#7a6530}body.light .reader-view .un-reader-header .gq-title,body.light.reader-view .un-reader-header .gq-title{color:#3d3a28}
+body.light dialog.gq-search{background:#f6f1e3;color:#243e31}body.light .gq-x{background:#efe7d1;color:#7a6530}body.light .gq-field,body.light .gq-chips button,body.light .gq-juzs button{background:#e9e1cc;color:#3d3a28}body.light .gq-chips button.on{background:#c9a94e;color:#20180a}body.light .gq-field input,body.light .gq-h,body.light .gq-recent,body.light .gq-row,body.light .gq-reciter{color:#243e31}body.light .gq-row small,body.light .gq-note{color:#6b6a58}body.light .gq-recent,body.light .gq-row{border-color:#d8cdb0}
+body.light dialog.mushaf-index-dialog{background:#f4efe3;color:#243e31}body.light .gq-card{background:#fffaf0}body.light .gq-card .index-entry-copy strong{color:#243e31}body.light .gq-card .index-entry-page{color:#3d3a28}body.light .gq-card .gq-current{background:#f3e7bd}body.light .gq-edition,body.light .index-search{background:#e9e1cc!important}body.light .gq-actions{background:#f4efe3}body.light .gq-actions button{background:#efe7d1;color:#3d3a28}body.light .mushaf-index-tabs button.selected{background:#eadba5!important;color:#5a4710!important}body.light .mushaf-index-header .dialog-close{background:#efe7d1!important;border-color:#cdbf95!important}
+
+/* full-bleed page, page rosette, browse mode (matches the screen recording) */
+body.reader-view #view-quran.active{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)!important}
+.reader-view .mushaf-paper,.reader-view.immersive-reading .mushaf-paper{border:0!important;padding:0 0 4px!important;background:transparent!important}
+.reader-view .un-reader-header{height:34px;min-height:34px}
+.reader-view .un-reader-header .gq-strip-btn{height:34px;width:36px;min-height:34px}
+.reader-view .page-number{display:grid!important;place-items:center;left:10px!important;right:auto!important;bottom:8px!important;transform:none!important;width:34px;height:30px;border:1.5px solid #b79f62;border-radius:50%;color:#d8b96a!important;font:600 11px var(--sans)!important;background:#00000033;pointer-events:auto;z-index:2}
+#gqProgress{display:none!important}
+#gqBrowseTop,#gqBrowseBottom{display:none}
+body.gq-browse #gqBrowseTop{display:flex;position:absolute;top:calc(env(safe-area-inset-top) + 6px);left:12px;right:12px;align-items:center;justify-content:space-between;z-index:6;color:#f1ead6}
+#gqBrowseTop strong{font-size:16px;font-weight:600}
+.gq-pill2{display:flex;gap:2px;padding:2px;border-radius:26px;background:#1d2220}.gq-pill2 button,#gqBMenu{width:42px;height:42px;border:0;border-radius:50%;background:transparent;color:#f1ead6;display:grid;place-items:center}
+#gqBMenu{background:#1d2220}#gqBrowseTop svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+body.gq-browse #gqBrowseBottom{display:flex;position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 74px);gap:8px;justify-content:center;z-index:6}
+.gq-chip{height:40px;padding:0 18px;border:0;border-radius:22px;background:#1d2220;color:#f1ead6;font:600 14px var(--sans);display:flex;align-items:center;gap:8px}.gq-chip svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6}.gq-chip-page b{color:#d8b96a;font-weight:600}.gq-chip.gq-round{width:42px;padding:0;justify-content:center}
+body.gq-browse .mushaf-paper{opacity:.28;transition:opacity .2s}
+body.gq-browse .un-reader-header,body.gq-browse .page-number{visibility:hidden}
+body.reader-view.gq-browse .tabbar{display:flex!important;z-index:7}
+body.light #gqBrowseTop,body.light #gqBrowseTop strong{color:#243e31}body.light .gq-pill2,body.light #gqBMenu,body.light .gq-chip{background:#e9e1cc;color:#243e31}body.light .gq-pill2 button,body.light #gqBMenu{color:#243e31}
+body.light .gq-reciter span{background:#efe7d1;border-color:#a8903f;color:#7a6530}
