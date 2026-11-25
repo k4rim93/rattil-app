@@ -129,7 +129,7 @@ body.gq-browse #gqBrowseTop{display:flex;position:absolute;top:calc(env(safe-are
 #gqBMenu{background:#1d2220}#gqBrowseTop svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 body.gq-browse #gqBrowseBottom{display:flex;position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 74px);gap:8px;justify-content:center;z-index:6}
 .gq-chip{height:40px;padding:0 18px;border:0;border-radius:22px;background:#1d2220;color:#f1ead6;font:600 14px var(--sans);display:flex;align-items:center;gap:8px}.gq-chip svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6}.gq-chip-page b{color:#d8b96a;font-weight:600}.gq-chip.gq-round{width:42px;padding:0;justify-content:center}
-body.gq-browse .mushaf-paper{opacity:.28;transition:opacity .2s}
+body.gq-browse .mushaf-paper{opacity:1}
 body.gq-browse .un-reader-header,body.gq-browse .page-number{visibility:hidden}
 body.reader-view.gq-browse .tabbar{display:flex!important;z-index:7}
 body.light #gqBrowseTop,body.light #gqBrowseTop strong{color:#243e31}body.light .gq-pill2,body.light #gqBMenu,body.light .gq-chip{background:#e9e1cc;color:#243e31}body.light .gq-pill2 button,body.light #gqBMenu{color:#243e31}
@@ -163,3 +163,28 @@ body:not(.light) #verseTools hr,body:not(.light) #verseTools .un-verse-actions{b
 body:not(.light) #verseTools header,body:not(.light) #verseTools .un-sheet-head,body:not(.light) #verseTools .un-sheet-head *:not(button){background:transparent!important;background-image:none!important}
 body:not(.light) #verseTools h2,body:not(.light) #verseTools #verseTitle{color:#f1ead6!important}
 body:not(.light) #verseTools .un-sheet-head:before,body:not(.light) #verseTools .un-sheet-head:after{background:transparent!important;background-image:none!important}
+
+/* Golden-like browse chips, mini player, long-press sheets */
+body.gq-browse #gqBrowseBottom{bottom:calc(env(safe-area-inset-bottom) + 160px)!important;flex-direction:row-reverse}
+#gqFontSize{position:static!important;width:42px!important;height:42px!important;border-radius:50%!important;flex:none}#gqFontSize i{display:none}
+body.gq-browse #gqFontSize{display:flex}
+.gq-chip-page{position:relative;overflow:hidden}.gq-chip-page:after{content:'';position:absolute;bottom:0;right:14px;height:3px;width:calc((100% - 28px) * var(--gq-prog,0) / 100%);border-radius:2px;background:#d8b96a}
+#gqMini{display:none}body.gq-browse #gqMini{display:flex;position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 90px);height:56px;align-items:center;gap:6px;padding:0 10px;border-radius:28px;background:#1d2220;color:#f1ead6;z-index:6}
+body.gq-browse .un-mini{display:none!important}
+#gqMini button{width:38px;height:38px;border:0;background:transparent;color:inherit;display:grid;place-items:center;padding:0;flex:none}#gqMini svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#gqMini #gqMiniPlay{width:46px;height:46px;border-radius:50%;background:#8a5a14;color:#fff}#gqMiniStop i{display:block;width:18px;height:18px;border-radius:4px;background:#e0a0a0}
+.gq-mini-t{flex:1;min-width:0;text-align:right;display:flex;flex-direction:column}.gq-mini-t b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gq-mini-t small{font-size:12px;opacity:.65}
+body.light #gqMini{background:#fbf3df;color:#4a3a1e;box-shadow:0 2px 14px #0002}body.light #gqBrowseBottom .gq-chip,body.light .gq-pill2,body.light #gqBMenu,body.light #gqFontSize{background:#fbf3df!important;color:#4a3a1e!important;border-color:#cdb27a!important}body.light #gqBrowseTop strong{color:#8a5a14}body.light #gqBrowseTop{color:#4a3a1e}
+#gqVCard,#gqVSheet{position:absolute;z-index:8;left:8px;right:8px;background:#1b201f;color:#f1ead6;border:1px solid #ffffff1c;box-shadow:0 10px 40px #0008}
+#gqVCard[hidden],#gqVSheet[hidden]{display:none}
+#gqVCard{top:calc(env(safe-area-inset-top) + 58px);border-radius:26px;padding:14px 16px 8px}
+#gqVCText{margin:0 0 10px;font:400 22px/1.9 var(--quran,'Amiri Quran',serif);text-align:right;max-height:18dvh;overflow:auto}
+.gq-vc-actions{display:flex;justify-content:space-between;border-top:1px solid #ffffff18;padding-top:8px}.gq-vc-actions button{flex:1;border:0;background:transparent;color:#d8b96a;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0}.gq-vc-actions small{font-size:12px;color:#9a9788}
+#gqVCard svg,#gqVSheet svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.gq-vc-actions svg{fill:#d8b96a;stroke:#d8b96a}
+#gqVSheet{bottom:calc(env(safe-area-inset-bottom) + 8px);height:56dvh;border-radius:30px;display:flex;flex-direction:column;padding:8px 14px 12px}
+#gqVSheet:not([hidden]){display:flex}.gq-grab{align-self:center;width:44px;height:4px;border-radius:3px;background:#ffffff40;margin-bottom:8px}
+#gqVSheet header{display:flex;align-items:center;justify-content:space-between}#gqVSheet header h3{margin:0;font-size:16px}#gqVSheet header span{width:44px}#gqVClose{width:44px;height:44px;border-radius:50%;border:1px solid #ffffff22;background:transparent;color:#d8b96a;display:grid;place-items:center;padding:0}
+#gqVTabs{display:flex;gap:8px;overflow-x:auto;padding:10px 2px;scrollbar-width:none}#gqVTabs button{flex:none;border:1px solid #ffffff30;background:transparent;color:inherit;border-radius:20px;padding:8px 16px;font:600 14px var(--sans);display:flex;gap:6px;align-items:center}#gqVTabs button.on{background:#d8b96a;color:#1a1f1d;border-color:#d8b96a}#gqVTabs #gqVEdit{background:#3a2e17;color:#e8c77a;border:0}
+#gqVBody{flex:1;overflow:auto;font-size:19px;line-height:1.9;padding:6px 4px}
+#gqVSheet footer{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:6px}.gq-vf-pill{display:flex;align-items:center;border:1px solid #ffffff22;border-radius:30px;padding:2px 6px}.gq-vf-pill button,.gq-vf-round{border:0;background:transparent;color:#d8b96a;min-height:44px;padding:0 12px;display:flex;align-items:center;gap:6px;font:500 14px var(--sans)}.gq-vf-round{width:52px;height:52px;border-radius:50%;border:1px solid #ffffff22;justify-content:center;padding:0}
+body.light #gqVCard,body.light #gqVSheet{background:#fbf3df;color:#3b2f17;border-color:#d8c48d}body.light #gqVTabs button{border-color:#cdb27a}body.light #gqVTabs button.on{background:#d9a62b;color:#fff}body.light #gqVTabs #gqVEdit{background:#f1e0b3;color:#8a5a14}body.light .gq-vc-actions small{color:#8a7a55}
