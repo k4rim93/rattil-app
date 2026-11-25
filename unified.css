@@ -204,3 +204,8 @@ body.light.reader-view .un-reader-header .gq-strip-btn,body.light .reader-view .
 body.light.reader-view .un-reader-header .gq-title,body.light .reader-view .un-reader-header .gq-title{color:#2a2415!important;font-weight:700}
 .reader-view .page-number{left:auto!important;right:14px!important;width:58px!important;height:34px!important;border-radius:18px!important;border:1.5px solid #b08a3a!important;box-shadow:inset 0 0 0 3px #0000,inset 0 0 0 4px #b08a3a66;font-size:14px!important;font-weight:700!important;background:transparent!important}
 body.light.reader-view .page-number,body.light .reader-view .page-number{color:#7a5a1a!important;background:#f6ebcc!important}
+/* browse mode: wrappers must not swallow taps; spotlight dimming softer */
+body.gq-browse #gqBrowseTop,body.gq-browse #gqBrowseBottom{pointer-events:none}
+body.gq-browse #gqBrowseTop>*,body.gq-browse #gqBrowseBottom>*{pointer-events:auto}
+body.gq-browse #gqBrowseTop strong,body.gq-browse #gqBrowseTop #gqBTitle{pointer-events:none}
+.mushaf-svg.un-muted-page{opacity:.5!important}
