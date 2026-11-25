@@ -95,10 +95,11 @@ const end=e=>{if(!g)return;const t=e.changedTouches[0],dy=t?t.clientY-g.y:0,fire
 view.addEventListener('touchend',end,{passive:true});view.addEventListener('touchcancel',()=>{g=null;view.classList.remove('gq-ready');reset()},{passive:true});
 window.rattilOpenSearch=openSearch;
 // ---- browse mode (tap blank page area or the grid icon): dims the page, shows top bar, chips and tab bar
-const top=document.createElement('div');top.id='gqBrowseTop';top.innerHTML='<div class="gq-pill2"><button type="button" id="gqBGear" aria-label="الإعدادات"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button><button type="button" id="gqBSearch" aria-label="بحث"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg></button></div><strong>وضع التصفح</strong><button type="button" id="gqBMenu" class="gq-round" aria-label="العودة إلى المصحف"><svg viewBox="0 0 24 24"><path d="M3 5.5c3-.7 6 0 9 1.800v12c-3-1.800-6-2.500-9-1.800zM21 5.500c-3-.7-6 0-9 1.800v12c3-1.800 6-2.500 9-1.800z"/><path d="M14 3l3 2-3 2"/></svg></button>';
+const top=document.createElement('div');top.id='gqBrowseTop';top.innerHTML='<div class="gq-pill2"><button type="button" id="gqBGear" aria-label="الإعدادات"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button><button type="button" id="gqBSearch" aria-label="بحث"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg></button></div><strong id="gqBTitle">وضع التصفح</strong><button type="button" id="gqBMenu" class="gq-round" aria-label="العودة إلى المصحف"><svg viewBox="0 0 24 24"><path d="M3 5.5c3-.7 6 0 9 1.800v12c-3-1.800-6-2.500-9-1.800zM21 5.500c-3-.7-6 0-9 1.800v12c3-1.800 6-2.500 9-1.800z"/><path d="M14 3l3 2-3 2"/></svg></button>';
 const bottom=document.createElement('div');bottom.id='gqBrowseBottom';bottom.innerHTML='<button type="button" id="gqBSurah" class="gq-chip"><span id="gqBSurahName"></span><svg viewBox="0 0 24 24"><path d="M12 6v14M12 6c-2-1.5-5-2-8-1.5V18c3-.5 6 0 8 2 2-2 5-2.500 8-2V4.500c-3-.5-6 0-8 1.500z"/></svg></button><button type="button" id="gqBPage" class="gq-chip gq-chip-page">الصفحة <b id="gqBPageNum"></b></button><button type="button" id="gqBMore" class="gq-chip gq-round" aria-label="أدوات القراءة">···</button>';
 view.append(top,bottom);
-const setBrowse=on=>{body.classList.toggle('gq-browse',on);if(on){$('gqBSurahName').textContent=$('readerTitle').textContent;$('gqBPageNum').textContent=toArabic(getPage())}};
+const setBrowse=on=>{body.classList.toggle('gq-browse',on);if(on){$('gqBTitle').textContent=$('readerTitle').textContent;shrink();$('gqBSurahName').textContent=$('readerTitle').textContent;$('gqBPageNum').textContent=toArabic(getPage())}};
+const shrink=()=>{const y=paper.scrollTop||0;top.classList.toggle('gq-small',y>40)};paper.addEventListener('scroll',shrink,{passive:true});
 const isBrowse=()=>body.classList.contains('gq-browse');
 $('gqGrid').addEventListener('click',()=>setBrowse(!isBrowse()));
 view.addEventListener('click',e=>{if(!isBrowse())return;if(e.target.closest('#gqBrowseTop,#gqBrowseBottom,#gqFontSize,.tabbar'))return;e.stopPropagation();e.preventDefault();setBrowse(false)},true);
@@ -110,7 +111,7 @@ $('gqBSurah').addEventListener('click',()=>{setBrowse(false);$('indexButton').cl
 $('gqBPage').addEventListener('click',()=>{setBrowse(false);$('pagePickerButton').click()});
 $('gqBMore').addEventListener('click',()=>{setBrowse(false);$('readerMore').click()});
 window.addEventListener('rattil-view',()=>setBrowse(false));
-window.addEventListener('rattil-page',()=>{if(isBrowse()){$('gqBSurahName').textContent=$('readerTitle').textContent;$('gqBPageNum').textContent=toArabic(getPage())}});
+window.addEventListener('rattil-page',()=>{if(isBrowse()){$('gqBTitle').textContent=$('readerTitle').textContent;$('gqBSurahName').textContent=$('readerTitle').textContent;$('gqBPageNum').textContent=toArabic(getPage())}});
 
 // ---- "ع" mushaf text size: tap upper half = bigger, lower half = smaller (5 steps), saved
 const sizes=[1,1.12,1.25,1.4,1.6];let sz=Math.max(0,Math.min(4,+localStorage.getItem('rattil-mushaf-size')||0));
@@ -118,4 +119,22 @@ const applySize=()=>{view.style.setProperty('--gq-zoom',sizes[sz]);body.classLis
 const fs=document.createElement('button');fs.type='button';fs.id='gqFontSize';fs.setAttribute('aria-label','حجم الخط');fs.innerHTML='<i>⌃</i><b>ع</b><i>⌄</i>';view.append(fs);
 fs.addEventListener('click',e=>{const r=fs.getBoundingClientRect();sz=Math.max(0,Math.min(4,sz+(e.clientY<r.top+r.height/2?1:-1)));applySize();e.stopPropagation()});
 applySize();
+
+// ---- verse sheet (Golden-style): verse text, copy and share in the sheet header
+const vt=$('verseTools');
+if(vt){const head=vt.querySelector('.un-sheet-head'),vtxt=document.createElement('p');vtxt.id='gqVerseText';vtxt.dir='rtl';vtxt.lang='ar';head.after(vtxt);
+ const mk=(id,label,svg)=>{const b=document.createElement('button');b.type='button';b.id=id;b.setAttribute('aria-label',label);b.innerHTML=svg;return b};
+ const cp=mk('gqVerseCopy','نسخ الآية','<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>'),sh=mk('gqVerseShare','مشاركة الآية','<svg viewBox="0 0 24 24"><path d="M12 15V3M8 7l4-4 4 4M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>');
+ head.append(cp,sh);let cur='',curRef='';
+ const label=()=>vt.querySelector('#verseTitle')?.textContent||'';
+ const load=async()=>{const m=label();const t=vt.querySelector('#verseTitle');const key=m;if(key===curRef)return;curRef=key;cur='';vtxt.textContent='…';
+  // find the selected ayah from the highlighted polygon
+  const p=document.querySelector('.mushaf-svg .un-selected-ayah');if(!p){vtxt.textContent='';return}
+  const s=p.getAttribute('surah'),a=p.getAttribute('ayah');
+  try{const r=await fetch(`https://api.alquran.cloud/v1/ayah/${s}:${a}/quran-uthmani`,{cache:'force-cache'});const j=await r.json();if(curRef!==key)return;cur=j.data.text;vtxt.textContent=cur}catch{vtxt.textContent='';cur=''}};
+ new MutationObserver(()=>{if(vt.open)load();else curRef=''}).observe(vt,{attributes:true,attributeFilter:['open']});
+ const full=()=>`${cur}\n﴿${label()}﴾`;
+ cp.addEventListener('click',async()=>{if(!cur)return;try{await navigator.clipboard.writeText(full());cp.classList.add('gq-done');setTimeout(()=>cp.classList.remove('gq-done'),1200)}catch{}});
+ sh.addEventListener('click',async()=>{if(!cur)return;try{if(navigator.share)await navigator.share({text:full()});else await navigator.clipboard.writeText(full())}catch{}});
+}
 }
