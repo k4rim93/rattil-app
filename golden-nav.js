@@ -188,8 +188,12 @@ const mkSvg=(t,a)=>{const e=document.createElementNS(NS,t);for(const k in a)e.se
 function stylePage(svg){
  if(svg.dataset.gq||svg.classList.contains('un-spotlight'))return;const c=svg.querySelector('#content path'),host=svg.parentElement;if(!c||!host)return;svg.dataset.gq='1';
  const W=host.clientWidth,H=host.clientHeight;if(!W||!H)return;
- const Hv=345*H/W;let s=1;if(Hv>560&&getPage()>2){s=Math.max(1,Math.min(1.2,(0.86*Hv)/526))}
- const off=-(Hv-550)/2;if(Hv>550)svg.setAttribute('viewBox',`0 ${off.toFixed(2)} 345 ${Hv.toFixed(2)}`);
+ let VW=345,X0=0;
+ try{const inv=svg.getScreenCTM().inverse(),rs=[...svg.querySelectorAll('#content,#ayah_markers')].map(n=>n.getBoundingClientRect()).filter(r=>r.width>0);
+  if(rs.length){const l=Math.min(...rs.map(r=>r.left)),rt=Math.max(...rs.map(r=>r.right)),pt=svg.createSVGPoint();pt.x=l;pt.y=0;const xl=pt.matrixTransform(inv).x;pt.x=rt;const xr=pt.matrixTransform(inv).x,cand=Math.abs(xr-xl)+5;
+   if(cand<340&&cand>250&&cand*H/W>=550){VW=cand;X0=Math.min(xl,xr)-2.5}}}catch(e){}
+ const Hv=VW*H/W;let s=1;if(Hv>560&&getPage()>2){s=Math.max(1,Math.min(1.2,(0.86*Hv)/526))}
+ const off=-(Hv-550)/2;if(Hv>550||VW<345)svg.setAttribute('viewBox',`${X0.toFixed(2)} ${off.toFixed(2)} ${VW.toFixed(2)} ${Hv.toFixed(2)}`);
  const k=s-1;
  const og=svg.querySelector(':scope>g[transform]'),om=/matrix\(\s*(-?[\d.]+)[ ,]+(-?[\d.]+)[ ,]+(-?[\d.]+)[ ,]+(-?[\d.]+)[ ,]+(-?[\d.]+)[ ,]+(-?[\d.]+)/.exec(og?.getAttribute('transform')||''),cm=/translate\(\s*(-?[\d.]+)[ ,]+(-?[\d.]+)/.exec(c.parentElement.getAttribute('transform')||'');
  const SC=om?+om[4]:-1.3333,EY=om?+om[6]:640,CY=(275-EY)/SC,TY=cm?+cm[2]:227.01;
@@ -204,7 +208,7 @@ function stylePage(svg){
   svg.querySelectorAll('.ayahPolygon').forEach(p=>{p.setAttribute('d',p.getAttribute('d').replace(new RegExp(NUM+' '+NUM,'g'),(a,x,y)=>x+' '+(275+(y-275)*s).toFixed(2)))});
  }
  // bigger ring markers (about their centre)
- svg.querySelectorAll('.ayah-mark').forEach(g=>{const o=g.querySelector('.ayah-mark-ornament'),n=[...g.children].find(x=>x!==o);if(!o||!n)return;const m=/^translate\(\s*(-?[\d.]+)[ ,]\s*(-?[\d.]+)\)/.exec(o.getAttribute('transform')||'');if(!m)return;const cx=+m[1],cy=+m[2],f=1.45;
+ svg.querySelectorAll('.ayah-mark').forEach(g=>{const o=g.querySelector('.ayah-mark-ornament'),n=[...g.children].find(x=>x!==o);if(!o||!n)return;const m=/^translate\(\s*(-?[\d.]+)[ ,]\s*(-?[\d.]+)\)/.exec(o.getAttribute('transform')||'');if(!m)return;const cx=+m[1],cy=+m[2],f=1.2;
   o.setAttribute('transform',`translate(${cx} ${cy}) scale(${f}) translate(${-cx} ${-cy}) `+o.getAttribute('transform'));
   n.setAttribute('transform',`translate(${cx} ${cy}) scale(${f}) translate(${-cx} ${-cy}) `+n.getAttribute('transform'))});
  // surah banner: the band between the previous ayah and the first ayah of a surah
