@@ -95,18 +95,19 @@ const end=e=>{if(!g)return;const t=e.changedTouches[0],dy=t?t.clientY-g.y:0,fire
 view.addEventListener('touchend',end,{passive:true});view.addEventListener('touchcancel',()=>{g=null;view.classList.remove('gq-ready');reset()},{passive:true});
 window.rattilOpenSearch=openSearch;
 // ---- browse mode (tap blank page area or the grid icon): dims the page, shows top bar, chips and tab bar
-const top=document.createElement('div');top.id='gqBrowseTop';top.innerHTML='<div class="gq-pill2"><button type="button" id="gqBGear" aria-label="الإعدادات"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button><button type="button" id="gqBSearch" aria-label="بحث"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg></button></div><strong id="gqBTitle">وضع التصفح</strong><button type="button" id="gqBMenu" class="gq-round" aria-label="العودة إلى المصحف"><svg viewBox="0 0 24 24"><path d="M3 5.5c3-.7 6 0 9 1.800v12c-3-1.800-6-2.500-9-1.800zM21 5.500c-3-.7-6 0-9 1.800v12c3-1.800 6-2.500 9-1.800z"/><path d="M14 3l3 2-3 2"/></svg></button>';
+const top=document.createElement('div');top.id='gqBrowseTop';top.innerHTML='<div class="gq-pill2"><button type="button" id="gqBGear" aria-label="الإعدادات"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button><button type="button" id="gqBSearch" aria-label="بحث"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg></button></div><strong id="gqBTitle">وضع التصفح</strong><button type="button" id="gqBMenu" class="gq-round" aria-label="الفهرس"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h11M4 17h7"/></svg></button>';
 const bottom=document.createElement('div');bottom.id='gqBrowseBottom';bottom.innerHTML='<button type="button" id="gqBSurah" class="gq-chip"><span id="gqBSurahName"></span><svg viewBox="0 0 24 24"><path d="M12 6v14M12 6c-2-1.5-5-2-8-1.5V18c3-.5 6 0 8 2 2-2 5-2.500 8-2V4.500c-3-.5-6 0-8 1.500z"/></svg></button><button type="button" id="gqBPage" class="gq-chip gq-chip-page">الصفحة <b id="gqBPageNum"></b></button><button type="button" id="gqBMore" class="gq-chip gq-round" aria-label="أدوات القراءة">···</button>';
 view.append(top,bottom);
-const setBrowse=on=>{body.classList.toggle('gq-browse',on);if(on){$('gqBTitle').textContent=$('readerTitle').textContent;shrink();$('gqBSurahName').textContent=$('readerTitle').textContent;$('gqBPageNum').textContent=toArabic(getPage())}};
+const setProg=()=>$('gqBPage').style.setProperty('--gq-prog',(getPage()/604*100).toFixed(1)+'%');
+const setBrowse=on=>{body.classList.toggle('gq-browse',on);if(on){$('gqBTitle').textContent=$('readerTitle').textContent;shrink();$('gqBSurahName').textContent=$('readerTitle').textContent;$('gqBPageNum').textContent=toArabic(getPage());setProg()}};
 const shrink=()=>{const y=paper.scrollTop||0;top.classList.toggle('gq-small',y>40)};paper.addEventListener('scroll',shrink,{passive:true});
 const isBrowse=()=>body.classList.contains('gq-browse');
 $('gqGrid').addEventListener('click',()=>setBrowse(!isBrowse()));
-view.addEventListener('click',e=>{if(!isBrowse())return;if(e.target.closest('#gqBrowseTop,#gqBrowseBottom,#gqFontSize,.tabbar'))return;e.stopPropagation();e.preventDefault();setBrowse(false)},true);
-paper.addEventListener('click',e=>{if(isBrowse()||e.target.closest('.un-ayah-hit,.ayah-note-marker,#paperPageNumber'))return;setBrowse(true)});
+view.addEventListener('click',e=>{if(!isBrowse())return;if(e.target.closest('#gqBrowseTop,#gqBrowseBottom,#gqMini,#gqFontSize,.tabbar'))return;e.stopPropagation();e.preventDefault();setBrowse(false)},true);
+paper.addEventListener('click',e=>{if(isBrowse()||e.defaultPrevented||e.target.closest('.ayah-note-marker,#paperPageNumber'))return;setBrowse(true)});
 $('gqBGear').addEventListener('click',()=>{setBrowse(false);showView('settings')});
 $('gqBSearch').addEventListener('click',()=>{setBrowse(false);openSearch()});
-$('gqBMenu').addEventListener('click',()=>setBrowse(false));
+$('gqBMenu').addEventListener('click',()=>{setBrowse(false);$('indexButton').click()});
 $('gqBSurah').addEventListener('click',()=>{setBrowse(false);$('indexButton').click()});
 $('gqBPage').addEventListener('click',()=>{setBrowse(false);$('pagePickerButton').click()});
 $('gqBMore').addEventListener('click',()=>{setBrowse(false);$('readerMore').click()});
@@ -116,7 +117,7 @@ window.addEventListener('rattil-page',()=>{if(isBrowse()){$('gqBTitle').textCont
 // ---- "ع" mushaf text size: tap upper half = bigger, lower half = smaller (5 steps), saved
 const sizes=[1,1.12,1.25,1.4,1.6];let sz=Math.max(0,Math.min(4,+localStorage.getItem('rattil-mushaf-size')||0));
 const applySize=()=>{view.style.setProperty('--gq-zoom',sizes[sz]);body.classList.toggle('gq-zoomed',sz>0);localStorage.setItem('rattil-mushaf-size',sz)};
-const fs=document.createElement('button');fs.type='button';fs.id='gqFontSize';fs.setAttribute('aria-label','حجم الخط');fs.innerHTML='<i>⌃</i><b>ع</b><i>⌄</i>';view.append(fs);
+const fs=document.createElement('button');fs.type='button';fs.id='gqFontSize';fs.setAttribute('aria-label','حجم الخط');fs.innerHTML='<i>⌃</i><b>ع</b><i>⌄</i>';bottom.append(fs);
 fs.addEventListener('click',e=>{const r=fs.getBoundingClientRect();sz=Math.max(0,Math.min(4,sz+(e.clientY<r.top+r.height/2?1:-1)));applySize();e.stopPropagation()});
 applySize();
 
@@ -137,4 +138,42 @@ if(vt){const head=vt.querySelector('.un-sheet-head'),vtxt=document.createElement
  cp.addEventListener('click',async()=>{if(!cur)return;try{await navigator.clipboard.writeText(full());cp.classList.add('gq-done');setTimeout(()=>cp.classList.remove('gq-done'),1200)}catch{}});
  sh.addEventListener('click',async()=>{if(!cur)return;try{if(navigator.share)await navigator.share({text:full()});else await navigator.clipboard.writeText(full())}catch{}});
 }
+
+// ---- browse-mode mini player (reciter, "playing from page N", play/prev/next/stop/expand)
+const mini=document.createElement('div');mini.id='gqMini';mini.innerHTML='<button type="button" id="gqMiniExp" aria-label="فتح أدوات التلاوة"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button><div class="gq-mini-t"><b id="gqMiniName"></b><small id="gqMiniSub"></small></div><button type="button" id="gqMiniNext" aria-label="التالي"><svg viewBox="0 0 24 24"><path d="M6 6l6 6-6 6M13 6l6 6-6 6" transform="scale(-1 1) translate(-24 0)"/></svg></button><button type="button" id="gqMiniPlay" aria-label="تشغيل"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></button><button type="button" id="gqMiniPrev" aria-label="السابق"><svg viewBox="0 0 24 24"><path d="M6 6l6 6-6 6M13 6l6 6-6 6"/></svg></button><button type="button" id="gqMiniStop" aria-label="إيقاف"><i></i></button>';view.append(mini);
+const reciterName=()=>{const r=$('reciterChoice');return r?r.options[r.selectedIndex]?.textContent||'':''};
+const updMini=()=>{$('gqMiniName').textContent=reciterName();$('gqMiniSub').textContent='تشغيل من الصفحة '+toArabic(getPage())};
+// ---- verse long-press: top card (text + actions) and bottom sheet (translation / tafsir)
+const poly=()=>[...document.querySelectorAll('.mushaf-svg .ayahPolygon')].filter(p=>p.getAttribute('surah')&&p.getAttribute('ayah'));
+const ayahs=()=>{const seen=new Set(),out=[];for(const p of poly()){const k=p.getAttribute('surah')+':'+p.getAttribute('ayah');if(!seen.has(k)){seen.add(k);out.push({k,p})}}return out};
+const selKey=()=>{const p=document.querySelector('.mushaf-svg .un-selected-ayah');return p?p.getAttribute('surah')+':'+p.getAttribute('ayah'):''};
+let autoplay=false,allowQuick=false;
+const holdOn=(p,auto)=>{autoplay=!!auto;p.dispatchEvent(new PointerEvent('pointerdown',{isPrimary:true,button:0,bubbles:true,clientX:1,clientY:1}));setTimeout(()=>p.dispatchEvent(new PointerEvent('pointerup',{isPrimary:true,bubbles:true})),700)};
+const step=(d,auto)=>{const l=ayahs();if(!l.length)return;const k=selKey();let i=l.findIndex(x=>x.k===k);i=i<0?(d>0?0:l.length-1):i+d;if(i<0||i>=l.length)return;holdOn(l[i].p,auto)};
+$('gqMiniPlay').addEventListener('click',()=>{if(selKey())$('miniPlay').click();else{const l=ayahs();if(l.length)holdOn(l[0].p,true)}});
+$('gqMiniStop').addEventListener('click',()=>$('miniStop').click());
+$('gqMiniExp').addEventListener('click',()=>{setBrowse(false);if(!selKey()){const l=ayahs();if(l.length){holdOn(l[0].p,false)}}else $('miniOpen').click()});
+$('gqMiniNext').addEventListener('click',()=>step(1,true));$('gqMiniPrev').addEventListener('click',()=>step(-1,true));
+const IC={share:'<svg viewBox="0 0 24 24"><path d="M12 15V3M8 7l4-4 4 4M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>',copy:'<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>',mark:'<svg viewBox="0 0 24 24"><path d="M7 3h10v18l-5-4-5 4z"/></svg>',note:'<svg viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 9h8M8 13h5"/></svg>',play:'<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>',book:'<svg viewBox="0 0 24 24"><path d="M12 6v14M12 6c-2-1.500-5-2-8-1.500V18c3-.5 6 0 8 2 2-2 5-2.500 8-2V4.500c-3-.5-6 0-8 1.500z"/></svg>',x:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',up:'<svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>',down:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',edit:'<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>'};
+const card=document.createElement('div');card.id='gqVCard';card.hidden=true;card.innerHTML='<p id="gqVCText" dir="rtl" lang="ar"></p><div class="gq-vc-actions"><button type="button" data-a="share">'+IC.share+'<small>مشاركة</small></button><button type="button" data-a="copy">'+IC.copy+'<small>نسخ</small></button><button type="button" data-a="mark">'+IC.mark+'<small>علامة</small></button><button type="button" data-a="note">'+IC.note+'<small>ملاحظة</small></button><button type="button" data-a="play">'+IC.play+'<small>تلاوة</small></button></div>';
+const sheet=document.createElement('div');sheet.id='gqVSheet';sheet.hidden=true;sheet.innerHTML='<i class="gq-grab"></i><header><button type="button" id="gqVClose" aria-label="إغلاق">'+IC.x+'</button><h3 id="gqVTitle"></h3><span></span></header><nav id="gqVTabs"><button type="button" data-t="ar.muyassar">التفسير الميسر</button><button type="button" data-t="ar.jalalayn">الجلالين</button><button type="button" data-t="en.sahih">English</button><button type="button" id="gqVEdit">'+IC.edit+' ملاحظتي</button></nav><div id="gqVBody" dir="auto"></div><footer><div class="gq-vf-pill"><button type="button" data-a="copy" aria-label="نسخ">'+IC.copy+'</button><button type="button" data-a="share" aria-label="مشاركة">'+IC.share+'</button></div><div class="gq-vf-pill"><button type="button" id="gqVPrev">السابق '+IC.up+'</button><button type="button" id="gqVNext">التالي '+IC.down+'</button></div><button type="button" id="gqVMushaf" class="gq-vf-round" aria-label="المصحف">'+IC.book+'</button></footer>';
+view.append(card,sheet);
+const cache=new Map();let tab=localStorage.getItem('rattil-verse-tab')||'ar.muyassar',curK='',vtext='';
+const getEd=async(k,ed)=>{const key=k+'|'+ed;if(cache.has(key))return cache.get(key);const r=await fetch(`https://api.alquran.cloud/v1/ayah/${k}/${ed}`,{cache:'force-cache'});if(!r.ok)throw Error('x');const j=await r.json();const t=j.data.text;cache.set(key,t);return t};
+const title=()=>$('verseTitle')?.textContent||'';
+const fullText=()=>`${vtext}\n﴿${title()}﴾`;
+const loadTab=async()=>{const k=curK;sheet.querySelectorAll('#gqVTabs [data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));const b=$('gqVBody');b.textContent='…';b.lang=tab.startsWith('en')?'en':'ar';try{const t=await getEd(k,tab);if(k===curK)b.textContent=t}catch{if(k===curK)b.textContent='تعذّر التحميل. تحتاج اتصال بالإنترنت.'}};
+const showV=async()=>{const k=selKey();if(!k)return;curK=k;vtext='';card.hidden=false;sheet.hidden=false;body.classList.add('gq-verse');$('gqVTitle').textContent=title();$('gqVCText').textContent='…';loadTab();try{const t=await getEd(k,'quran-uthmani');if(k===curK){vtext=t;$('gqVCText').textContent=t}}catch{if(k===curK)$('gqVCText').textContent=''}};
+const hideV=()=>{if(card.hidden&&sheet.hidden)return;card.hidden=true;sheet.hidden=true;body.classList.remove('gq-verse');curK=''};
+const quick=$('verseQuick');
+if(quick)new MutationObserver(()=>{if(!quick.open)return;if(allowQuick){allowQuick=false;return}quick.close();if(autoplay){autoplay=false;$('quickContinue').click();updMini()}else showV()}).observe(quick,{attributes:true,attributeFilter:['open']});
+const act=async a=>{if(a==='copy'){if(vtext)try{await navigator.clipboard.writeText(fullText())}catch{}}else if(a==='share'){if(vtext)try{if(navigator.share)await navigator.share({text:fullText()});else await navigator.clipboard.writeText(fullText())}catch{}}else if(a==='mark')$('verseBookmark').click();else if(a==='note'){hideV();$('verseNote').click()}else if(a==='play'){allowQuick=true;quick.showModal()}};
+for(const b of [...card.querySelectorAll('[data-a]'),...sheet.querySelectorAll('[data-a]')])b.addEventListener('click',()=>act(b.dataset.a));
+sheet.querySelectorAll('#gqVTabs [data-t]').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.t;localStorage.setItem('rattil-verse-tab',tab);loadTab()}));
+$('gqVEdit').addEventListener('click',()=>act('note'));$('gqVClose').addEventListener('click',hideV);$('gqVMushaf').addEventListener('click',hideV);
+$('gqVNext').addEventListener('click',()=>step(1,false));$('gqVPrev').addEventListener('click',()=>step(-1,false));
+window.addEventListener('rattil-page',()=>{hideV();updMini()});window.addEventListener('rattil-view',hideV);
+const _sb=setBrowse;
+body.addEventListener('transitionend',()=>{},{once:true});
+let wasB=false;new MutationObserver(()=>{const b=isBrowse();if(b===wasB)return;wasB=b;if(b){updMini();if(!sheet.hidden)hideV()}}).observe(body,{attributes:true,attributeFilter:['class']});
 }
