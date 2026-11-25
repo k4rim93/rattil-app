@@ -140,3 +140,10 @@ body.light #gqFontSize,body.light .gq-pill2,body.light #gqBMenu{background:#e7dc
 .reader-view.gq-zoomed .mushaf-paper{overflow:auto!important;align-items:flex-start!important;-webkit-overflow-scrolling:touch}
 .reader-view.gq-zoomed .mushaf-svg-host{width:calc(100% * var(--gq-zoom,1))!important;height:auto!important;min-height:100%!important;flex:none}
 .reader-view.gq-zoomed .mushaf-svg{width:100%!important;height:auto!important}
+/* floating bar: compact card, bigger icons (Golden-like proportions) */
+.tabbar{padding:6px 8px 6px!important;bottom:calc(10px + env(safe-area-inset-bottom))!important;width:min(380px,calc(100% - 24px))!important;border-radius:30px!important}
+.tabbar button{min-height:54px!important;gap:2px!important;justify-content:center}
+.tabbar button>span{width:46px!important;height:32px!important;font-size:24px!important;border-radius:16px!important}
+.tabbar button>span svg{width:26px!important;height:26px!important}
+.tabbar button small{font-size:11px!important}
+.tabbar button.home-tab.active>span{width:46px!important;height:32px!important}
