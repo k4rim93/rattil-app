@@ -38,18 +38,18 @@ body.light:not(.reader-view) .daily-focus h2,body.light:not(.reader-view) .daily
 body[data-view=today] .topbar{height:53px}#view-today .page-heading .date-line{display:none}#view-today .page-heading{padding:7px 2px 13px}.un-today-progress .progress-week{padding:10px 14px}.un-today-progress .progress-week>span{font-size:10px}.un-today-progress .progress-week strong{font-size:20px}.un-today-progress .progress-week small{font-size:10px}.un-today-progress .progress-metrics>div{padding:7px 11px}.un-today-progress .progress-metrics strong{font-size:22px}.un-today-progress #progressLastPage{font-size:10px;margin:5px 2px}.un-today-progress>.gold-button{margin-top:3px}
 
 /* Mushaf night mode: the reader and recitation page follow the app theme (dark unless body.light). */
-body.reader-view:not(.light),body.reader-view:not(.light) .app-shell{background:#0a1110;color:#e9e2cf}
-body.reader-view:not(.light) .mushaf-paper,body.reader-view:not(.light).immersive-reading .mushaf-paper,body:not(.light) #view-quran .mushaf-paper{background:#0e1514;border-color:#826c3855;box-shadow:none!important}
+body.reader-view:not(.light),body.reader-view:not(.light) .app-shell{background:#000;color:#e9e2cf}
+body.reader-view:not(.light) .mushaf-paper,body.reader-view:not(.light).immersive-reading .mushaf-paper,body:not(.light) #view-quran .mushaf-paper{background:#000;border-color:#826c3855;box-shadow:none!important}
 body:not(.light) #view-quran .mushaf-svg #content path{fill:#ebe4d0!important}
 body:not(.light) #view-quran .mushaf-svg #ayah_markers path{fill:#c6a132!important}
 body:not(.light) #view-quran .mushaf-svg #ayah_markers .ayah-mark>g:not(.ayah-mark-ornament) path{fill:#ebe4d0!important}
 body.reader-view:not(.light) .page-number,body.reader-view:not(.light) .mushaf-controls,body.reader-view:not(.light) .mushaf-controls button{color:#b79f62}
 body.reader-view:not(.light) .quran-loading,body.reader-view:not(.light) .quran-error{color:#b9b295}
-body.reader-view:not(.light) #view-quran,body.reader-view:not(.light) #view-quran.active{background:#0a1110;color:#e9e2cf}
+body.reader-view:not(.light) #view-quran,body.reader-view:not(.light) #view-quran.active{background:#000;color:#e9e2cf}
 body.reader-view:not(.light) .un-reader-header,body.reader-view:not(.light) .un-reader-header *,body.reader-view:not(.light) .mushaf-toolbar button,body.reader-view:not(.light) .mushaf-toolbar .text-button{color:#d8cfae}
-body:not(.light) .recitation-mushaf-paper,body:not(.light).recitation-session-active .recitation-mushaf-paper,body:not(.light) .recitation-mushaf-host{background:#0e1514!important;border-color:#826c3855}
+body:not(.light) .recitation-mushaf-paper,body:not(.light).recitation-session-active .recitation-mushaf-paper,body:not(.light) .recitation-mushaf-host{background:#000!important;border-color:#826c3855}
 body:not(.light) .recitation-mushaf-paper,body:not(.light) .recitation-mushaf-host{box-shadow:inset 0 0 0 3px #17211f!important}
-body:not(.light) .recitation-qvp-canvas{background:#0e1514}
+body:not(.light) .recitation-qvp-canvas{background:#000}
 /* ===== Golden-Quran-style mushaf chrome: thin top strip, pull-down search sheet, tabbed index sheet, hizb pill ===== */
 .reader-view .un-reader-header{height:40px;min-height:40px;padding:0 6px;border:0;background:transparent;gap:4px}
 .reader-view .un-reader-header .gq-strip-btn{width:40px;height:40px;min-height:40px;padding:0;background:transparent;border-radius:12px;display:grid;place-items:center;color:#b79f62}
@@ -225,11 +225,13 @@ body.light #view-quran .mushaf-svg #content path{stroke:#0b0b0b;stroke-width:.3;
 body:not(.light) #view-quran .mushaf-svg #content path{stroke:#ebe4d0;stroke-width:.3;stroke-linejoin:round}
 .un-verse-ink #content path{stroke:#243e31!important;stroke-width:.3}
 /* QPC V2 edition (text glyphs instead of outlines) */
-body.light #view-quran .mushaf-svg #content text{fill:#0b0b0b;stroke:#0b0b0b;stroke-width:.12;paint-order:stroke}
-body:not(.light) #view-quran .mushaf-svg #content text{fill:#ebe4d0;stroke:#ebe4d0;stroke-width:.12}
+body.light #view-quran .mushaf-svg #content text{fill:#0b0b0b;stroke:#0b0b0b;stroke-width:.2;paint-order:stroke}
+body:not(.light) #view-quran .mushaf-svg #content text{fill:#ebe4d0;stroke:#ebe4d0;stroke-width:.2}
 .mushaf-svg #content text{font-kerning:none;white-space:pre}
-.un-verse-ink #content text{fill:#243e31!important;stroke:#243e31!important;stroke-width:.12}
+.un-verse-ink #content text{fill:#243e31!important;stroke:#243e31!important;stroke-width:.2}
 .mushaf-svg .qpc2-surah-name{font-family:'Amiri','Scheherazade New','Geeza Pro',serif}
 
 .mushaf-svg .q2b-out{fill:#e7d6b8;stroke:#9a5a14;stroke-width:.7}.mushaf-svg .q2b-lens{fill:#f7f0e0;stroke:#9a5a14;stroke-width:.6}.mushaf-svg .q2b-orn{fill:none;stroke:#9a5a14;stroke-width:.5;stroke-linecap:round}.mushaf-svg .q2b-name{fill:#111}.mushaf-svg .qpc2-basmala-path{fill:#0b0b0b}
 body:not(.light) .mushaf-svg .q2b-out{fill:#2b2410;stroke:#c9a02f}body:not(.light) .mushaf-svg .q2b-lens{fill:#050503;stroke:#c9a02f}body:not(.light) .mushaf-svg .q2b-orn{stroke:#c9a02f}body:not(.light) .mushaf-svg .q2b-name{fill:#f2ecd8}body:not(.light) .mushaf-svg .qpc2-basmala-path{fill:#ebe4d0}
+
+.mushaf-svg{--q2ring:#a8691f}body:not(.light) .mushaf-svg{--q2ring:#c9a02f}
