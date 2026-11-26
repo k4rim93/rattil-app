@@ -276,3 +276,24 @@ body:not(.light):not(.reader-view) .follow-start-card small,body:not(.light):not
 body:not(.light):not(.reader-view) .follow-start-card strong{color:#000!important}
 body:not(.light):not(.reader-view)[data-view=home] #view-home :is(.date-line,small,p,.home-footer,.prayer-next small){color:#d9c48a!important;text-shadow:0 1px 8px #000,0 0 3px #000}
 body:not(.light):not(.reader-view)[data-view=home] #view-home .action-line small,body:not(.light):not(.reader-view)[data-view=home] #view-home .continue-row p{text-shadow:none}
+/* Light mode home over the sky: readable text. Cards cream with dark text, loose text cream with shadow. */
+body.light:not(.reader-view)[data-view=home] #view-home :is(.date-line,.scene-copy h1,.scene-copy p,.scene-copy>p:last-child,.prayer-next small,.prayer-next strong,.prayer-strip small,.prayer-strip strong,.prayer-strip p,.prayer-strip span,.prayer-strip h2,.prayer-strip h3,.home-footer,.sample-note,#view-home>p,#view-home>small){color:#fffaf0!important;text-shadow:0 1px 8px #000c,0 0 3px #000a}
+body.light:not(.reader-view)[data-view=home] #view-home .continue-row,body.light:not(.reader-view)[data-view=home] #view-home .action-line{background:#faf4e8ee!important;border:1px solid #9d854f88!important;border-radius:18px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+body.light:not(.reader-view)[data-view=home] #view-home :is(.continue-row,.action-line) :is(strong,h2){color:#203c2d!important;text-shadow:none}
+body.light:not(.reader-view)[data-view=home] #view-home :is(.continue-row,.action-line) :is(small,p){color:#4a5d48!important;text-shadow:none}
+body.light:not(.reader-view)[data-view=home] #view-home :is(.continue-row,.action-line) .action-icon{background:#e9dfc2!important;border-color:#9d854f88!important;color:#5c4a17!important}
+body.light:not(.reader-view)[data-view=home] #view-home .round-arrow,body.light:not(.reader-view)[data-view=home] #view-home .chevron{color:#5c4a17!important;border-color:#9d854f88!important;background:#e9dfc2!important}
+body.light:not(.reader-view)[data-view=home] .tabbar{background:#faf4e8e6}
+body.light:not(.reader-view)[data-view=home] .tabbar button{color:#4a5d48}
+body.light:not(.reader-view)[data-view=home] .tabbar button.active{color:#5c4a17}
+body.light:not(.reader-view)[data-view=home] #view-home :is(p,small,h1,span,strong){color:#fffaf0!important;text-shadow:0 1px 8px #000c,0 0 3px #000a}
+body.light:not(.reader-view)[data-view=home] #view-home :is(.continue-row,.action-line) :is(strong,h2){color:#203c2d!important;text-shadow:none}
+body.light:not(.reader-view)[data-view=home] #view-home :is(.continue-row,.action-line) :is(small,p){color:#4a5d48!important;text-shadow:none}
+body.light:not(.reader-view)[data-view=home] #view-home :is(.continue-row,.action-line) :is(.action-icon,.chevron,.round-arrow,.action-icon span){color:#5c4a17!important;text-shadow:none}
+body.light:not(.reader-view)[data-view=home] .tabbar,body.light:not(.reader-view):has(#view-home.active) .tabbar{background:#faf4e8f0!important;border-color:#9d854f88!important}
+body.light:not(.reader-view):has(#view-home.active) .tabbar button{color:#4a5d48!important}
+body.light:not(.reader-view):has(#view-home.active) .tabbar button.active{color:#20281f!important}
+body.light:not(.reader-view)[data-view=home] #view-home .prayer-time-row{color:#fffaf0!important;text-shadow:0 1px 8px #000c,0 0 3px #000a}
+body.light:not(.reader-view)[data-view=home] #view-home :is(.continue-row,.action-line) span:not(.action-icon):not(.chevron){color:#4a5d48!important;text-shadow:none}
+body.light:not(.reader-view)[data-view=home] #view-home .section-symbol{background:#e9dfc2!important;border-color:#9d854f88!important;color:#5c4a17!important;text-shadow:none}
+body.light:not(.reader-view)[data-view=home] #view-home .action-line .chevron{background:transparent!important;border:0!important}
