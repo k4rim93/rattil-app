@@ -230,3 +230,6 @@ body:not(.light) #view-quran .mushaf-svg #content text{fill:#ebe4d0;stroke:#ebe4
 .mushaf-svg #content text{font-kerning:none;white-space:pre}
 .un-verse-ink #content text{fill:#243e31!important;stroke:#243e31!important;stroke-width:.12}
 .mushaf-svg .qpc2-surah-name{font-family:'Amiri','Scheherazade New','Geeza Pro',serif}
+
+.mushaf-svg .q2b-out{fill:#e7d6b8;stroke:#9a5a14;stroke-width:.7}.mushaf-svg .q2b-lens{fill:#f7f0e0;stroke:#9a5a14;stroke-width:.6}.mushaf-svg .q2b-orn{fill:none;stroke:#9a5a14;stroke-width:.5;stroke-linecap:round}.mushaf-svg .q2b-name{fill:#111}.mushaf-svg .qpc2-basmala-path{fill:#0b0b0b}
+body:not(.light) .mushaf-svg .q2b-out{fill:#2b2410;stroke:#c9a02f}body:not(.light) .mushaf-svg .q2b-lens{fill:#050503;stroke:#c9a02f}body:not(.light) .mushaf-svg .q2b-orn{stroke:#c9a02f}body:not(.light) .mushaf-svg .q2b-name{fill:#f2ecd8}body:not(.light) .mushaf-svg .qpc2-basmala-path{fill:#ebe4d0}
