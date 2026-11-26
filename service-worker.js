@@ -5,6 +5,10 @@ self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).the
 self.addEventListener('message',event=>{if(event.data?.type==='GET_VERSION')event.ports[0]?.postMessage({version:VERSION});if(event.data?.type==='APPLY_UPDATE')event.waitUntil(self.skipWaiting())});
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('rattil-shell-') && key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())));
 self.addEventListener('fetch', event => {
+  if (event.request.method === 'GET' && new URL(event.request.url).origin === 'https://fonts.quran.ws') {
+    event.respondWith(caches.open('rattil-qpc2-fonts').then(async cache => { const hit = await cache.match(event.request); if (hit) return hit; const res = await fetch(event.request); if (res.ok) await cache.put(event.request, res.clone()); return res; }));
+    return;
+  }
   if (event.request.method !== 'GET' || new URL(event.request.url).origin !== location.origin) return;
   // Model assets have their own IndexedDB store. Never cache HTML as a model/JS fallback.
   if (/\.onnx(?:$|\.parts\/)/.test(new URL(event.request.url).pathname)) return;

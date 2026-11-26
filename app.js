@@ -92,7 +92,7 @@ function drawRecitationQvpPageNow(){
  const availableWidth=Math.max(1,host.clientWidth),availableHeight=Math.max(1,host.clientHeight),ratio=recitationQvpPage.width/recitationQvpPage.height,scale=Math.min(availableWidth/recitationQvpPage.width,availableHeight/recitationQvpPage.height),displayWidth=Math.max(1,recitationQvpPage.width*scale),displayHeight=Math.max(1,recitationQvpPage.height*scale),dpr=Math.min(2,window.devicePixelRatio||1),pixelWidth=Math.round(displayWidth*dpr),pixelHeight=Math.round(displayHeight*dpr);
  // Resizing a canvas reallocates its bitmap, so only do it when the size really changed.
  if(canvas.width!==pixelWidth||canvas.height!==pixelHeight){canvas.style.width=displayWidth+'px';canvas.style.height=displayHeight+'px';canvas.width=pixelWidth;canvas.height=pixelHeight;canvas.style.aspectRatio=String(ratio)}
- const dark=!document.body.classList.contains('light'),pal=dark?{paper:'#0e1514',ink:'#ebe4d0',correct:'#6fd19a',error:'#ff7d6b',uncertain:'#ecb54f',hint:'#dba160',active:'#f6efd9',activeBox:'#2c3d37',cursor:'#bdb184'}:{paper:'#f8f1df',ink:'#263b31',correct:'#246343',error:'#b23121',uncertain:'#86621f',hint:'#98652b',active:'#0b1414',activeBox:'#fff',cursor:'#7d7455'},ctx=canvas.getContext('2d'),ink=pal.ink,fit=recitationQvpPage.fit(canvas,0),layerKey=[recitationSvgPage,pixelWidth,pixelHeight,recitationPreview,dark].join(':');
+ const dark=!document.body.classList.contains('light'),pal=dark?{paper:'#000',ink:'#ebe4d0',correct:'#6fd19a',error:'#ff7d6b',uncertain:'#ecb54f',hint:'#dba160',active:'#f6efd9',activeBox:'#2c3d37',cursor:'#bdb184'}:{paper:'#f8f1df',ink:'#263b31',correct:'#246343',error:'#b23121',uncertain:'#86621f',hint:'#98652b',active:'#0b1414',activeBox:'#fff',cursor:'#7d7455'},ctx=canvas.getContext('2d'),ink=pal.ink,fit=recitationQvpPage.fit(canvas,0),layerKey=[recitationSvgPage,pixelWidth,pixelHeight,recitationPreview,dark].join(':');
  // Paper, decorations and (in preview) the printed words never change between events: draw them once per page and size.
  if(baseLayer.key!==layerKey||!baseLayer.canvas){const layer=baseLayer.canvas||document.createElement('canvas');layer.width=pixelWidth;layer.height=pixelHeight;const lctx=layer.getContext('2d');lctx.fillStyle=pal.paper;lctx.fillRect(0,0,pixelWidth,pixelHeight);if(recitationPreview)recitationQvpPage.draw(lctx,{...fit,ink});recitationQvpPage.drawDecorations(lctx,{...fit,ink:'#c7a34c'});baseLayer={key:layerKey,canvas:layer}}
  ctx.drawImage(baseLayer.canvas,0,0);
@@ -425,12 +425,27 @@ function renderPageSvg(source,requestedPage){
   const root=document.getElementById('mushafSvgHost');
   svg.querySelectorAll('script,foreignObject,iframe,style').forEach(node=>node.remove());for(const node of [svg,...svg.querySelectorAll('*')])for(const attr of [...node.attributes])if(attr.name.startsWith('on')||((attr.localName==='href')&&!attr.value.startsWith('#')))node.removeAttribute(attr.name);
   const mounted=document.importNode(svg,true);
+  mountPageSvg(mounted,requestedPage);connectAyahMarkers(requestedPage,mounted);
+}
+function mountPageSvg(mounted,requestedPage){
+  const root=document.getElementById('mushafSvgHost');
   mounted.classList.add('mushaf-svg');mounted.setAttribute('role','img');mounted.setAttribute('aria-label',`صفحة المصحف ${toArabic(requestedPage)}`);
   mounted.removeAttribute('width');mounted.removeAttribute('height');
   root.replaceChildren(mounted);
   document.getElementById('paperPageNumber').textContent=toArabic(requestedPage);pageLoaded=true;
-  connectAyahMarkers(requestedPage,mounted);
   window.dispatchEvent(new CustomEvent('rattil-page',{detail:{page:requestedPage,svg:mounted}}));
+}
+const mushafEdition=()=>readStore('rattil-edition','qpc2')==='classic'?'classic':'qpc2';
+function attachAyahMarker(marker,reference){let pressTimer=0,didLongPress=false,pointerType='';marker.classList.add('ayah-note-marker');marker.setAttribute('role','button');marker.setAttribute('tabindex','0');marker.setAttribute('aria-label',`اضغط مطولًا لإضافة ملاحظة على ${reference.surahName}، الآية ${toArabic(reference.ayah)}`);marker.addEventListener('pointerdown',event=>{pointerType=event.pointerType;if(pointerType==='touch'||pointerType==='pen'){didLongPress=false;pressTimer=setTimeout(()=>{didLongPress=true;openAyahNote(reference)},550)}});['pointerup','pointerleave','pointercancel'].forEach(type=>marker.addEventListener(type,()=>clearTimeout(pressTimer)));marker.addEventListener('click',event=>{if(event.detail===0||pointerType==='mouse')openAyahNote(reference);else if(didLongPress)event.preventDefault()})}
+async function loadQpc2Page(requestedPage,current){
+  const q=await import('./qpc2/qpc2.js');
+  const data=await q.loadQpc2Data([new URL('./qpc2/qpc2-ay.json',import.meta.url).href,new URL('./qpc2/qpc2-p1.json',import.meta.url).href,new URL('./qpc2/qpc2-p2.json',import.meta.url).href,new URL('./qpc2/qpc2-p3.json',import.meta.url).href,new URL('./qpc2/qpc2-p4.json',import.meta.url).href]);
+  const host=document.getElementById('mushafSvgHost');
+  const el=await q.buildQpc2Svg(requestedPage,data,{hostW:host.clientWidth,hostH:host.clientHeight,surahName:n=>getSurahName(n)});
+  if(current!==pageRequest)return true;
+  mountPageSvg(el,requestedPage);
+  el.querySelectorAll('.ayah-mark[data-surah]').forEach(m=>attachAyahMarker(m,{surah:+m.dataset.surah,surahName:getSurahName(+m.dataset.surah),ayah:+m.dataset.ayah,page:requestedPage}));
+  return true;
 }
 async function connectAyahMarkers(requestedPage,svg){
   try{
@@ -443,6 +458,7 @@ async function loadPage(requestedPage){
   const current=++pageRequest,root=document.getElementById('mushafSvgHost');
   root.innerHTML='<p class="quran-loading">جارٍ تحميل صفحة المصحف…</p>';
   const url=mushafPageUrl(requestedPage);
+  if(mushafEdition()==='qpc2'){try{await loadQpc2Page(requestedPage,current);return}catch(e){console.warn('qpc2 edition failed, using classic',e);if(current!==pageRequest)return}}
   try{
     const svg=await fetchPageSvg(url);if(current!==pageRequest)return;renderPageSvg(svg,requestedPage);
   }catch{
@@ -488,15 +504,19 @@ async function loadIndexData(){
     const [meta,surahs]=await Promise.all([getQuranJson(`${quranApi}/meta`),getQuranJson(`${quranApi}/surah`)]);indexData.meta=meta.data;indexData.surahs=surahs.data;renderSurahs();renderJuz();renderSavedIndexes();
   }catch{surahList.innerHTML='<p class="quran-error">تعذر تحميل الفهرس. اتصل بالإنترنت ثم أعد فتحه.</p>';juzList.innerHTML='<p class="quran-error">تعذر تحميل فهرس الأجزاء.</p>'}
 }
+const shortSurahName=(name)=>String(name||'').replace(/[\u064b-\u065f\u0670\u06d6-\u06ed]/g,'').replace(/\u0671/g,'\u0627').replace(/^\s*سورة\s+/u,'').trim();
+function currentSurahNumber(){return indexData.meta?.pages?.references?.[page-1]?.surah||0}
 function renderSurahs(){
   if(!indexData.surahs)return;
   const list=document.getElementById('surahList'),query=normalizeRecitationWord(document.getElementById('surahSearch').value.trim()).toLocaleLowerCase('ar');list.replaceChildren();
   const matches=indexData.surahs.filter(s=>normalizeRecitationWord(s.name).toLocaleLowerCase('ar').includes(query)||String(s.number).includes(query));
-  let activeJuz=0;
+  const current=currentSurahNumber(),refs=indexData.meta.juzs.references;let activeJuz=0,card=null;
   matches.forEach(surah=>{
     const targetPage=pageForReference(surah.number,1),juz=juzForReference(surah.number,1);
-    if(juz!==activeJuz){const heading=document.createElement('h3');heading.className='index-group-heading';heading.textContent=`الجزء ${toArabic(juz)}`;list.append(heading);activeJuz=juz}
-    list.append(makeIndexRow({title:`${toArabic(surah.number)}. ${surah.name}`,detail:`${toArabic(surah.numberOfAyahs)} آية · ${surah.revelationType==='Meccan'?'مكية':'مدنية'}`,page:targetPage}));
+    if(juz!==activeJuz){const heading=document.createElement('button');heading.type='button';heading.className='gq-juz-head';const label=document.createElement('span');label.textContent=`الجزء ${toArabic(juz)}`;const chevron=document.createElement('i');chevron.textContent='‹';chevron.setAttribute('aria-hidden','true');heading.append(label,chevron);const ref=refs[juz-1];heading.addEventListener('click',()=>{mushafIndex.close();showView('quran');setPage(pageForReference(ref.surah,ref.ayah))});list.append(heading);card=document.createElement('div');card.className='gq-card';list.append(card);activeJuz=juz}
+    const row=makeIndexRow({title:shortSurahName(surah.name),detail:`رقمها ${toArabic(surah.number)} · آياتها ${toArabic(surah.numberOfAyahs)} · ${surah.revelationType==='Meccan'?'مكّيّة':'مدنيّة'}`,page:surah.number===current?page:targetPage});
+    if(surah.number===current){row.classList.add('gq-current');row.setAttribute('aria-current','true')}
+    card.append(row);
   });
   if(!list.children.length)list.innerHTML='<p class="quran-error">لا توجد سورة بهذا الاسم.</p>';
 }
@@ -509,7 +529,7 @@ function renderJuz(){
   });
 }
 function selectIndexTab(name){document.querySelectorAll('[data-index-tab]').forEach(tab=>{const selected=tab.dataset.indexTab===name;tab.classList.toggle('selected',selected);tab.setAttribute('aria-selected',String(selected))});document.querySelectorAll('.index-panel').forEach(panel=>{const selected=panel.id===`indexPanel-${name}`;panel.hidden=!selected;panel.classList.toggle('active',selected)});document.getElementById('surahSearchWrap').hidden=name!=='surahs';document.getElementById('indexSort').hidden=!['notes','bookmarks'].includes(name);if(name==='notes'||name==='bookmarks')renderSavedIndexes()}
-document.getElementById('indexButton').addEventListener('click',()=>{selectIndexTab('surahs');mushafIndex.showModal();loadIndexData()});
+document.getElementById('indexButton').addEventListener('click',async()=>{selectIndexTab('surahs');document.getElementById('surahSearch').value='';mushafIndex.showModal();await loadIndexData();requestAnimationFrame(()=>document.querySelector('#surahList .gq-current')?.scrollIntoView({block:'center'}))});
 document.getElementById('closeMushafIndex').addEventListener('click',()=>mushafIndex.close());
 document.querySelectorAll('[data-index-tab]').forEach(tab=>tab.addEventListener('click',()=>selectIndexTab(tab.dataset.indexTab)));
 document.getElementById('surahSearch').addEventListener('input',renderSurahs);
@@ -689,4 +709,5 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&liveAudioC
 
 installAppUpdate({button:document.getElementById('refreshApp'),status:document.getElementById('refreshAppStatus'),setApplying:value=>appUpdating=value,announce:text=>{document.getElementById('refreshAppStatus').textContent=text},isBusy:()=>Boolean(recitationStarting||liveMediaStream||liveAudioContext||recitationStopping||currentRecitationSession||settledUiTasks.size)});
 
-import('./unified.js').then(({initUnified})=>initUnified({showView,setPage,getPage:()=>page,getSurahName,openAyahNote,announce,toArabic,readStore,writeStore,setImmersive}));
+import('./unified.js').then(({initUnified})=>{initUnified({showView,setPage,getPage:()=>page,getSurahName,openAyahNote,announce,toArabic,readStore,writeStore,setImmersive});import('./golden-nav.js').then(({initGoldenNav})=>initGoldenNav({showView,setPage,getPage:()=>page,toArabic,readStore,writeStore,announce,setImmersive,normalize:normalizeRecitationWord,indexData,loadIndexData,pageForReference,juzForReference,shortSurahName,quranApi,mushafIndex}))});
+{const sel=document.getElementById('editionSelect');if(sel){sel.value=mushafEdition();sel.addEventListener('change',()=>{writeStore('rattil-edition',sel.value==='qpc2'?'qpc2':'classic');pageLoaded=false;loadPage(page)})}}
