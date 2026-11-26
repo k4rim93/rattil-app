@@ -322,13 +322,13 @@ body:not(.reader-view) :is(h1,h2,h3){font-family:var(--sans)}
 body:not(.light):not(.reader-view){--bg:#04080f;--surface:rgba(255,255,255,.055);--surface-raised:rgba(255,255,255,.08);--surface-soft:rgba(255,255,255,.04);--text:#eef3f9;--muted:#9fb0c4;--line:rgba(255,255,255,.13);--gold:#eec96f;--gold-light:#f7dc8e;--gb:#f7dc8e;--gm:#9fb0c4;--gl:rgba(255,255,255,.14);--gk:#04080f;--un-panel:rgba(255,255,255,.055);--un-edge:rgba(255,255,255,.13);--un-muted:#9fb0c4}
 body:not(.light):not(.reader-view),body:not(.light):not(.reader-view) html{background:#04080f}
 body:not(.light):not(.reader-view) .app-shell{background:transparent}
-body:not(.light):not(.reader-view):not([data-view=home]) .app-shell{background:linear-gradient(180deg,#0c1828 0%,#060d18 55%,#04080f 100%)}
+body:not(.light):not(.reader-view):not([data-view=home]) .app-shell{background:radial-gradient(ellipse at 50% -8%,#234a7a80 0%,transparent 55%),linear-gradient(180deg,#142c4c 0%,#0a1a30 55%,#050d18 100%)}
 body:not(.light):not(.reader-view) .topbar{background:rgba(5,11,20,.55);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.09)}
 body:not(.light):not(.reader-view) .tabbar,body:not(.light):not(.reader-view):has(#view-home.active) .tabbar{background:rgba(9,18,30,.55);border:1px solid rgba(255,255,255,.12);box-shadow:0 14px 40px rgba(0,0,0,.5);backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2)}
 body:not(.light):not(.reader-view) .tabbar button{color:#9fb0c4}
 body:not(.light):not(.reader-view) .tabbar button.active{color:#f7dc8e}
 body:not(.light):not(.reader-view) .tabbar button.active>span,body:not(.light):not(.reader-view) .tabbar button.home-tab.active>span{background:linear-gradient(160deg,#ffe9ad,#eec96f);color:#14243c}
-body:not(.light):not(.reader-view) .daily-focus,body:not(.light):not(.reader-view) .progress-week,body:not(.light):not(.reader-view) .progress-metrics>div,body:not(.light):not(.reader-view) .practice-engine-setup,body:not(.light):not(.reader-view) .recitation-history-panel,body:not(.light):not(.reader-view) .dhikr-row,body:not(.light):not(.reader-view) .list-row,body:not(.light):not(.reader-view) .practice-start-card,body:not(.light):not(.reader-view) .un-settings-group,body:not(.light):not(.reader-view) .practice-panel,body:not(.light):not(.reader-view) .un-reader-credits{background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.13);box-shadow:0 12px 32px rgba(0,0,0,.30);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+body:not(.light):not(.reader-view) .daily-focus,body:not(.light):not(.reader-view) .progress-week,body:not(.light):not(.reader-view) .progress-metrics>div,body:not(.light):not(.reader-view) .practice-engine-setup,body:not(.light):not(.reader-view) .recitation-history-panel,body:not(.light):not(.reader-view) .dhikr-row,body:not(.light):not(.reader-view) .list-row,body:not(.light):not(.reader-view) .practice-start-card,body:not(.light):not(.reader-view) .un-settings-group,body:not(.light):not(.reader-view) .practice-panel,body:not(.light):not(.reader-view) .un-reader-credits{background:linear-gradient(160deg,rgba(255,255,255,.11),rgba(255,255,255,.045));border-color:rgba(255,255,255,.16);box-shadow:0 12px 32px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.12);backdrop-filter:blur(20px) saturate(1.25);-webkit-backdrop-filter:blur(20px) saturate(1.25)}
 body:not(.light):not(.reader-view) .recitation-history-entry,body:not(.light):not(.reader-view) .mistake-log-entry,body:not(.light):not(.reader-view) .practice-status,body:not(.light):not(.reader-view) .reset-azkar{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.10);color:var(--gm)}
 body:not(.light):not(.reader-view) .brand-mark,body:not(.light):not(.reader-view) .icon-button,body:not(.light):not(.reader-view) .top-actions .icon-button,body:not(.light):not(.reader-view) .round-arrow,body:not(.light):not(.reader-view) .section-symbol,body:not(.light):not(.reader-view) .list-icon,body:not(.light):not(.reader-view) .action-icon,body:not(.light):not(.reader-view) .state-pill,body:not(.light):not(.reader-view) .city-row select,body:not(.light):not(.reader-view) .mode-panel select,body:not(.light):not(.reader-view) .mode-panel input,body:not(.light):not(.reader-view) .week-dots i,body:not(.light):not(.reader-view) .prayer-glyph{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:var(--gb)}
 body:not(.light):not(.reader-view) strong,body:not(.light):not(.reader-view) .un-settings-group>summary,body:not(.light):not(.reader-view) .list-row,body:not(.light):not(.reader-view) .action-line,body:not(.light):not(.reader-view) .continue-row h2{color:var(--text)}
@@ -352,10 +352,10 @@ body:not(.light):not(.reader-view)[data-view=home] #view-home :is(.date-line,sma
 body:not(.light):not(.reader-view)[data-view=home] #view-home :is(.action-line small,.continue-row p){color:#9fb0c4!important;text-shadow:none}
 body:not(.light):not(.reader-view)[data-view=home] #view-home :is(.action-line strong,.continue-row h2){color:#eef3f9!important}
 body:not(.light):not(.reader-view)[data-view=home] .scene-copy h1{color:#f7dc8e!important}
-body.light:not(.reader-view){--un-panel:rgba(255,255,255,.68);--un-edge:rgba(18,41,61,.10);--un-muted:#5f7488;--text:#12293d;--muted:#5f7488;--gold:#8a6d2f;--gold-light:#a87f2f;--gb:#8a6d2f;--gm:#5f7488;--gl:rgba(18,41,61,.12)}
+body.light:not(.reader-view){--un-panel:linear-gradient(160deg,rgba(255,255,255,.88),rgba(255,255,255,.58));--un-edge:rgba(18,41,61,.10);--un-muted:#5f7488;--text:#12293d;--muted:#5f7488;--gold:#8a6d2f;--gold-light:#a87f2f;--gb:#8a6d2f;--gm:#5f7488;--gl:rgba(18,41,61,.12)}
 body.light:not(.reader-view),body.light:not(.reader-view) html{background:#eef4fa}
 body.light:not(.reader-view) .app-shell{background:transparent}
-body.light:not(.reader-view):not([data-view=home]) .app-shell{background:linear-gradient(180deg,#cfe4f5 0%,#eef4fa 55%,#f7fafc 100%)}
+body.light:not(.reader-view):not([data-view=home]) .app-shell{background:radial-gradient(ellipse at 50% -8%,#ffffff90 0%,transparent 50%),linear-gradient(180deg,#9cc6ea 0%,#cfe4f5 55%,#eef5fb 100%)}
 body.light:not(.reader-view):not([data-view=home]) .app-shell:after{display:none}
 body.light:not(.reader-view) .topbar{background:rgba(238,244,250,.62);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(18,41,61,.08)}
 body.light:not(.reader-view) .tabbar,body.light:not(.reader-view):has(#view-home.active) .tabbar{background:rgba(255,255,255,.62)!important;border-color:rgba(255,255,255,.9)!important;box-shadow:0 14px 40px rgba(30,60,90,.16);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
@@ -389,3 +389,13 @@ body.light:not(.reader-view)[data-view=home] #view-home :is(.continue-row,.actio
 body.light:not(.reader-view)[data-view=home] #view-home .round-arrow,body.light:not(.reader-view)[data-view=home] #view-home .chevron{color:#8a6d2f!important;border-color:rgba(18,41,61,.10)!important;background:rgba(255,255,255,.6)!important}
 body.light:not(.reader-view)[data-view=home] #view-home .section-symbol{background:rgba(255,255,255,.6)!important;border-color:rgba(18,41,61,.10)!important;color:#8a6d2f!important}
 body.light:not(.reader-view)[data-view=home] #view-home .action-line .chevron{background:transparent!important;border:0!important}
+/* Tidied engine card: extra explanation folded under a summary. */
+.asr-more{margin-top:4px}
+.asr-more>summary{display:flex;align-items:center;gap:6px;min-height:34px;cursor:pointer;list-style:none;font-size:11px;color:var(--muted)}
+.asr-more>summary::-webkit-details-marker{display:none}
+.asr-more>summary:before{content:'\2039';font-size:13px;transition:transform .15s}
+.asr-more[open]>summary:before{transform:rotate(-90deg)}
+.asr-more .asr-limits{margin:6px 0 2px}
+.asr-more .clear-asr-cache{margin-top:2px}
+
+#loadAsr{white-space:nowrap}
