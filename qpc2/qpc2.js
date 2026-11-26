@@ -60,6 +60,10 @@ export async function buildQpc2Svg(page,data,opts={}){
         const pn=mk('path',{d:N[0],class:'q2b-name',transform:`translate(${(sx-(A[1]+gap+N[1])*k).toFixed(2)} ${(cy+hh*0.37).toFixed(2)}) scale(${k.toFixed(5)})`});
         const gn=mk('g',{class:'qpc2-surah-name','data-surah':ln[1]});gn.append(pa,pn);g.append(gn);
         deco.append(g);return}
+      if(page===2){
+        const l1=data.p[1].l[1],bw=l1[1].split(' ').slice(0,4).map(w=>w.replace('|',''));const f1=famOf(1);const BF=22.7;
+        const nat=decW(l1[2]).slice(0,4).map(v=>v*BF/1000);const gap=2.2;const tot=nat.reduce((a,b)=>a+b,0)+gap*3;let x=PX+(W+tot)/2+4;
+        const row=mk('g',{class:'qpc2-basmala'});bw.forEach((w,i)=>{const x0=x-nat[i];const t=mk('text',{x:x.toFixed(2),y:(y0+LHr*0.72+1).toFixed(2),'font-family':f1,'font-size':BF,direction:'rtl'});t.textContent=w;row.append(t);x=x0-gap});content.append(row);return}
       const B=hd.b,k=(page<=2?142:188)/(B[2]-B[1]),cx=PX+W/2-2+(page<=2?6:0),cyb=y0+LHr*0.5+(page<=2?1.6:0);
       const pth=mk('path',{d:B[0],class:'qpc2-basmala-path',transform:`translate(${cx.toFixed(2)} ${cyb.toFixed(2)}) scale(${k.toFixed(5)}) translate(${-(B[1]+B[2])/2} ${-(B[3]+B[4])/2})`});
       const row=mk('g',{class:'qpc2-basmala'});row.append(pth);deco.append(row);return}
