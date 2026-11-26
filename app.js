@@ -435,7 +435,7 @@ function mountPageSvg(mounted,requestedPage){
   document.getElementById('paperPageNumber').textContent=toArabic(requestedPage);pageLoaded=true;
   window.dispatchEvent(new CustomEvent('rattil-page',{detail:{page:requestedPage,svg:mounted}}));
 }
-const mushafEdition=()=>readStore('rattil-edition','classic')==='qpc2'?'qpc2':'classic';
+const mushafEdition=()=>readStore('rattil-edition','qpc2')==='classic'?'classic':'qpc2';
 function attachAyahMarker(marker,reference){let pressTimer=0,didLongPress=false,pointerType='';marker.classList.add('ayah-note-marker');marker.setAttribute('role','button');marker.setAttribute('tabindex','0');marker.setAttribute('aria-label',`اضغط مطولًا لإضافة ملاحظة على ${reference.surahName}، الآية ${toArabic(reference.ayah)}`);marker.addEventListener('pointerdown',event=>{pointerType=event.pointerType;if(pointerType==='touch'||pointerType==='pen'){didLongPress=false;pressTimer=setTimeout(()=>{didLongPress=true;openAyahNote(reference)},550)}});['pointerup','pointerleave','pointercancel'].forEach(type=>marker.addEventListener(type,()=>clearTimeout(pressTimer)));marker.addEventListener('click',event=>{if(event.detail===0||pointerType==='mouse')openAyahNote(reference);else if(didLongPress)event.preventDefault()})}
 async function loadQpc2Page(requestedPage,current){
   const q=await import('./qpc2/qpc2.js');
