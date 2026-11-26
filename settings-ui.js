@@ -1,14 +1,15 @@
 // Settings screen layout. Presentation only: every control keeps its id, listeners and storage keys.
 // Native selects stay in the DOM (hidden or invisible overlays) so app.js and unified.js behave as before.
 const CSS = `
-#view-settings{--st-card:rgba(255,255,255,.055);--st-edge:rgba(255,255,255,.13);--st-gold:#f7dc8e;--st-mut:#9fb0c4;--st-txt:#eef3f9;--st-sep:rgba(255,255,255,.10);--st-btn:#eec96f;--st-btnt:#14243c;--st-sel:rgba(247,220,142,.10);--st-bg:rgba(255,255,255,.05)}
-body.light #view-settings{--st-card:rgba(255,255,255,.72);--st-edge:rgba(18,41,61,.10);--st-gold:#8a6d2f;--st-mut:#5f7488;--st-txt:#12293d;--st-sep:rgba(18,41,61,.10);--st-btn:#dcb85f;--st-btnt:#3a2c07;--st-sel:rgba(138,109,47,.12);--st-bg:rgba(255,255,255,.55)}
+#view-settings{--st-card:linear-gradient(160deg,rgba(255,255,255,.11),rgba(255,255,255,.045));--st-edge:rgba(255,255,255,.13);--st-gold:#f7dc8e;--st-mut:#9fb0c4;--st-txt:#eef3f9;--st-sep:rgba(255,255,255,.10);--st-btn:#eec96f;--st-btnt:#14243c;--st-sel:rgba(247,220,142,.10);--st-bg:rgba(255,255,255,.05)}
+body.light #view-settings{--st-card:linear-gradient(160deg,rgba(255,255,255,.88),rgba(255,255,255,.58));--st-edge:rgba(18,41,61,.10);--st-gold:#8a6d2f;--st-mut:#5f7488;--st-txt:#12293d;--st-sep:rgba(18,41,61,.10);--st-btn:#dcb85f;--st-btnt:#3a2c07;--st-sel:rgba(138,109,47,.12);--st-bg:rgba(255,255,255,.55)}
 #view-settings [hidden]{display:none!important}
 #view-settings .page-heading{padding:22px 2px 4px}#view-settings .page-heading p{display:none}
 #view-settings .st-wrap{padding-bottom:140px;color:var(--st-txt)}
 #view-settings .st-sec{font-size:13px;color:var(--st-gold);margin:22px 6px 9px;display:flex;align-items:center;gap:8px}
 #view-settings .st-sec:after{content:'';flex:1;height:1px;background:var(--st-sep)}
-#view-settings .st-card{background:var(--st-card);border:1px solid var(--st-edge);border-radius:18px;overflow:hidden;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+#view-settings .st-card{background:var(--st-card);border:1px solid var(--st-edge);border-radius:18px;overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.12);backdrop-filter:blur(20px) saturate(1.25);-webkit-backdrop-filter:blur(20px) saturate(1.25)}
+body.light #view-settings .st-card{box-shadow:0 12px 32px rgba(30,60,90,.14),inset 0 1px 0 #fff}
 #view-settings .st-seg{display:flex;background:var(--st-card);border:1px solid var(--st-edge);border-radius:16px;padding:4px;gap:4px}
 #view-settings .st-seg button{flex:1;border:0;background:transparent;color:var(--st-mut);padding:10px 0;border-radius:12px;font:inherit;font-size:14px;min-height:44px}
 #view-settings .st-seg button.on{background:var(--st-btn);color:var(--st-btnt);font-weight:700}
@@ -52,10 +53,10 @@ body.light #view-settings{--st-card:rgba(255,255,255,.72);--st-edge:rgba(18,41,6
 #view-settings .st-top{display:flex;justify-content:space-between;font-size:13px;color:var(--st-mut)}.st-top b{color:var(--st-gold);font-weight:600}
 #view-settings .st-bar{height:8px;border-radius:8px;background:var(--st-sep);margin:9px 0 10px;overflow:hidden;direction:ltr}
 #view-settings .st-bar i{display:block;height:100%;width:0;background:var(--st-gold);transition:width .3s}
-#view-settings .st-pk{display:flex;align-items:center;gap:12px;padding:0 16px;min-height:60px;border-top:1px solid var(--st-sep)}
+#view-settings .st-pk{display:flex;align-items:center;gap:12px;padding:0 16px;min-height:52px;border-top:1px solid var(--st-sep)}
 #view-settings .st-pk .n{flex:1;font-size:15px;color:var(--st-txt)}
-#view-settings .st-pk .n small{display:block;color:var(--st-mut);font-size:11.5px;margin-top:1px}
-#view-settings .st-btn{border:0;border-radius:10px;padding:8px 16px;min-height:38px;min-width:76px;font:600 13px inherit;font-family:inherit;background:var(--st-btn);color:var(--st-btnt)}
+#view-settings .st-pk .n small{color:var(--st-mut);font-size:12px}
+#view-settings .st-btn{border:0;border-radius:10px;padding:8px 16px;min-height:38px;min-width:76px;white-space:nowrap;font:600 13px inherit;font-family:inherit;background:var(--st-btn);color:var(--st-btnt)}
 #view-settings .st-btn.ok{background:transparent;border:1px solid var(--st-edge);color:var(--st-gold)}
 #view-settings .st-hint{font-size:11.5px;color:var(--st-mut);margin:9px 8px 0;line-height:1.8}
 body[data-view=settings] #backToTop{display:none!important}
