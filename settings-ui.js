@@ -1,14 +1,14 @@
 // Settings screen layout. Presentation only: every control keeps its id, listeners and storage keys.
 // Native selects stay in the DOM (hidden or invisible overlays) so app.js and unified.js behave as before.
 const CSS = `
-#view-settings{--st-card:#0d0c09;--st-edge:#6b552466;--st-gold:#f2dc94;--st-mut:#b9a06a;--st-txt:#f4ead0;--st-sep:#6b552440;--st-btn:#d9bf74;--st-btnt:#1a1405;--st-sel:#1b1608;--st-bg:#000}
-body.light #view-settings{--st-card:#fbf6ea;--st-edge:#9d854f66;--st-gold:#6b5524;--st-mut:#6a6a52;--st-txt:#203c2d;--st-sep:#9d854f33;--st-btn:#c9a95a;--st-btnt:#2a1f05;--st-sel:#efe3bd;--st-bg:#f5eedb}
+#view-settings{--st-card:rgba(255,255,255,.055);--st-edge:rgba(255,255,255,.13);--st-gold:#f7dc8e;--st-mut:#9fb0c4;--st-txt:#eef3f9;--st-sep:rgba(255,255,255,.10);--st-btn:#eec96f;--st-btnt:#14243c;--st-sel:rgba(247,220,142,.10);--st-bg:rgba(255,255,255,.05)}
+body.light #view-settings{--st-card:rgba(255,255,255,.72);--st-edge:rgba(18,41,61,.10);--st-gold:#8a6d2f;--st-mut:#5f7488;--st-txt:#12293d;--st-sep:rgba(18,41,61,.10);--st-btn:#dcb85f;--st-btnt:#3a2c07;--st-sel:rgba(138,109,47,.12);--st-bg:rgba(255,255,255,.55)}
 #view-settings [hidden]{display:none!important}
 #view-settings .page-heading{padding:22px 2px 4px}#view-settings .page-heading p{display:none}
 #view-settings .st-wrap{padding-bottom:140px;color:var(--st-txt)}
 #view-settings .st-sec{font-size:13px;color:var(--st-gold);margin:22px 6px 9px;display:flex;align-items:center;gap:8px}
 #view-settings .st-sec:after{content:'';flex:1;height:1px;background:var(--st-sep)}
-#view-settings .st-card{background:var(--st-card);border:1px solid var(--st-edge);border-radius:18px;overflow:hidden;backdrop-filter:none;-webkit-backdrop-filter:none}
+#view-settings .st-card{background:var(--st-card);border:1px solid var(--st-edge);border-radius:18px;overflow:hidden;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 #view-settings .st-seg{display:flex;background:var(--st-card);border:1px solid var(--st-edge);border-radius:16px;padding:4px;gap:4px}
 #view-settings .st-seg button{flex:1;border:0;background:transparent;color:var(--st-mut);padding:10px 0;border-radius:12px;font:inherit;font-size:14px;min-height:44px}
 #view-settings .st-seg button.on{background:var(--st-btn);color:var(--st-btnt);font-weight:700}
