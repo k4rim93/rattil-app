@@ -297,3 +297,7 @@ body.light:not(.reader-view)[data-view=home] #view-home .prayer-time-row{color:#
 body.light:not(.reader-view)[data-view=home] #view-home :is(.continue-row,.action-line) span:not(.action-icon):not(.chevron){color:#4a5d48!important;text-shadow:none}
 body.light:not(.reader-view)[data-view=home] #view-home .section-symbol{background:#e9dfc2!important;border-color:#9d854f88!important;color:#5c4a17!important;text-shadow:none}
 body.light:not(.reader-view)[data-view=home] #view-home .action-line .chevron{background:transparent!important;border:0!important}
+body.light:not(.reader-view) .follow-start-card strong{color:#1c2a1f!important}
+body.light:not(.reader-view) .follow-start-card small{color:#2f2a12!important}
+body.light:not(.reader-view) .follow-start-card :is(.chevron,.start-chevron,[class*=chev]),body.light:not(.reader-view) .follow-start-card>span:first-child{color:#1c2a1f!important;opacity:1!important}
+body.light:not(.reader-view) .follow-start-card .practice-card-arrow{color:#1c2a1f!important;opacity:1!important;font-weight:700}
