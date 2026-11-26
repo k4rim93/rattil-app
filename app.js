@@ -274,11 +274,12 @@ function openSessionSummary(session){
   if(!dialog||!content)return;
   const summary=buildSessionSummary(session);content.replaceChildren();
   const headline=document.createElement('p');headline.className='session-summary-headline';
-  headline.textContent=summary.rescoreUnavailable?'الفحص الصوتي ما كانش متاح في الجلسة دي؛ النتيجة دي من المتابعة الحية بس.':(summary.counts.wrong?`رصد المحرك ${toArabic(summary.counts.wrong)} موضع محتاج مراجعة:`:(summary.counts.judged?'المحرك ما رصدش غلطات واضحة في الكلمات اللي فحصها صوتيًا.':(summary.savedVerdicts?'مفيش فحص غلطات للجلسة دي.':'مفيش نتائج فحص محفوظة للجلسة دي.')));
   const unconfirmed=(session.words||[]).filter(w=>w.status==='uncertain'&&!(w.errorSource));
-  const unconfirmedNode=document.createElement('p');unconfirmedNode.className='session-summary-note';
-  unconfirmedNode.textContent=unconfirmed.length?`${toArabic(unconfirmed.length)} كلمة ما اتأكدش منها المحرك (بالكهرماني في المصحف): ${unconfirmed.slice(0,12).map(w=>w.text).join('، ')}${unconfirmed.length>12?'…':''}. ممكن تكون اتقالت صح؛ راجعها.`:'كل الكلمات اللي عدّى عليها المحرك اتأكد منها.';
-  content.append(headline,unconfirmedNode,sessionMistakesNode(summary,true),sessionSummaryCaveatNode(summary));
+  const noCheck=summary.rescoreUnavailable||!summary.counts.judged;
+  headline.textContent=summary.counts.wrong?`غلطات: ${toArabic(summary.counts.wrong)}`:(noCheck?'مفيش فحص غلطات للجلسة دي.':'مفيش غلطات.');
+  const nodes=[headline,sessionMistakesNode(summary,true)];
+  if(unconfirmed.length){const review=document.createElement('p');review.className='session-summary-note';review.textContent=`راجع: ${unconfirmed.slice(0,12).map(w=>w.text).join('، ')}${unconfirmed.length>12?'…':''}`;nodes.push(review);}
+  content.append(...nodes);
   content.onclick=event=>{if(event.target?.classList?.contains('quiet-link'))dialog.close()};
   if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');
 }
