@@ -439,7 +439,7 @@ const mushafEdition=()=>readStore('rattil-edition','classic')==='qpc2'?'qpc2':'c
 function attachAyahMarker(marker,reference){let pressTimer=0,didLongPress=false,pointerType='';marker.classList.add('ayah-note-marker');marker.setAttribute('role','button');marker.setAttribute('tabindex','0');marker.setAttribute('aria-label',`اضغط مطولًا لإضافة ملاحظة على ${reference.surahName}، الآية ${toArabic(reference.ayah)}`);marker.addEventListener('pointerdown',event=>{pointerType=event.pointerType;if(pointerType==='touch'||pointerType==='pen'){didLongPress=false;pressTimer=setTimeout(()=>{didLongPress=true;openAyahNote(reference)},550)}});['pointerup','pointerleave','pointercancel'].forEach(type=>marker.addEventListener(type,()=>clearTimeout(pressTimer)));marker.addEventListener('click',event=>{if(event.detail===0||pointerType==='mouse')openAyahNote(reference);else if(didLongPress)event.preventDefault()})}
 async function loadQpc2Page(requestedPage,current){
   const q=await import('./qpc2/qpc2.js');
-  const data=await q.loadQpc2Data([new URL('./qpc2/qpc2-ay.json',import.meta.url).href,new URL('./qpc2/qpc2-p1.json',import.meta.url).href,new URL('./qpc2/qpc2-p2.json',import.meta.url).href,new URL('./qpc2/qpc2-p3.json',import.meta.url).href]);
+  const data=await q.loadQpc2Data([new URL('./qpc2/qpc2-ay.json',import.meta.url).href,new URL('./qpc2/qpc2-p1.json',import.meta.url).href,new URL('./qpc2/qpc2-p2.json',import.meta.url).href,new URL('./qpc2/qpc2-p3.json',import.meta.url).href,new URL('./qpc2/qpc2-p4.json',import.meta.url).href]);
   const host=document.getElementById('mushafSvgHost');
   const el=await q.buildQpc2Svg(requestedPage,data,{hostW:host.clientWidth,hostH:host.clientHeight,surahName:n=>getSurahName(n)});
   if(current!==pageRequest)return true;
