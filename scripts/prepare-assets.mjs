@@ -52,6 +52,11 @@ await copyFile(join(root, "manifest.webmanifest"), join(pub, "manifest.webmanife
 await copyFile(join(root, "icon.svg"), join(pub, "icon.svg"));
 await copyFile(join(root, "design-previews", "rattil-wordmark", "rattil-wordmark.svg"), join(pub, "rattil-wordmark.svg"));
 await copyFile(join(root, "design-previews", "rattil-wordmark", "rattil-wordmark-display.svg"), join(pub, "rattil-wordmark-display.svg"));
+await mkdir(join(pub, "fonts"), { recursive: true });
+for (const font of ["NotoSansArabic-arabic.woff2", "NotoSansArabic-latin.woff2"]) {
+  const encodedFont = await readFile(join(root, "icon-assets", `${font}.b64`), "utf8");
+  await writeFile(join(pub, "fonts", font), Buffer.from(encodedFont.trim(), "base64"));
+}
 for (const icon of ["apple-touch-icon.png", "icon-192.png", "icon-512.png", "favicon-64.png", "sky-portrait.jpg", "cloud-drift.webp", "sky-dawn.webp", "sky-day.webp", "sky-sunset.webp", "sky-night.webp", "cloud-alpha.webp"]) {
   const encodedIcon = await readFile(join(root, "icon-assets", `${icon}.b64`), "utf8");
   await writeFile(join(pub, icon), Buffer.from(encodedIcon.trim(), "base64"));
