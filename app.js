@@ -425,12 +425,27 @@ function renderPageSvg(source,requestedPage){
   const root=document.getElementById('mushafSvgHost');
   svg.querySelectorAll('script,foreignObject,iframe,style').forEach(node=>node.remove());for(const node of [svg,...svg.querySelectorAll('*')])for(const attr of [...node.attributes])if(attr.name.startsWith('on')||((attr.localName==='href')&&!attr.value.startsWith('#')))node.removeAttribute(attr.name);
   const mounted=document.importNode(svg,true);
+  mountPageSvg(mounted,requestedPage);connectAyahMarkers(requestedPage,mounted);
+}
+function mountPageSvg(mounted,requestedPage){
+  const root=document.getElementById('mushafSvgHost');
   mounted.classList.add('mushaf-svg');mounted.setAttribute('role','img');mounted.setAttribute('aria-label',`صفحة المصحف ${toArabic(requestedPage)}`);
   mounted.removeAttribute('width');mounted.removeAttribute('height');
   root.replaceChildren(mounted);
   document.getElementById('paperPageNumber').textContent=toArabic(requestedPage);pageLoaded=true;
-  connectAyahMarkers(requestedPage,mounted);
   window.dispatchEvent(new CustomEvent('rattil-page',{detail:{page:requestedPage,svg:mounted}}));
+}
+const mushafEdition=()=>readStore('rattil-edition','classic')==='qpc2'?'qpc2':'classic';
+function attachAyahMarker(marker,reference){let pressTimer=0,didLongPress=false,pointerType='';marker.classList.add('ayah-note-marker');marker.setAttribute('role','button');marker.setAttribute('tabindex','0');marker.setAttribute('aria-label',`اضغط مطولًا لإضافة ملاحظة على ${reference.surahName}، الآية ${toArabic(reference.ayah)}`);marker.addEventListener('pointerdown',event=>{pointerType=event.pointerType;if(pointerType==='touch'||pointerType==='pen'){didLongPress=false;pressTimer=setTimeout(()=>{didLongPress=true;openAyahNote(reference)},550)}});['pointerup','pointerleave','pointercancel'].forEach(type=>marker.addEventListener(type,()=>clearTimeout(pressTimer)));marker.addEventListener('click',event=>{if(event.detail===0||pointerType==='mouse')openAyahNote(reference);else if(didLongPress)event.preventDefault()})}
+async function loadQpc2Page(requestedPage,current){
+  const q=await import('./qpc2/qpc2.js');
+  const data=await q.loadQpc2Data([new URL('./qpc2/qpc2-ay.json',import.meta.url).href,new URL('./qpc2/qpc2-p1.json',import.meta.url).href,new URL('./qpc2/qpc2-p2.json',import.meta.url).href,new URL('./qpc2/qpc2-p3.json',import.meta.url).href]);
+  const host=document.getElementById('mushafSvgHost');
+  const el=await q.buildQpc2Svg(requestedPage,data,{hostW:host.clientWidth,hostH:host.clientHeight,surahName:n=>getSurahName(n)});
+  if(current!==pageRequest)return true;
+  mountPageSvg(el,requestedPage);
+  el.querySelectorAll('.ayah-mark[data-surah]').forEach(m=>attachAyahMarker(m,{surah:+m.dataset.surah,surahName:getSurahName(+m.dataset.surah),ayah:+m.dataset.ayah,page:requestedPage}));
+  return true;
 }
 async function connectAyahMarkers(requestedPage,svg){
   try{
@@ -443,6 +458,7 @@ async function loadPage(requestedPage){
   const current=++pageRequest,root=document.getElementById('mushafSvgHost');
   root.innerHTML='<p class="quran-loading">جارٍ تحميل صفحة المصحف…</p>';
   const url=mushafPageUrl(requestedPage);
+  if(mushafEdition()==='qpc2'){try{await loadQpc2Page(requestedPage,current);return}catch(e){console.warn('qpc2 edition failed, using classic',e);if(current!==pageRequest)return}}
   try{
     const svg=await fetchPageSvg(url);if(current!==pageRequest)return;renderPageSvg(svg,requestedPage);
   }catch{
@@ -694,3 +710,4 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&liveAudioC
 installAppUpdate({button:document.getElementById('refreshApp'),status:document.getElementById('refreshAppStatus'),setApplying:value=>appUpdating=value,announce:text=>{document.getElementById('refreshAppStatus').textContent=text},isBusy:()=>Boolean(recitationStarting||liveMediaStream||liveAudioContext||recitationStopping||currentRecitationSession||settledUiTasks.size)});
 
 import('./unified.js').then(({initUnified})=>{initUnified({showView,setPage,getPage:()=>page,getSurahName,openAyahNote,announce,toArabic,readStore,writeStore,setImmersive});import('./golden-nav.js').then(({initGoldenNav})=>initGoldenNav({showView,setPage,getPage:()=>page,toArabic,readStore,writeStore,announce,setImmersive,normalize:normalizeRecitationWord,indexData,loadIndexData,pageForReference,juzForReference,shortSurahName,quranApi,mushafIndex}))});
+{const sel=document.getElementById('editionSelect');if(sel){sel.value=mushafEdition();sel.addEventListener('change',()=>{writeStore('rattil-edition',sel.value==='qpc2'?'qpc2':'classic');pageLoaded=false;loadPage(page)})}}
