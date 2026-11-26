@@ -310,3 +310,82 @@ body.light:not(.reader-view) .follow-start-card .practice-card-arrow{color:#1c2a
 .session-summary-dialog .recitation-history-words .mistake-kind{padding:2px 8px;margin:0;font-size:11px}
 .session-summary-dialog .recitation-history-verse .quiet-link{align-self:flex-start;min-height:40px;padding:6px 16px;border:1px solid var(--un-edge,#6b5524);border-radius:10px;outline:none;box-shadow:none}
 .session-summary-dialog .recitation-history-verse .quiet-link:focus,.session-summary-dialog .recitation-history-verse .quiet-link:focus-visible{outline:none!important}
+/* Sky edition: one bundled UI font everywhere, glass on night-navy and day-sky. Quran text fonts untouched. */
+:root{--sans:'Noto Sans Arabic','Noto Sans Arabic UI',Tahoma,Arial,sans-serif}
+body:not(.reader-view) :is(h1,h2,h3){font-family:var(--sans)}
+.page-heading h1,.scene-copy h1,.mode-panel h2,dialog h2,.daily-focus h2,.history-heading h2,.un-section-title h2{font-family:var(--sans);font-weight:700}
+.progress-week strong{font-family:var(--sans);font-weight:700}
+.home-footer,.reader-intro h1,.brand strong,.continue-row h2{font-family:var(--sans)}
+.view{animation:appear .18s ease-out}
+.gold-button,.list-row,.action-line,.practice-start-card,.mode-switch button{transition:transform .12s ease}
+.gold-button:active,.list-row:active,.action-line:active,.practice-start-card:active,.mode-switch button:active{transform:scale(.97)}
+body:not(.light):not(.reader-view){--bg:#04080f;--surface:rgba(255,255,255,.055);--surface-raised:rgba(255,255,255,.08);--surface-soft:rgba(255,255,255,.04);--text:#eef3f9;--muted:#9fb0c4;--line:rgba(255,255,255,.13);--gold:#eec96f;--gold-light:#f7dc8e;--gb:#f7dc8e;--gm:#9fb0c4;--gl:rgba(255,255,255,.14);--gk:#04080f;--un-panel:rgba(255,255,255,.055);--un-edge:rgba(255,255,255,.13);--un-muted:#9fb0c4}
+body:not(.light):not(.reader-view),body:not(.light):not(.reader-view) html{background:#04080f}
+body:not(.light):not(.reader-view) .app-shell{background:transparent}
+body:not(.light):not(.reader-view):not([data-view=home]) .app-shell{background:linear-gradient(180deg,#0c1828 0%,#060d18 55%,#04080f 100%)}
+body:not(.light):not(.reader-view) .topbar{background:rgba(5,11,20,.55);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.09)}
+body:not(.light):not(.reader-view) .tabbar,body:not(.light):not(.reader-view):has(#view-home.active) .tabbar{background:rgba(9,18,30,.55);border:1px solid rgba(255,255,255,.12);box-shadow:0 14px 40px rgba(0,0,0,.5);backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2)}
+body:not(.light):not(.reader-view) .tabbar button{color:#9fb0c4}
+body:not(.light):not(.reader-view) .tabbar button.active{color:#f7dc8e}
+body:not(.light):not(.reader-view) .tabbar button.active>span,body:not(.light):not(.reader-view) .tabbar button.home-tab.active>span{background:linear-gradient(160deg,#ffe9ad,#eec96f);color:#14243c}
+body:not(.light):not(.reader-view) .daily-focus,body:not(.light):not(.reader-view) .progress-week,body:not(.light):not(.reader-view) .progress-metrics>div,body:not(.light):not(.reader-view) .practice-engine-setup,body:not(.light):not(.reader-view) .recitation-history-panel,body:not(.light):not(.reader-view) .dhikr-row,body:not(.light):not(.reader-view) .list-row,body:not(.light):not(.reader-view) .practice-start-card,body:not(.light):not(.reader-view) .un-settings-group,body:not(.light):not(.reader-view) .practice-panel,body:not(.light):not(.reader-view) .un-reader-credits{background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.13);box-shadow:0 12px 32px rgba(0,0,0,.30);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+body:not(.light):not(.reader-view) .recitation-history-entry,body:not(.light):not(.reader-view) .mistake-log-entry,body:not(.light):not(.reader-view) .practice-status,body:not(.light):not(.reader-view) .reset-azkar{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.10);color:var(--gm)}
+body:not(.light):not(.reader-view) .brand-mark,body:not(.light):not(.reader-view) .icon-button,body:not(.light):not(.reader-view) .top-actions .icon-button,body:not(.light):not(.reader-view) .round-arrow,body:not(.light):not(.reader-view) .section-symbol,body:not(.light):not(.reader-view) .list-icon,body:not(.light):not(.reader-view) .action-icon,body:not(.light):not(.reader-view) .state-pill,body:not(.light):not(.reader-view) .city-row select,body:not(.light):not(.reader-view) .mode-panel select,body:not(.light):not(.reader-view) .mode-panel input,body:not(.light):not(.reader-view) .week-dots i,body:not(.light):not(.reader-view) .prayer-glyph{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:var(--gb)}
+body:not(.light):not(.reader-view) strong,body:not(.light):not(.reader-view) .un-settings-group>summary,body:not(.light):not(.reader-view) .list-row,body:not(.light):not(.reader-view) .action-line,body:not(.light):not(.reader-view) .continue-row h2{color:var(--text)}
+body:not(.light):not(.reader-view) .prayer-next strong{color:var(--gb)}
+body:not(.light):not(.reader-view) .gold-button,body:not(.light):not(.reader-view) .mode-switch button.selected{background:linear-gradient(160deg,#ffe9ad,#eec96f);border:0;color:#14243c;border-radius:14px}
+body:not(.light):not(.reader-view) .gold-button *{color:#14243c}
+body:not(.light):not(.reader-view) .week-dots i.filled{background:linear-gradient(160deg,#ffe9ad,#eec96f);border-color:#ffe9ad}
+body:not(.light):not(.reader-view) .mode-switch{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12)}
+body:not(.light):not(.reader-view) .mode-switch button{color:var(--gm)}
+body:not(.light):not(.reader-view) .follow-start-card{background:linear-gradient(160deg,#ffe9ad,#eec96f);border:0}
+body:not(.light):not(.reader-view) .follow-start-card,body:not(.light):not(.reader-view) .follow-start-card *{color:#14243c}
+body:not(.light):not(.reader-view) .follow-start-card small{color:rgba(20,36,60,.75)!important}
+body:not(.light):not(.reader-view) .practice-mic-orbit{background:#14243c;color:#f7dc8e;border:1px solid #14243c}
+body:not(.light):not(.reader-view) .selected-start-card .practice-mic-orbit{background:#14243c;border-color:#14243c;color:#f7dc8e}
+body:not(.light):not(.reader-view) dialog{background:#0b1626f2;border-color:rgba(255,255,255,.13);color:#eef3f9}
+body:not(.light):not(.reader-view) dialog input,body:not(.light):not(.reader-view) dialog select,body:not(.light):not(.reader-view) dialog textarea{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);color:#eef3f9}
+body:not(.light):not(.reader-view) .city-row select{color:#eef3f9}
+body:not(.light):not(.reader-view)[data-view=home] #view-home :is(.continue-row,.action-line,.prayer-strip){background:rgba(255,255,255,.055)!important;border:1px solid rgba(255,255,255,.13)!important;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+body:not(.light):not(.reader-view)[data-view=home] #view-home .action-line .action-icon{background:rgba(255,255,255,.07)!important;border-color:rgba(255,255,255,.14)!important;color:#f7dc8e!important}
+body:not(.light):not(.reader-view)[data-view=home] #view-home :is(.date-line,small,p,.home-footer,.prayer-next small){color:#bccadf!important;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+body:not(.light):not(.reader-view)[data-view=home] #view-home :is(.action-line small,.continue-row p){color:#9fb0c4!important;text-shadow:none}
+body:not(.light):not(.reader-view)[data-view=home] #view-home :is(.action-line strong,.continue-row h2){color:#eef3f9!important}
+body:not(.light):not(.reader-view)[data-view=home] .scene-copy h1{color:#f7dc8e!important}
+body.light:not(.reader-view){--un-panel:rgba(255,255,255,.68);--un-edge:rgba(18,41,61,.10);--un-muted:#5f7488;--text:#12293d;--muted:#5f7488;--gold:#8a6d2f;--gold-light:#a87f2f;--gb:#8a6d2f;--gm:#5f7488;--gl:rgba(18,41,61,.12)}
+body.light:not(.reader-view),body.light:not(.reader-view) html{background:#eef4fa}
+body.light:not(.reader-view) .app-shell{background:transparent}
+body.light:not(.reader-view):not([data-view=home]) .app-shell{background:linear-gradient(180deg,#cfe4f5 0%,#eef4fa 55%,#f7fafc 100%)}
+body.light:not(.reader-view):not([data-view=home]) .app-shell:after{display:none}
+body.light:not(.reader-view) .topbar{background:rgba(238,244,250,.62);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(18,41,61,.08)}
+body.light:not(.reader-view) .tabbar,body.light:not(.reader-view):has(#view-home.active) .tabbar{background:rgba(255,255,255,.62)!important;border-color:rgba(255,255,255,.9)!important;box-shadow:0 14px 40px rgba(30,60,90,.16);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+body.light:not(.reader-view) .tabbar button,body.light:not(.reader-view):has(#view-home.active) .tabbar button{color:#5f7488!important}
+body.light:not(.reader-view) .tabbar button.active,body.light:not(.reader-view):has(#view-home.active) .tabbar button.active{color:#3a2c07!important}
+body.light:not(.reader-view) .tabbar button.active>span,body.light:not(.reader-view) .tabbar button.home-tab.active>span{background:linear-gradient(160deg,#f3d98c,#dcb85f);color:#3a2c07}
+body.light:not(.reader-view) .page-heading h1{color:#14304a}
+body.light:not(.reader-view) .page-heading p{color:#5f7488}
+body.light:not(.reader-view) .history-heading h2{color:#8a6d2f}
+body.light:not(.reader-view) .list-row,body.light:not(.reader-view) .practice-start-card,body.light:not(.reader-view) .local-note{color:#12293d}
+body.light:not(.reader-view) .list-row small,body.light:not(.reader-view) .practice-start-card small,body.light:not(.reader-view) .progress-week small,body.light:not(.reader-view) .progress-metrics span{color:#5f7488}
+body.light:not(.reader-view) strong{color:#14304a}
+body.light:not(.reader-view) .daily-focus h2,body.light:not(.reader-view) .progress-week strong{color:#8a6d2f}
+body.light:not(.reader-view) .list-icon,body.light:not(.reader-view) .action-icon,body.light:not(.reader-view) .section-symbol,body.light:not(.reader-view) .prayer-glyph,body.light:not(.reader-view) .icon-button,body.light:not(.reader-view) .top-actions .icon-button,body.light:not(.reader-view) .round-arrow{background:rgba(255,255,255,.55);border-color:rgba(18,41,61,.10);color:#8a6d2f}
+body.light:not(.reader-view) .week-dots i{background:rgba(255,255,255,.5);border-color:rgba(18,41,61,.14)}
+body.light:not(.reader-view) .week-dots i.filled{background:linear-gradient(160deg,#f3d98c,#dcb85f);border-color:#dcb85f}
+body.light:not(.reader-view) .mode-switch{background:rgba(255,255,255,.5);border-color:rgba(18,41,61,.10)}
+body.light:not(.reader-view) .mode-switch button{color:#5f7488}
+body.light:not(.reader-view) .mode-switch button.selected{background:linear-gradient(160deg,#f3d98c,#dcb85f);color:#3a2c07}
+body.light:not(.reader-view) .gold-button{background:linear-gradient(160deg,#f3d98c,#dcb85f);border:0;color:#3a2c07}
+body.light:not(.reader-view) .gold-button *{color:#3a2c07}
+body.light:not(.reader-view) .follow-start-card{background:linear-gradient(160deg,#f3d98c,#dcb85f)}
+body.light:not(.reader-view) dialog{background:#f7fafcf5;border-color:rgba(18,41,61,.12);color:#12293d}
+body.light:not(.reader-view) dialog input,body.light:not(.reader-view) dialog select,body.light:not(.reader-view) dialog textarea{background:#fff;border-color:rgba(18,41,61,.14);color:#12293d}
+body.light:not(.reader-view) .city-row select{background:rgba(255,255,255,.7);border-color:rgba(18,41,61,.12);color:#12293d}
+body.light:not(.reader-view) .recitation-history-entry,body.light:not(.reader-view) .mistake-log-entry,body.light:not(.reader-view) .practice-status,body.light:not(.reader-view) .reset-azkar{background:rgba(255,255,255,.5);border-color:rgba(18,41,61,.10);color:#5f7488}
+body.light:not(.reader-view)[data-view=home] #view-home :is(.continue-row,.action-line,.prayer-strip){background:rgba(255,255,255,.66)!important;border-color:rgba(255,255,255,.85)!important;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+body.light:not(.reader-view)[data-view=home] #view-home :is(.continue-row,.action-line) :is(strong,h2){color:#14304a!important;text-shadow:none}
+body.light:not(.reader-view)[data-view=home] #view-home :is(.continue-row,.action-line) :is(small,p){color:#5f7488!important;text-shadow:none}
+body.light:not(.reader-view)[data-view=home] #view-home :is(.continue-row,.action-line) .action-icon{background:rgba(255,255,255,.6)!important;border-color:rgba(18,41,61,.10)!important;color:#8a6d2f!important}
+body.light:not(.reader-view)[data-view=home] #view-home .round-arrow,body.light:not(.reader-view)[data-view=home] #view-home .chevron{color:#8a6d2f!important;border-color:rgba(18,41,61,.10)!important;background:rgba(255,255,255,.6)!important}
+body.light:not(.reader-view)[data-view=home] #view-home .section-symbol{background:rgba(255,255,255,.6)!important;border-color:rgba(18,41,61,.10)!important;color:#8a6d2f!important}
+body.light:not(.reader-view)[data-view=home] #view-home .action-line .chevron{background:transparent!important;border:0!important}
