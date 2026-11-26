@@ -60,12 +60,12 @@ async function download(pack, onProgress, signal) {
 export function initOfflinePack({ announce, mount }) {
   if (!mount || !('caches' in window)) return;
   mount.innerHTML = `<div class="st-meter"><div class="st-top"><span>المحفوظ على جهازك</span><b class="mv">...</b></div><div class="st-bar"><i></i></div></div>
-<div class="st-pk" data-pack="engine"><span class="n">المحرك<small>٦٦ ميجا</small></span><button type="button" class="st-btn ok op-btn" disabled>...</button></div>
-<div class="st-pk" data-pack="recite"><span class="n">صفحات التسميع<small>٩٢ ميجا<span class="op-status"></span></small></span><button type="button" class="st-btn op-btn">تحميل</button></div>
-<div class="st-pk" data-pack="fonts"><span class="n">خطوط المصحف<small>٢٠٨ ميجا · اختياري<span class="op-status"></span></small></span><button type="button" class="st-btn op-btn">تحميل</button></div>`;
+<div class="st-pk" data-pack="engine"><span class="n">المحرك <small>· ٦٦ ميجا</small></span><button type="button" class="st-btn ok op-btn" disabled>...</button></div>
+<div class="st-pk" data-pack="recite"><span class="n">صفحات التسميع <small>· ٩٢ ميجا<span class="op-status"></span></small></span><button type="button" class="st-btn op-btn">تحميل</button></div>
+<div class="st-pk" data-pack="fonts"><span class="n">خطوط المصحف <small>· ٢٠٨ ميجا · اختياري<span class="op-status"></span></small></span><button type="button" class="st-btn op-btn">تحميل</button></div>`;
   const hint = document.createElement('div');
   hint.className = 'st-hint';
-  hint.textContent = 'التحميل مرة واحدة على واي فاي، وسيب الشاشة مفتوحة. الصوت والتفسير محتاجين إنترنت دايمًا.';
+  hint.textContent = 'مرة واحدة على واي فاي وسيب الشاشة مفتوحة. الصوت والتفسير محتاجين إنترنت دايمًا.';
   mount.after(hint);
   const jobs = {}, q = (key, s) => mount.querySelector(`[data-pack=${key}] ${s}`);
   const meter = async () => {
