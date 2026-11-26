@@ -78,7 +78,11 @@ export async function buildQpc2Svg(page,data,opts={}){
     const row=mk('g',{});
     words.forEach((w,i)=>{
       const wd=nat[i],x0=x-wd;
-      const t=mk('text',{x:x.toFixed(2),y:base.toFixed(2),'font-family':fam,'font-size':fs.toFixed(3),direction:'rtl'});t.textContent=w.t;row.append(t);
+      const t=mk('text',{x:x.toFixed(2),y:base.toFixed(2),'font-family':fam,'font-size':fs.toFixed(3),direction:'rtl'});t.textContent=w.t;
+      if(w.m){t.setAttribute('style','fill:var(--q2ring);stroke:var(--q2ring)');t.setAttribute('class','q2-ring');row.append(t);
+        const cid='q2c'+page+'_'+ai,cp=mk('clipPath',{id:cid});cp.append(mk('circle',{cx:(x0+wd/2).toFixed(2),cy:(base-fs*0.3).toFixed(2),r:(wd*0.3).toFixed(2)}));row.append(cp);
+        const t2=mk('text',{x:x.toFixed(2),y:base.toFixed(2),'font-family':fam,'font-size':fs.toFixed(3),direction:'rtl','clip-path':'url(#'+cid+')',class:'q2-num'});t2.textContent=w.t;row.append(t2)}
+      else row.append(t);
       const rect=[x0-(i<words.length-1?gap/2:0),y0,x+(i>0?gap/2:0),y0+LHr];
       if(!polys.has(ai))polys.set(ai,[]);polys.get(ai).push(rect);
       if(w.m){const [sr,ay]=data.ay[ai];const mg=mk('g',{class:'ayah-mark','data-surah':sr,'data-ayah':ay});mg.append(mk('rect',{x:x0.toFixed(2),y:y0,width:wd.toFixed(2),height:LHr,'fill-opacity':'0',fill:'#000'}));marks.append(mg);ai++}
