@@ -31,15 +31,15 @@ export async function buildQpc2Svg(page,data,opts={}){
   const content=mk('g',{id:'content'});svg.append(content);const deco=mk('g',{id:'qpc2-deco'});svg.append(deco);
   const marks=mk('g',{id:'ayah_markers'});svg.append(marks);
   const polys=new Map();let ai=pd.a;
-  const sp=page<=2,PP=41.9,nRows=pd.l.length,cb=H/2-(1.93+nRows-2)*PP/2;
-  const slotY=i=>sp?(cb+(i===0?0:(1.93+i-1)*PP)-PP/2):(s>1?(H-LH*LINES)/2+YSHIFT*vh:TOP)+i*LH;
+  const SH=page===2?8:0,sp=page<=2,PP=41,nRows=pd.l.length,cb=H/2-(1.93+nRows-2)*PP/2;
+  const slotY=i=>sp?(SH+cb+(i===0?0:(1.93+i-1)*PP)-PP/2):(s>1?(H-LH*LINES)/2+YSHIFT*vh:TOP)+i*LH;
   const FS=sp?24:FS0;const LHr=sp?PP:LH;
   pd.l.forEach((ln,idx)=>{
     const y0=slotY(idx),base=y0+LHr*0.72;
     if(ln[0]==='h'||ln[0]==='b'){
       const hd=data.hd;
       if(ln[0]==='h'){
-        const g=mk('g',{class:'gq-banner qpc2-banner'});const bh=Math.min(33,LHr*0.85),y1=y0+(LHr-bh)/2+4,y2=y1+bh,x1=PX,x2=PX+W,cy=(y1+y2)/2,h=bh,E=58,F=E/44;
+        const g=mk('g',{class:'gq-banner qpc2-banner'});const bh=Math.min(33,LHr*0.85),y1=y0+(LHr-bh)/2+(sp?2:4),y2=y1+bh,x1=PX,x2=PX+W,cy=(y1+y2)/2,h=bh,E=58,F=E/44;
         g.append(mk('rect',{x:x1,y:y1,width:W,height:h,rx:2.6,class:'q2b-out'}));
         const lens=(xa,xb)=>`M${xa} ${cy-h*0.36}H${xb}A${h*0.36} ${h*0.36} 0 0 1 ${xb} ${cy+h*0.36}H${xa}A${h*0.36} ${h*0.36} 0 0 1 ${xa} ${cy-h*0.36}Z`;
         g.append(mk('path',{d:lens(x1+E*0.95,x2-E*0.95),class:'q2b-lens'}));
@@ -60,7 +60,7 @@ export async function buildQpc2Svg(page,data,opts={}){
         const pn=mk('path',{d:N[0],class:'q2b-name',transform:`translate(${(sx-(A[1]+gap+N[1])*k).toFixed(2)} ${(cy+hh*0.37).toFixed(2)}) scale(${k.toFixed(5)})`});
         const gn=mk('g',{class:'qpc2-surah-name','data-surah':ln[1]});gn.append(pa,pn);g.append(gn);
         deco.append(g);return}
-      const B=hd.b,k=188/(B[2]-B[1]),cx=PX+W/2-2,cyb=y0+LHr*0.5;
+      const B=hd.b,k=(page<=2?142:188)/(B[2]-B[1]),cx=PX+W/2-2+(page<=2?6:0),cyb=y0+LHr*0.5+(page<=2?1.6:0);
       const pth=mk('path',{d:B[0],class:'qpc2-basmala-path',transform:`translate(${cx.toFixed(2)} ${cyb.toFixed(2)}) scale(${k.toFixed(5)}) translate(${-(B[1]+B[2])/2} ${-(B[3]+B[4])/2})`});
       const row=mk('g',{class:'qpc2-basmala'});row.append(pth);deco.append(row);return}
     const words=ln[1].split(' ').map(w=>({t:w.replace('|',''),m:w.endsWith('|')}));
