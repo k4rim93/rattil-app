@@ -80,15 +80,6 @@ export function initSettingsUi() {
   const syncTheme = () => seg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.mode === mode()));
   syncs.push(syncTheme); wrap.append(seg);
   new MutationObserver(syncTheme).observe(toggle, { subtree: true, childList: true, characterData: true });
-  // Edition: two page-preview cards.
-  const edSel = $('editionSelect'); hold.append(edSel.closest('.list-row') || edSel);
-  sec('المصحف');
-  const eds = el('div', 'st-eds');
-  for (const [v, l] of [['qpc2', 'مصحف المدينة ١٤٢١'], ['classic', 'الطبعة الحالية']]) {
-    const b = el('button', 'st-ed', `<div class="st-pg"><i></i><i></i><i></i><i></i><i></i><i></i></div>${l}`); b.type = 'button'; b.dataset.v = v;
-    b.addEventListener('click', () => { edSel.value = v; edSel.dispatchEvent(new Event('change', { bubbles: true })); sync(); }); eds.append(b);
-  }
-  syncs.push(() => eds.querySelectorAll('.st-ed').forEach(b => b.classList.toggle('on', b.dataset.v === edSel.value))); wrap.append(eds);
   // Reciter: pills built from the default-reciter select.
   const recSel = $('defaultReciter'); if (recSel) {
     hold.append(recSel.closest('.list-row') || recSel);
