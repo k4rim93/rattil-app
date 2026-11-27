@@ -227,12 +227,12 @@ body.recitation-session-active .view:not(#view-practice){display:none!important}
 body.recitation-session-active #view-practice.active{position:absolute;inset:env(safe-area-inset-top) 0 calc(76px + env(safe-area-inset-bottom));display:flex;flex-direction:column;min-height:0;padding:4px 12px 8px;overflow:hidden}
 body.recitation-session-active .practice-heading,body.recitation-session-active .practice-start-options,body.recitation-session-active .recitation-modes,body.recitation-session-active .practice-panel{display:none!important}
 body.recitation-session-active .recitation-reader:not([hidden]){display:flex;flex:1;flex-direction:column;min-height:0;margin:0;padding:0;border:0;overflow:hidden}
-body.recitation-session-active .recitation-reader-head{flex:0 0 48px;justify-content:space-between;padding:0 2px 7px}
+body.recitation-session-active .recitation-reader-head{flex:0 0 54px;justify-content:space-between;padding:0 2px 7px}
 body.recitation-session-active .recitation-exit{flex:0 0 38px;width:38px;height:38px;border:1px solid var(--line);border-radius:50%;background:var(--surface-raised);color:var(--text);font-size:25px;line-height:1}
 body.recitation-session-active .recitation-reader-title{text-align:center;flex:1;min-width:0}
 body.recitation-session-active .recitation-reader-title strong{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 body.recitation-session-active .recitation-reader-title small{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-body.recitation-session-active .recitation-preview-button{flex:0 0 auto;min-height:34px;padding:0 9px;border:1px solid #79663b66;border-radius:9px;background:#172320;color:var(--gold-light);font-size:10px}
+body.recitation-session-active .recitation-preview-button{flex:0 0 auto;min-height:44px;padding:0 16px;border:1px solid rgba(156,198,234,.35);border-radius:999px;background:rgba(20,44,76,.6);color:#dbe7f5;font-size:13px}
 body.recitation-session-active .recitation-mushaf-paper{display:flex;flex:1;flex-direction:column;align-items:center;justify-content:center;min-height:0;margin:0;padding:0 0 24px;overflow:hidden;border:0;background:#060707}
 body.recitation-session-active .recitation-waiting strong{font-size:25px}
 body.recitation-session-active .recitation-waiting small{font-size:12px}
@@ -244,7 +244,7 @@ body.recitation-session-active #asrResult{flex:0 0 auto;min-height:0;margin:0;pa
 body.recitation-session-active .recitation-controls:not([hidden]){position:fixed;left:50%;bottom:calc(5px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(520px,calc(100% - 28px));display:flex;justify-content:center;gap:14px;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;backdrop-filter:none}
 body.recitation-session-active .recitation-controls>span{position:absolute;bottom:73px;left:50%;transform:translateX(-50%);width:max-content;max-width:90%;text-align:center;color:var(--muted);font-size:10px}
 body.recitation-session-active .recitation-controls #startRec{display:none}
-body.recitation-session-paused .recitation-controls #startRec{display:grid;place-items:center;place-content:center;width:62px;height:62px;padding:0;border:1px solid #ead28c;border-radius:50%;background:#d6bf76;color:#14211d;font-size:0;box-shadow:0 0 0 7px #d6bf7626}
+body.recitation-session-paused .recitation-controls #startRec{display:grid;place-items:center;place-content:center;width:62px;height:62px;padding:0;border:1px solid #f7dc8e;border-radius:50%;background:linear-gradient(135deg,#e8c968,#d4af37);color:#14213a;font-size:0;box-shadow:0 0 0 7px rgba(212,175,55,.15),0 10px 26px rgba(3,8,16,.45)}
 body.recitation-session-paused .recitation-controls #startRec svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8}body.recitation-session-paused .recitation-controls #startRec span{display:none}
 body.recitation-session-paused .recitation-controls #stopRec{display:none}
 body.recitation-session-active .recitation-controls #stopRec:not(:disabled){display:grid;place-items:center;place-content:center;width:62px;height:62px;padding:0;border:1px solid #ead28c;border-radius:50%;background:#d6bf76;color:#14211d;font-size:0;box-shadow:0 0 0 7px #d6bf7626}
@@ -311,3 +311,43 @@ body:has(#view-home.active) .tabbar button{text-shadow:0 1px 8px #000c}
 /* Static sky under Reduce Motion; unset location spans the prayer grid. */
 #view-home .prayer-time-row.prayer-unset{grid-column:1/-1;display:block;width:100%;text-align:center;padding:18px 8px;line-height:1.9}
 @media(prefers-reduced-motion:reduce){.app-shell>.sky-bg .sky-clouds{animation:none!important;transform:translateX(-10%)}.app-shell>.sky-bg .sky-phase{transition:none!important}}
+/* ==== Recitation session: navy/gold glass unification, diagnostics off session screen, live-listen cue ==== */
+body.recitation-session-active .perf-readout{display:none!important}
+body.recitation-session-active .recitation-reader-head strong{color:#f7dc8e}
+body.recitation-session-active .recitation-reader-head small{color:#9fb3cc}
+body.recitation-session-active .recitation-exit{background:rgba(20,44,76,.6);border:1px solid rgba(156,198,234,.35);color:#f7dc8e}
+body.recitation-session-active .recitation-preview-button[aria-pressed="true"]{border-color:rgba(212,175,55,.65);color:#f7dc8e;background:rgba(212,175,55,.14)}
+body.recitation-session-active .recitation-waiting{background:rgba(16,36,63,.88);border:1px solid rgba(212,175,55,.4);border-radius:18px;padding:18px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 14px 34px rgba(3,8,16,.45)}
+body.recitation-session-active .recitation-waiting strong{color:#f7dc8e}
+body.recitation-session-active .recitation-waiting small{color:#b9c8dd}
+body.recitation-session-active .provisional-speech{background:rgba(16,36,63,.85);border:1px dashed rgba(156,198,234,.45)}
+body.recitation-session-active .provisional-speech .prov-tag{background:linear-gradient(135deg,#e8c968,#d4af37);color:#14213a}
+body.recitation-session-active .provisional-speech .prov-text{color:#e8eef8}
+body.recitation-session-active .recitation-page-number{background:rgba(13,31,60,.85);color:#f7dc8e;border:1px solid rgba(212,175,55,.4);border-radius:999px}
+body.recitation-session-active .recite-correction-panel{background:rgba(20,44,76,.7);border:1px solid rgba(156,198,234,.3)}
+body.recitation-session-active #asrResult{color:#9fb3cc}
+body.recitation-session-active:not(.recitation-session-paused) .recitation-controls>span::before{content:"";display:inline-block;width:7px;height:7px;margin-inline-end:6px;border-radius:50%;background:#ff5a4e;vertical-align:1px;animation:rattil-listen-pulse 1.6s ease-in-out infinite}
+body.recitation-session-active:not(.recitation-session-paused) .recitation-controls #stopRec,body.recitation-session-active:not(.recitation-session-paused) .recitation-controls #startRec{box-shadow:0 0 0 calc(7px + (var(--mic-level,0) * 9px)) rgba(212,175,55,.22),0 10px 26px rgba(3,8,16,.45)}
+@keyframes rattil-listen-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
+@media (prefers-reduced-motion:reduce){body.recitation-session-active .recitation-controls>span::before{animation:none}}
+body.light.recitation-session-active .recitation-reader-head{background:rgba(255,255,255,.8);border-bottom:1px solid rgba(168,132,44,.3);box-shadow:0 8px 22px rgba(90,110,140,.16)}
+body.light.recitation-session-active .recitation-reader-head strong{color:#1b3a5f}
+body.light.recitation-session-active .recitation-reader-head small{color:#5b7186}
+body.light.recitation-session-active .recitation-exit{background:rgba(255,255,255,.75);border:1px solid rgba(168,132,44,.4);color:#a8842c}
+body.light.recitation-session-active .recitation-preview-button{background:rgba(255,255,255,.75);border:1px solid rgba(22,48,78,.18);color:#16304e}
+body.light.recitation-session-active .recitation-preview-button[aria-pressed="true"]{border-color:rgba(168,132,44,.6);color:#8a6a1c;background:rgba(212,175,55,.16)}
+body.light.recitation-session-active .recitation-mushaf-paper{background:rgba(253,248,236,.97);border:1px solid rgba(201,162,39,.35);box-shadow:0 18px 40px rgba(90,110,140,.18)}
+body.light.recitation-session-active .recitation-qvp-canvas{background:#fdf8ec}
+body.light.recitation-session-active .recitation-waiting{background:rgba(255,255,255,.88);border:1px solid rgba(168,132,44,.45);box-shadow:0 14px 30px rgba(90,110,140,.2)}
+body.light.recitation-session-active .recitation-waiting strong{color:#8a6a1c}
+body.light.recitation-session-active .recitation-waiting small{color:#5b7186}
+body.light.recitation-session-active .provisional-speech{background:rgba(255,255,255,.85);border:1px dashed rgba(168,132,44,.5)}
+body.light.recitation-session-active .provisional-speech .prov-text{color:#16304e}
+body.light.recitation-session-active .recitation-page-number{background:rgba(255,255,255,.85);color:#8a6a1c;border:1px solid rgba(168,132,44,.45)}
+body.light.recitation-session-active .recite-correction-panel{background:rgba(255,255,255,.8);border:1px solid rgba(22,48,78,.15)}
+body.light.recitation-session-active .recite-correction-panel p{color:#5b7186}
+body.light.recitation-session-active #asrResult{color:#5b7186}
+body.light.recitation-session-active .recitation-controls:not([hidden]){background:rgba(255,255,255,.88)!important;border:1px solid rgba(168,132,44,.35)!important;box-shadow:0 14px 30px rgba(90,110,140,.22)!important}
+body.light.recitation-session-active .recitation-controls>span{color:#5b7186}
+body.light.recitation-session-active .app-shell{background:linear-gradient(#d9e9f6,#c4ddf1)}
+body.light.recitation-session-active .recitation-mushaf-paper{border-radius:18px}
