@@ -7,6 +7,8 @@ import { createLatencyStats } from './latency-stats.js';
 import { splitPending } from './pending-progress.js';
 import { createDiag, buildDiagReport, renderDiagLines } from './diag.js';
 import { buildSessionSummary, aggregateMistakes, mistakeKindLabel, classifyVerdict, isFlagged, unreviewedWordKeys } from './mistake-core.js';
+// Gentle haptic tick on button presses (Android; iOS Safari has no navigator.vibrate and gets the CSS :active press instead)
+document.addEventListener('pointerdown',e=>{const b=e.target?.closest?.('button');if(b&&!b.disabled){try{navigator.vibrate?.(8)}catch{}}},{capture:true,passive:true});
 const latencyStats=createLatencyStats();let pendingPaintAt=0,drawQueued=false;
 const diag=createDiag();let diagWorkerLog=null,diagHb=0,diagLastChunk=0,wpPendingAt=0,diagWpRecvAt=0,diagWpKey='';
 document.getElementById('appManifest').href=new URL('manifest.webmanifest',document.baseURI).href;
@@ -92,7 +94,7 @@ function drawRecitationQvpPageNow(){
  const availableWidth=Math.max(1,host.clientWidth),availableHeight=Math.max(1,host.clientHeight),ratio=recitationQvpPage.width/recitationQvpPage.height,scale=Math.min(availableWidth/recitationQvpPage.width,availableHeight/recitationQvpPage.height),displayWidth=Math.max(1,recitationQvpPage.width*scale),displayHeight=Math.max(1,recitationQvpPage.height*scale),dpr=Math.min(2,window.devicePixelRatio||1),pixelWidth=Math.round(displayWidth*dpr),pixelHeight=Math.round(displayHeight*dpr);
  // Resizing a canvas reallocates its bitmap, so only do it when the size really changed.
  if(canvas.width!==pixelWidth||canvas.height!==pixelHeight){canvas.style.width=displayWidth+'px';canvas.style.height=displayHeight+'px';canvas.width=pixelWidth;canvas.height=pixelHeight;canvas.style.aspectRatio=String(ratio)}
- const dark=!document.body.classList.contains('light'),pal=dark?{paper:'#000',ink:'#ebe4d0',correct:'#6fd19a',error:'#ff7d6b',uncertain:'#ecb54f',hint:'#dba160',active:'#f6efd9',activeBox:'#2c3d37',cursor:'#bdb184'}:{paper:'#f8f1df',ink:'#263b31',correct:'#246343',error:'#b23121',uncertain:'#86621f',hint:'#98652b',active:'#0b1414',activeBox:'#fff',cursor:'#7d7455'},ctx=canvas.getContext('2d'),ink=pal.ink,fit=recitationQvpPage.fit(canvas,0),layerKey=[recitationSvgPage,pixelWidth,pixelHeight,recitationPreview,dark].join(':');
+ const dark=!document.body.classList.contains('light'),pal=dark?{paper:'#081628',ink:'#f0e9d6',correct:'#7fd6a8',error:'#ff8d7d',uncertain:'#ecb54f',hint:'#dba160',active:'#f6efd9',activeBox:'#1d3f6b',cursor:'#d4af37'}:{paper:'#f8f1df',ink:'#2a2f3a',correct:'#246343',error:'#b23121',uncertain:'#86621f',hint:'#98652b',active:'#101c2e',activeBox:'#fff',cursor:'#a8842c'},ctx=canvas.getContext('2d'),ink=pal.ink,fit=recitationQvpPage.fit(canvas,0),layerKey=[recitationSvgPage,pixelWidth,pixelHeight,recitationPreview,dark].join(':');
  // Paper, decorations and (in preview) the printed words never change between events: draw them once per page and size.
  if(baseLayer.key!==layerKey||!baseLayer.canvas){const layer=baseLayer.canvas||document.createElement('canvas');layer.width=pixelWidth;layer.height=pixelHeight;const lctx=layer.getContext('2d');lctx.fillStyle=pal.paper;lctx.fillRect(0,0,pixelWidth,pixelHeight);if(recitationPreview)recitationQvpPage.draw(lctx,{...fit,ink});recitationQvpPage.drawDecorations(lctx,{...fit,ink:'#c7a34c'});baseLayer={key:layerKey,canvas:layer}}
  ctx.drawImage(baseLayer.canvas,0,0);
@@ -274,11 +276,12 @@ function openSessionSummary(session){
   if(!dialog||!content)return;
   const summary=buildSessionSummary(session);content.replaceChildren();
   const headline=document.createElement('p');headline.className='session-summary-headline';
-  headline.textContent=summary.rescoreUnavailable?'الفحص الصوتي ما كانش متاح في الجلسة دي؛ النتيجة دي من المتابعة الحية بس.':(summary.counts.wrong?`رصد المحرك ${toArabic(summary.counts.wrong)} موضع محتاج مراجعة:`:(summary.counts.judged?'المحرك ما رصدش غلطات واضحة في الكلمات اللي فحصها صوتيًا.':(summary.savedVerdicts?'مفيش فحص غلطات للجلسة دي.':'مفيش نتائج فحص محفوظة للجلسة دي.')));
   const unconfirmed=(session.words||[]).filter(w=>w.status==='uncertain'&&!(w.errorSource));
-  const unconfirmedNode=document.createElement('p');unconfirmedNode.className='session-summary-note';
-  unconfirmedNode.textContent=unconfirmed.length?`${toArabic(unconfirmed.length)} كلمة ما اتأكدش منها المحرك (بالكهرماني في المصحف): ${unconfirmed.slice(0,12).map(w=>w.text).join('، ')}${unconfirmed.length>12?'…':''}. ممكن تكون اتقالت صح؛ راجعها.`:'كل الكلمات اللي عدّى عليها المحرك اتأكد منها.';
-  content.append(headline,unconfirmedNode,sessionMistakesNode(summary,true),sessionSummaryCaveatNode(summary));
+  const noCheck=summary.rescoreUnavailable||!summary.counts.judged;
+  headline.textContent=summary.counts.wrong?`غلطات: ${toArabic(summary.counts.wrong)}`:(noCheck?'مفيش فحص غلطات للجلسة دي.':'مفيش غلطات.');
+  const nodes=[headline,sessionMistakesNode(summary,true)];
+  if(unconfirmed.length){const review=document.createElement('p');review.className='session-summary-note';review.textContent=`راجع: ${unconfirmed.slice(0,12).map(w=>w.text).join('، ')}${unconfirmed.length>12?'…':''}`;nodes.push(review);}
+  content.append(...nodes);
   content.onclick=event=>{if(event.target?.classList?.contains('quiet-link'))dialog.close()};
   if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');
 }
@@ -435,7 +438,7 @@ function mountPageSvg(mounted,requestedPage){
   document.getElementById('paperPageNumber').textContent=toArabic(requestedPage);pageLoaded=true;
   window.dispatchEvent(new CustomEvent('rattil-page',{detail:{page:requestedPage,svg:mounted}}));
 }
-const mushafEdition=()=>readStore('rattil-edition','qpc2')==='classic'?'classic':'qpc2';
+const mushafEdition=()=>'qpc2';
 function attachAyahMarker(marker,reference){let pressTimer=0,didLongPress=false,pointerType='';marker.classList.add('ayah-note-marker');marker.setAttribute('role','button');marker.setAttribute('tabindex','0');marker.setAttribute('aria-label',`اضغط مطولًا لإضافة ملاحظة على ${reference.surahName}، الآية ${toArabic(reference.ayah)}`);marker.addEventListener('pointerdown',event=>{pointerType=event.pointerType;if(pointerType==='touch'||pointerType==='pen'){didLongPress=false;pressTimer=setTimeout(()=>{didLongPress=true;openAyahNote(reference)},550)}});['pointerup','pointerleave','pointercancel'].forEach(type=>marker.addEventListener(type,()=>clearTimeout(pressTimer)));marker.addEventListener('click',event=>{if(event.detail===0||pointerType==='mouse')openAyahNote(reference);else if(didLongPress)event.preventDefault()})}
 async function loadQpc2Page(requestedPage,current){
   const q=await import('./qpc2/qpc2.js');
@@ -710,4 +713,3 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&liveAudioC
 installAppUpdate({button:document.getElementById('refreshApp'),status:document.getElementById('refreshAppStatus'),setApplying:value=>appUpdating=value,announce:text=>{document.getElementById('refreshAppStatus').textContent=text},isBusy:()=>Boolean(recitationStarting||liveMediaStream||liveAudioContext||recitationStopping||currentRecitationSession||settledUiTasks.size)});
 
 import('./unified.js').then(({initUnified})=>{initUnified({showView,setPage,getPage:()=>page,getSurahName,openAyahNote,announce,toArabic,readStore,writeStore,setImmersive});import('./golden-nav.js').then(({initGoldenNav})=>initGoldenNav({showView,setPage,getPage:()=>page,toArabic,readStore,writeStore,announce,setImmersive,normalize:normalizeRecitationWord,indexData,loadIndexData,pageForReference,juzForReference,shortSurahName,quranApi,mushafIndex}))});
-{const sel=document.getElementById('editionSelect');if(sel){sel.value=mushafEdition();sel.addEventListener('change',()=>{writeStore('rattil-edition',sel.value==='qpc2'?'qpc2':'classic');pageLoaded=false;loadPage(page)})}}
