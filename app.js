@@ -7,6 +7,8 @@ import { createLatencyStats } from './latency-stats.js';
 import { splitPending } from './pending-progress.js';
 import { createDiag, buildDiagReport, renderDiagLines } from './diag.js';
 import { buildSessionSummary, aggregateMistakes, mistakeKindLabel, classifyVerdict, isFlagged, unreviewedWordKeys } from './mistake-core.js';
+// Gentle haptic tick on button presses (Android; iOS Safari has no navigator.vibrate and gets the CSS :active press instead)
+document.addEventListener('pointerdown',e=>{const b=e.target?.closest?.('button');if(b&&!b.disabled){try{navigator.vibrate?.(8)}catch{}}},{capture:true,passive:true});
 const latencyStats=createLatencyStats();let pendingPaintAt=0,drawQueued=false;
 const diag=createDiag();let diagWorkerLog=null,diagHb=0,diagLastChunk=0,wpPendingAt=0,diagWpRecvAt=0,diagWpKey='';
 document.getElementById('appManifest').href=new URL('manifest.webmanifest',document.baseURI).href;
