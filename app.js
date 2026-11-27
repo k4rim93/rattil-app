@@ -283,7 +283,7 @@ function persistFinishedSession(session){
   if(!session||!Number.isFinite(session.startedAt))return;
   const history=savedRecitationHistory(),i=history.findIndex(item=>item.startedAt===session.startedAt&&item.endedAt===session.endedAt);
   if(i<0)return;
-  history[i]={...history[i],verdicts:session.verdicts||null,rescoreStats:session.rescoreStats||null,rescoreUnavailable:session.rescoreUnavailable||undefined};
+  history[i]={...history[i],verdicts:session.verdicts||null,rescoreStats:session.rescoreStats||null,rescoreUnavailable:session.rescoreUnavailable||undefined,uncheckableItems:session.uncheckableItems||null};
   writeStore('rattil-recitation-history',JSON.stringify(history.slice(-30)));
 }
 function fillSessionSummary(session){
@@ -312,6 +312,17 @@ function fillSessionSummary(session){
     content.append(label,chips);
   }
   content.append(sessionSummaryCaveatNode(summary));
+  const uncheckableAyahs=new Map();
+  for(const item of session.uncheckableItems||[])for(const a of item.ayahs||[])uncheckableAyahs.set(`${a.surah}:${a.ayah}`,item.reason);
+  const uncheckableCounts={audio_expired:0,no_alignment:0};
+  for(const w of session.words||[]){
+    if(w.status==='error'||w.hinted||w.status==='hint')continue;
+    if(session.verdicts?.[w.key])continue;
+    const reason=uncheckableAyahs.get(`${w.surah}:${w.ayah}`);
+    if(reason)uncheckableCounts[reason]=(uncheckableCounts[reason]||0)+1;
+  }
+  if(uncheckableCounts.no_alignment){const note=document.createElement('p');note.className='session-summary-note';note.textContent=`${toArabic(uncheckableCounts.no_alignment)} كلمة المحرك مش قادر يحدد مكانها في التسجيل، فمش هتتفحص صوتيًا — راجعها بصوتك.`;content.append(note);}
+  if(uncheckableCounts.audio_expired){const note=document.createElement('p');note.className='session-summary-note';note.textContent=`${toArabic(uncheckableCounts.audio_expired)} كلمة صوتها اتمسح من الذاكرة المؤقتة (بيتم الاحتفاظ بآخر ١٠ دقايق من الجلسة)، فمش هتتفحص صوتيًا.`;content.append(note);}
   const actions=document.createElement('div');actions.className='session-summary-actions';
   if(finalCheckPending){
     const note=document.createElement('p');note.className='session-bg-note';
@@ -319,7 +330,7 @@ function fillSessionSummary(session){
     note.append(spin,document.createTextNode(' بنفحص الكلمات المتبقية في الخلفية… النتيجة هتتحدث هنا لوحدها'));
     actions.append(note);
   }else{
-    const remaining=(session.words||[]).filter(w=>w.status!=='error'&&!w.hinted&&w.status!=='hint').filter(w=>{const verdict=session.verdicts?.[w.key];return !verdict||classifyVerdict(verdict).bucket==='unclear'}).length;
+    const remaining=(session.words||[]).filter(w=>w.status!=='error'&&!w.hinted&&w.status!=='hint').filter(w=>{const verdict=session.verdicts?.[w.key];return !verdict||classifyVerdict(verdict).bucket==='unclear'}).filter(w=>!uncheckableAyahs.has(`${w.surah}:${w.ayah}`)).length;
     if(remaining>0&&asrWorker&&asrReady){
       const more=document.createElement('button');more.type='button';more.className='gold-button';
       more.textContent=`أكمل فحص الكلمات المتبقية (${toArabic(remaining)})`;
@@ -468,6 +479,9 @@ function handleRecitationEvent(message){
  }else if(message.type==='word_verdicts'){
   if(deferRecitationEvidence(message))return;
   handleWordVerdicts(message);
+ }else if(message.type==='final_check_uncheckable'){
+  const uncheckSession=currentRecitationSession||summarySession;
+  if(uncheckSession){uncheckSession.uncheckableItems=Array.isArray(message.items)?message.items:[];scheduleSummaryRefresh();}
  }else if(message.type==='rescore_done'){
   const statSession=currentRecitationSession||summarySession;
   if(statSession){const rs=statSession.rescoreStats=statSession.rescoreStats||{fails:{},final:null};if(message.reason==='final')rs.final={planned:Number(message.planned)||0,coveredAyahs:Number(message.coveredAyahs)||0,budgetSkipped:Number(message.budgetSkipped)||0};else rs.fails[message.reason]=(rs.fails[message.reason]||0)+1;}
