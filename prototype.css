@@ -1,9 +1,9 @@
 /* Original Rattil reading surface: paper, quiet brass, and generous margins. */
 .reader-intro{text-align:center;padding:3px 0 20px}.reader-intro>span{font-size:10px;color:var(--gold);letter-spacing:.04em}.reader-intro h1{font-family:var(--quran);font-size:27px;font-weight:400;color:var(--text);margin:2px 0}.reader-intro p{font-size:10px;color:var(--muted);margin:0}
 #view-quran .mushaf-paper,body.light #view-quran .mushaf-paper,body.immersive-reading #view-quran .mushaf-paper{background:#f8f1df;border:1px solid #ac955e;border-radius:5px;padding:18px 10px 39px;box-shadow:inset 0 0 0 5px #e7d9b2,0 12px 30px #0003}
-#view-quran .mushaf-svg #content path,body.light #view-quran .mushaf-svg #content path{fill:#253c32!important}
+#view-quran .mushaf-svg #content path,body.light #view-quran .mushaf-svg #content path{fill:#101c2e!important}
 #view-quran .mushaf-svg #ayah_markers path{fill:#977c38!important}
-#view-quran .mushaf-svg #ayah_markers .ayah-mark>g:not(.ayah-mark-ornament) path{fill:#253c32!important}
+#view-quran .mushaf-svg #ayah_markers .ayah-mark>g:not(.ayah-mark-ornament) path{fill:#101c2e!important}
 #view-quran .page-number{background:transparent;color:#6e5a2d;border:0;left:50%;transform:translateX(-50%);bottom:4px}
 .reader-practice{display:block;width:100%;margin-top:20px;min-height:46px}.mushaf-toolbar button{min-height:44px}
 .history-heading{display:flex;justify-content:space-between;align-items:center;gap:10px}.history-heading h2{font-size:16px;margin:0}.local-note{color:var(--muted);font-size:11px;line-height:1.8}.recitation-history-entry>small{display:block;font-size:11px;line-height:1.8}.recitation-history-entry p{font-size:12px;color:var(--gold-light)}.recitation-history-words .hint,.recitation-history-words .uncertain{color:#eed38c;background:#8c672f33}.progress-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.progress-metrics>div{padding:17px 12px;border:1px solid var(--line);border-radius:15px;background:var(--surface)}.progress-metrics strong{display:block;font-size:28px;color:var(--gold-light)}.progress-metrics span{font-size:11px;color:var(--muted)}
@@ -54,7 +54,7 @@ body.recitation-session-active .recitation-controls #stopRec:not(:disabled),body
 .tabbar button svg{width:22px;height:22px;display:block}
 .tabbar button{gap:3px}
 
-.diag-panel{margin:12px 2px 0;padding:12px;border:1px solid #d8b96a;border-radius:12px;background:#0b1314;color:#f3eee2;font-size:13px;line-height:1.9}.diag-panel summary{cursor:pointer;font-weight:700;color:#eed797}.diag-panel pre{white-space:pre-wrap;word-break:break-word;font:inherit;margin:8px 0;color:#f3eee2}.diag-panel button{background:#eed797;color:#17211c;border:0;border-radius:10px;padding:10px 14px;font-weight:700;font-size:13px}.diag-panel textarea{width:100%;background:#111b1c;color:#f3eee2;border:1px solid #556;border-radius:8px;font:10px/1.4 ui-monospace,monospace;margin-top:8px}
+.diag-panel{margin:12px 2px 0;padding:12px;border:1px solid #d8b96a;border-radius:12px;background:#0b1314;color:#f3eee2;font-size:13px;line-height:1.9}.diag-panel summary{cursor:pointer;font-weight:700;color:#eed797}.diag-panel pre{white-space:pre-wrap;word-break:break-word;font:inherit;margin:8px 0;color:#f3eee2}.diag-panel button{background:#eed797;color:#101c2e;border:0;border-radius:10px;padding:10px 14px;font-weight:700;font-size:13px}.diag-panel textarea{width:100%;background:#0d1c34;color:#f3eee2;border:1px solid #556;border-radius:8px;font:10px/1.4 ui-monospace,monospace;margin-top:8px}
 .session-summary-dialog{max-width:min(94vw,430px)}
 .session-summary-dialog #sessionSummaryContent{text-align:right;max-height:60dvh;overflow:auto}
 .session-summary-counts{font-size:14px;color:var(--gold-light);margin:6px 0}
