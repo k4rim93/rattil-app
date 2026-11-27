@@ -327,7 +327,16 @@ async function handle(message) {
     if (closed) queueRescore(closed[0], closed[1]); }
   if (message.type === "stop" && session) { await session.stop(); settledDirty=true; flushSettledWords();
     if (vadSpeech) { vadSpeech = false; queueRescore(vadRunStart, vadLastSpeech); }
-    { const e = rescoreEpoch; rescoreChain = rescoreChain.then(() => finalPass(e)).catch(() => {}); }
+    // Instant summary: tell the app to save and show the session NOW, then keep
+    // the stop-time final pass running in the background. Verdict events it
+    // posts update the open summary; final_check_done closes the loop. Same
+    // pass, same verdicts, same honest counts — only the ordering changed.
+    const stopEpoch = rescoreEpoch;
+    const plannedGroups = planFinalPass(progressLog, { ayahs: postedVerdictAyahs, words: postedVerdictWords }, audioTotal).length;
+    post("final_check_started", { planned: plannedGroups });
+    post("diag", { log: diag.snapshot() });
+    post("stopped");
+    rescoreChain = rescoreChain.then(() => finalPass(stopEpoch)).catch(() => {});
     await rescoreChain;
     // Honesty at save time: the tracker did recite something this session but
     // no acoustic scoring could run at all (scorer never initialised, short
@@ -336,8 +345,17 @@ async function handle(message) {
       rescoreUnavailablePosted = true;
       post("event", { event: { type: "rescore_unavailable" } });
     }
-    post("diag", { log: diag.snapshot() });
-    post("stopped"); }
+    post("final_check_done"); }
+  if (message.type === "check_more" && session) {
+    // User asked to keep checking the words the stop-time pass left unreviewed
+    // (budget cut). planFinalPass skips everything already covered, so this
+    // continues exactly where the previous pass stopped. Scheduling only.
+    const e = rescoreEpoch;
+    const planned = planFinalPass(progressLog, { ayahs: postedVerdictAyahs, words: postedVerdictWords }, audioTotal).length;
+    post("final_check_started", { planned });
+    rescoreChain = rescoreChain.then(() => finalPass(e)).catch(() => {});
+    await rescoreChain;
+    post("final_check_done"); }
 }
 self.onmessage = (event) => {
   queue = queue.then(() => handle(event.data || {})).catch((error) => post("error", { message: error?.message || String(error), stage: "message-handler" }));
