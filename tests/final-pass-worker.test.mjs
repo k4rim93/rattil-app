@@ -2,7 +2,8 @@
 // The live per-run rescore only covers VAD windows containing a verse_match
 // emission; on a slow device that match can arrive late and nothing persists.
 // These tests drive the real asr-worker source in a vm harness with a mock
-// scorer and assert the stop drain still lands verdicts BEFORE 'stopped'.
+// scorer. Instant summary: 'stopped' posts first so the app can save and show
+// the session; the stop drain then lands verdicts BEFORE 'final_check_done'.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
@@ -33,7 +34,8 @@ test('late verse_match (outside every VAD window): stop drain still persists ver
   await a.handle({ type: 'stop' });
   const verdictIdx = events.findIndex(x => x.event?.type === 'word_verdicts');
   assert.ok(verdictIdx >= 0, 'final pass must post verdicts');
-  assert.ok(verdictIdx < events.findIndex(x => x.type === 'stopped'), 'verdicts land before stopped');
+  assert.ok(events.findIndex(x => x.type === 'stopped') < verdictIdx, 'stopped posts first so the summary opens instantly');
+  assert.ok(verdictIdx < events.findIndex(x => x.type === 'final_check_done'), 'verdicts land before final_check_done');
   const final = events.find(x => x.event?.type === 'rescore_done' && x.event.reason === 'final')?.event;
   assert.equal(final.planned, 1);
   assert.equal(final.coveredAyahs, 1);
@@ -48,14 +50,14 @@ test('final pass is persist-only: it never paints word_issues', async () => {
   assert.equal(events.filter(x => x.event?.type === 'word_verdicts').length, 1);
 });
 
-test('scorer down, short session, tracker DID recite: stop posts rescore_unavailable before stopped', async () => {
+test('scorer down, short session, tracker DID recite: stop posts rescore_unavailable before final_check_done', async () => {
   const { a, events } = harness(() => { throw Error('init failure'); });
   a.seed();
   a.seedProgress([{ surah: 55, ayah: 3, at: 4000 }]);
   await a.handle({ type: 'stop' });
   const unavail = events.findIndex(x => x.event?.type === 'rescore_unavailable');
   assert.ok(unavail >= 0, 'unavailable must be posted even below the live retry cap');
-  assert.ok(unavail < events.findIndex(x => x.type === 'stopped'));
+  assert.ok(unavail < events.findIndex(x => x.type === 'final_check_done'));
   assert.equal(events.filter(x => x.event?.type === 'word_verdicts').length, 0);
 });
 
