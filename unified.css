@@ -399,3 +399,12 @@ body.light:not(.reader-view)[data-view=home] #view-home .action-line .chevron{ba
 .asr-more .clear-asr-cache{margin-top:2px}
 
 #loadAsr{white-space:nowrap}
+
+/* selected ayah: gold spotlight (approved mockup A) */
+body.light.reader-view .un-ayah-hit.un-selected-ayah,body.light .reader-view .un-ayah-hit.un-selected-ayah{fill:#c9a227!important;fill-opacity:.30!important}
+body:not(.light) .un-ayah-hit.un-selected-ayah{fill:#d4af37!important;fill-opacity:.26!important}
+body.light .mushaf-svg.un-muted-page{opacity:.6!important}
+body:not(.light) .mushaf-svg.un-muted-page{opacity:.55!important}
+body:not(.light) .un-verse-ink #content path{fill:#f6e8bd!important;stroke:#f6e8bd!important;stroke-width:.35!important}
+body:not(.light) .un-verse-ink #content text{fill:#f6e8bd!important;stroke:#f6e8bd!important}
+body:not(.light) .un-verse-ink #ayah_markers path{fill:#e8c968!important}
