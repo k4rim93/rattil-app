@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFileSync } from 'node:fs';
 import { createSettledWordBridge } from '../settled-words.js';
+import { planFinalPass } from '../final-pass.js';
 const source = readFileSync(new URL('../asr-worker.js', import.meta.url), 'utf8');
 function harness(factory, verdictList) {
   const events = [];
-  const c = vm.createContext({ createSettledWordBridge, console: { warn() {} }, Date, Float32Array, Map, Set, Promise, Number, Math, URL, setTimeout, setInterval() {}, navigator: {}, self: { postMessage: e => events.push(e) }, createRecognitionSession: factory, createDiag: () => ({ reset() {}, mark() {}, sample() {}, bucket() {}, snapshot() { return {} } }) });
+  const c = vm.createContext({ createSettledWordBridge, planFinalPass, console: { warn() {} }, Date, Float32Array, Map, Set, Promise, Number, Math, URL, setTimeout, setInterval() {}, navigator: {}, self: { postMessage: e => events.push(e) }, createRecognitionSession: factory, createDiag: () => ({ reset() {}, mark() {}, sample() {}, bucket() {}, snapshot() { return {} } }) });
   let src = source.replace(/^import .*;\r?\n/gm, '').replace('let appBase = new URL(/* @vite-ignore */ "../", import.meta.url);', 'let appBase=new URL("https://test.invalid/");');
   vm.runInContext(src + `;globalThis.api={rescoreReset,queueRescore,handle,setup(){ortRef={};modelBufferRef={};ioRef={};corpusRef={};quranRef={};session={reset(){},stop:async()=>{}}},seed(){audioTotal=16000;audioChunks=[new Float32Array(16000)];matchLog.push({surah:55,ayah:3,at:8000})},chain:()=>rescoreChain};`, c);
   c.api.setup(); return { a: c.api, events };
@@ -42,12 +43,13 @@ test('non-finite scores are nulled, not leaked as NaN/Infinity', async () => {
   assert.deepEqual({ ...msg.words[0] }, { w: 1, state: 'wrong', gop: null, gopNone: null, repGain: null, vowelErrors: 0 });
   assert.equal(events.filter(x => x.event?.type === 'word_issues').length, 0);
 });
-test('verdict events arrive before stopped so the summary is complete', async () => {
+test('stopped posts instantly, verdicts arrive before final_check_done so the summary completes', async () => {
   const { a, events } = harness(async () => scorer());
   a.seed(); a.queueRescore(0, 16000); await a.handle({ type: 'stop' });
   const verdictIdx = events.findIndex(x => x.event?.type === 'word_verdicts');
   assert.ok(verdictIdx >= 0);
-  assert.ok(verdictIdx < events.findIndex(x => x.type === 'stopped'));
+  assert.ok(events.findIndex(x => x.type === 'stopped') < verdictIdx, 'summary opens instantly');
+  assert.ok(verdictIdx < events.findIndex(x => x.type === 'final_check_done'), 'verdicts still complete the summary');
 });
 test('reset drops stale verdicts; only the new session posts', async () => {
   let unblock; let calls = 0;
