@@ -202,21 +202,68 @@ function rescoreDone(reason, extra = {}) { post("event", { event: { type: "resco
 // Stop-time persistence pass: re-score every recited ayah the live per-run
 // rescore did not cover, using the audio segment bounded by the tracker's own
 // progress trail (see final-pass.js). Persist-only: no word_issues paint.
-// Bounded by FINAL_PASS_BUDGET_MS so saving the session never hangs; anything
-// cut by the budget is reported, and those words stay honestly unreviewed.
-const FINAL_PASS_BUDGET_MS = 20000;
+// Budget: proportional to the audio still to score (on phones the scorer
+// runs at about real-time), floored so short sessions always finish, capped
+// per round so a background round cannot run away. The 20s fixed cap existed
+// to keep session saving from hanging; the summary now opens instantly, so
+// the cap only ever produced unreviewed words and is gone.
+// Rounds: after each pass the plan is rebuilt from the new coverage and the
+// loop continues on its own (auto-continue) while rounds keep adding NEW
+// verdict words. A round that adds nothing means every remaining group is
+// fruitless — same segment, same expected passage, same deterministic result
+// — so the loop stops and reports those ayahs as uncheckable instead of
+// retrying forever. FINAL_PASS_HARD_CAP_MS bounds the whole background check.
+const FINAL_PASS_MIN_BUDGET_MS = 25000;
+const FINAL_PASS_MAX_BUDGET_MS = 120000;
+const FINAL_PASS_HARD_CAP_MS = 240000;
+function verdictWordCount() { let n = 0; for (const set of postedVerdictWords.values()) n += set.size; return n; }
 async function finalPass(epoch) {
   if (epoch !== rescoreEpoch) return;
-  const groups = planFinalPass(progressLog, { ayahs: postedVerdictAyahs, words: postedVerdictWords }, audioTotal);
-  let covered = 0, words = 0, budgetSkipped = 0;
-  const deadline = Date.now() + FINAL_PASS_BUDGET_MS;
-  for (const g of groups) {
+  const startedAt = Date.now();
+  const uncheckable = new Map(); // `${surah}:${ayah}` -> 'audio_expired' | 'no_alignment'
+  let round = 0;
+  while (true) {
     if (epoch !== rescoreEpoch) return;
-    if (Date.now() > deadline) { budgetSkipped++; continue; }
-    const posted = await finalPassGroup(g, epoch);
-    if (posted > 0) { covered += posted; }
+    const groups = planFinalPass(progressLog, { ayahs: postedVerdictAyahs, words: postedVerdictWords }, audioTotal);
+    if (!groups.length) { if (!round) rescoreDone("final", { planned: 0, coveredAyahs: 0, budgetSkipped: 0, round: 0 }); break; }
+    round++;
+    const plannedSamples = groups.reduce((total, g) => total + Math.max(0, g.audioTo - g.audioFrom), 0);
+    const budget = Math.min(FINAL_PASS_MAX_BUDGET_MS, Math.max(FINAL_PASS_MIN_BUDGET_MS, Math.round(1.5 * plannedSamples / 16)));
+    const deadline = Math.min(Date.now() + budget, startedAt + FINAL_PASS_HARD_CAP_MS);
+    const wordsBefore = verdictWordCount();
+    const attempted = [];
+    let covered = 0, budgetSkipped = 0;
+    for (const g of groups) {
+      if (epoch !== rescoreEpoch) return;
+      if (Date.now() > deadline) { budgetSkipped++; continue; }
+      if (g.audioTo <= audioDropped) { for (let a = g.from; a <= g.to; a++) uncheckable.set(g.surah + ":" + a, "audio_expired"); continue; }
+      attempted.push(g);
+      const posted = await finalPassGroup(g, epoch);
+      if (posted > 0) { covered += posted; }
+    }
+    rescoreDone("final", { planned: groups.length, coveredAyahs: covered, budgetSkipped, round });
+    const newWords = verdictWordCount() - wordsBefore;
+    if (Date.now() >= startedAt + FINAL_PASS_HARD_CAP_MS) break;
+    if (newWords > 0 || budgetSkipped > 0) continue; // progress or untried groups: keep going
+    // No new verdicts and nothing left untried: the remaining groups can
+    // never produce verdicts. Say why, honestly, once.
+    // Every still-uncovered word in an attempted group is uncheckable (a
+    // partial verdict set for its ayah does not make the rest reachable).
+    for (const g of attempted) {
+      if (g.audioTo <= audioDropped) continue; // already marked above
+      for (let a = g.from; a <= g.to; a++) uncheckable.set(g.surah + ":" + a, "no_alignment");
+    }
+    break;
   }
-  rescoreDone("final", { planned: groups.length, coveredAyahs: covered, budgetSkipped });
+  if (uncheckable.size) {
+    const byReason = new Map();
+    for (const [key, reason] of uncheckable) {
+      const [surah, ayah] = key.split(":").map(Number);
+      if (!byReason.has(reason)) byReason.set(reason, []);
+      byReason.get(reason).push({ surah, ayah });
+    }
+    post("event", { event: { type: "final_check_uncheckable", items: [...byReason.entries()].map(([reason, ayahs]) => ({ reason, ayahs })) } });
+  }
 }
 
 // Score one planned group; returns the number of ayahs that got verdicts.
@@ -322,7 +369,7 @@ async function handle(message) {
     if (!onsetSeen) { let e = 0; for (let i = 0; i < message.samples.length; i++) e += message.samples[i] * message.samples[i]; if (Math.sqrt(e / message.samples.length) > VAD_THR) { onsetSeen = true; diag.mark("onset", { a: audioTotal / 16 }); } }
     await session.feed(message.samples); flushSettledWords(); const feedMs = performance.now() - began; feedingLen = 0; diag.sample("feed", feedMs); diag.sample("samples", message.samples.length); diag.bucket(Date.now(), "feed", feedMs); post("perf", { ms: feedMs, samples: message.samples.length, lagMs: Date.now() - (message.sentAt || Date.now()) });
     audioTotal += message.samples.length; audioChunks.push(message.samples);
-    if (audioTotal - audioDropped > 5 * 60 * 16000) { let drop = audioTotal - audioDropped - 5 * 60 * 16000; while (drop > 0 && audioChunks.length) { const c = audioChunks[0]; if (c.length <= drop) { audioChunks.shift(); drop -= c.length; audioDropped += c.length; } else { audioChunks[0] = c.subarray(drop); audioDropped += drop; drop = 0; } } }
+    if (audioTotal - audioDropped > 10 * 60 * 16000) { let drop = audioTotal - audioDropped - 10 * 60 * 16000; while (drop > 0 && audioChunks.length) { const c = audioChunks[0]; if (c.length <= drop) { audioChunks.shift(); drop -= c.length; audioDropped += c.length; } else { audioChunks[0] = c.subarray(drop); audioDropped += drop; drop = 0; } } }
     const closed = feedVad(message.samples);
     if (closed) queueRescore(closed[0], closed[1]); }
   if (message.type === "stop" && session) { await session.stop(); settledDirty=true; flushSettledWords();
