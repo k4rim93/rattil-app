@@ -415,3 +415,33 @@ body:not(.light) .un-verse-ink #ayah_markers path{fill:#e8c968!important}
 .list-row,.practice-start-card,.dhikr-row,.recitation-history-entry,.mistake-log-entry{transition:transform .14s ease}
 .list-row:active,.practice-start-card:active,.dhikr-row:active,.recitation-history-entry:active,.mistake-log-entry:active{transform:scale(.98)}
 @media(prefers-reduced-motion:reduce){.tabbar button:active,.action-line:active,.un-menu-row:active,.un-verse-actions button:active,.gq-actions button:active,.gq-card .index-entry:active,.mushaf-index-tabs button:active,.gq-chips button:active,.gq-juzs button:active,#gqMini button:active,.un-mini button:active,.recitation-controls button:active,.recitation-preview-button:active,.recitation-exit:active,.gold-button:active,.icon-button:active,.gq-strip-btn:active,.un-sheet-head>button:active,.dialog-close:active,.gq-x:active,.gq-chip:active,.gq-pill2 button:active,#gqBMenu:active,.round-arrow:active,.back-to-top:active,.mushaf-controls button:active,.list-row:active,.practice-start-card:active,.dhikr-row:active,.recitation-history-entry:active,.mistake-log-entry:active{transform:none}}
+/* Live recitation wave + instant summary + clean-page celebration (approved mockups 2026-11-27) */
+.recite-wave{display:flex;align-items:center;justify-content:center;gap:10px;margin:10px 16px 0;padding:8px 14px;background:rgba(16,36,63,.88);border:1px solid rgba(212,175,55,.4);border-radius:18px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.recite-wave .bars{display:flex;align-items:center;gap:5px;height:56px}
+.recite-wave .bars i{width:5px;border-radius:3px;background:linear-gradient(180deg,#f7dc8e,#b5964c);height:6px;opacity:.3;transition:height .12s ease,opacity .12s ease}
+.recite-wave>span{color:#b9c8dd;font-size:12px}
+body.light .recite-wave{background:rgba(255,255,255,.78);border-color:rgba(18,41,61,.14)}
+body.light .recite-wave>span{color:#5b7186}
+.celebration-dialog{text-align:center}
+.celebration-dialog .crown{width:74px;height:74px;margin:4px auto 10px;border-radius:50%;background:radial-gradient(circle at 50% 35%,#ffe9a8,#b5964c 72%);display:flex;align-items:center;justify-content:center;font-size:34px;color:#3d2c05;box-shadow:0 0 46px rgba(247,220,142,.55),0 0 120px rgba(247,220,142,.25)}
+.celebration-dialog h2{color:#f7dc8e;margin:0 0 6px}
+.celebration-dialog p{margin:0 0 6px;line-height:1.9}
+.celebration-dialog small{color:#9fb3cc;display:block;margin-bottom:16px}
+.celebration-dialog .gold-button{width:100%;margin-bottom:10px}
+.celebration-dialog .quiet-link{width:100%;min-height:44px}
+body.light .celebration-dialog small{color:#5b7186}
+.session-summary-meter{background:rgba(255,255,255,.06);border-radius:12px;padding:12px 14px;margin:6px 0 12px}
+.session-summary-meter .t{display:flex;justify-content:space-between;color:#dbe7f5;font-size:13px;font-weight:600;margin-bottom:8px}
+.session-summary-meter .bar{height:8px;border-radius:5px;background:rgba(255,255,255,.1);overflow:hidden}
+.session-summary-meter .bar b{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,#e8d28e,#b5964c);transition:width .5s ease}
+body.light .session-summary-meter{background:rgba(18,41,61,.05)}
+body.light .session-summary-meter .t{color:#12293d}
+body.light .session-summary-meter .bar{background:rgba(18,41,61,.1)}
+.session-summary-chips{display:flex;flex-wrap:wrap;gap:7px;margin:2px 0 12px}
+.session-summary-chips button{border:1px solid rgba(232,201,104,.55);color:#eed797;border-radius:10px;padding:4px 12px;font:17px var(--quran);background:rgba(232,201,104,.08);min-height:36px}
+body.light .session-summary-chips button{color:#7a6530;border-color:rgba(150,116,32,.45);background:rgba(232,201,104,.16)}
+.session-bg-note{display:flex;align-items:center;gap:8px;background:rgba(156,198,234,.08);border:1px dashed rgba(156,198,234,.4);border-radius:12px;padding:10px 12px;color:#9fb3cc;font-size:12px;margin:6px 0}
+body.light .session-bg-note{color:#3d5469;border-color:rgba(18,41,61,.25);background:rgba(18,41,61,.05)}
+.session-bg-note .spin{width:14px;height:14px;border:2px solid #9fb3cc44;border-top-color:#9fb3cc;border-radius:50%;animation:recite-spin 1s linear infinite;flex-shrink:0}
+@keyframes recite-spin{to{transform:rotate(360deg)}}
+.session-summary-actions .gold-button{width:100%;margin:6px 0 2px}
