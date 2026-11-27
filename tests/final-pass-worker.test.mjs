@@ -15,7 +15,7 @@ function harness(factory, verdictList) {
   const events = [];
   const c = vm.createContext({ createSettledWordBridge, planFinalPass, console: { warn() {} }, Date, Float32Array, Map, Set, Promise, Number, Math, URL, setTimeout, setInterval() {}, navigator: {}, self: { postMessage: e => events.push(e) }, createRecognitionSession: factory, createDiag: () => ({ reset() {}, mark() {}, sample() {}, bucket() {}, snapshot() { return {} } }) });
   let src = source.replace(/^import .*;\r?\n/gm, '').replace('let appBase = new URL(/* @vite-ignore */ "../", import.meta.url);', 'let appBase=new URL("https://test.invalid/");');
-  vm.runInContext(src + `;globalThis.api={rescoreReset,queueRescore,handle,setup(){ortRef={};modelBufferRef={};ioRef={};corpusRef={};quranRef={};session={reset(){},stop:async()=>{}}},seed(){audioTotal=16000;audioChunks=[new Float32Array(16000)];matchLog.push({surah:55,ayah:3,at:8000})},seedProgress(list){for(const p of list)progressLog.push(p)},chain:()=>rescoreChain};`, c);
+  vm.runInContext(src + `;globalThis.api={rescoreReset,queueRescore,handle,setup(){ortRef={};modelBufferRef={};ioRef={};corpusRef={};quranRef={};session={reset(){},stop:async()=>{}}},seed(dropped){audioTotal=16000;audioChunks=[new Float32Array(16000)];audioDropped=dropped||0;matchLog.push({surah:55,ayah:3,at:8000})},seedProgress(list){for(const p of list)progressLog.push(p)},chain:()=>rescoreChain};`, c);
   c.api.setup(); return { a: c.api, events };
 }
 const VERDICTS = [
@@ -92,6 +92,33 @@ test('empty scorer output on the final pass posts nothing but reports the plan',
   a.seedProgress([{ surah: 55, ayah: 3, at: 4000 }]);
   await a.handle({ type: 'stop' });
   assert.equal(events.filter(x => x.event?.type === 'word_verdicts').length, 0);
+  const final = events.find(x => x.event?.type === 'rescore_done' && x.event.reason === 'final')?.event;
+  assert.equal(final.planned, 1);
+  assert.equal(final.coveredAyahs, 0);
+});
+
+test('partial verdicts that never grow: pass retries once, then reports the ayah uncheckable (no_alignment)', async () => {
+  const partial = [{ surah: 55, ayah: 3, word: 0, state: 'ok', gop: -0.3, gopNone: -40, repGain: -1, vowelErrors: 0 }];
+  const { a, events } = harness(async () => scorer(async () => {}, partial));
+  a.seed();
+  a.seedProgress([{ surah: 55, ayah: 3, at: 4000, w: 0 }, { surah: 55, ayah: 3, at: 8000, w: 2 }]);
+  await a.handle({ type: 'stop' });
+  const rounds = events.filter(x => x.event?.type === 'rescore_done' && x.event.reason === 'final');
+  assert.equal(rounds.length, 2, 'one productive round plus one no-progress round, then the loop stops');
+  const uncheck = events.find(x => x.event?.type === 'final_check_uncheckable')?.event;
+  assert.ok(uncheck, 'uncheckable must be reported once the pass gives up');
+  assert.deepEqual(JSON.parse(JSON.stringify(uncheck.items)), [{ reason: 'no_alignment', ayahs: [{ surah: 55, ayah: 3 }] }]);
+});
+
+test('audio already trimmed from the ring buffer: ayah reported audio_expired, scorer never fed', async () => {
+  let feeds = 0;
+  const { a, events } = harness(async () => scorer(async () => { feeds++; }));
+  a.seed(16000); // the whole first second of audio is already gone
+  a.seedProgress([{ surah: 55, ayah: 3, at: 4000, w: 0 }]);
+  await a.handle({ type: 'stop' });
+  assert.equal(feeds, 0, 'no scoring feed without audio');
+  const uncheck = events.find(x => x.event?.type === 'final_check_uncheckable')?.event;
+  assert.deepEqual(JSON.parse(JSON.stringify(uncheck.items)), [{ reason: 'audio_expired', ayahs: [{ surah: 55, ayah: 3 }] }]);
   const final = events.find(x => x.event?.type === 'rescore_done' && x.event.reason === 'final')?.event;
   assert.equal(final.planned, 1);
   assert.equal(final.coveredAyahs, 0);
