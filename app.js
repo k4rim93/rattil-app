@@ -553,12 +553,7 @@ function setupRecitationNav(){
   let start=null;
   paper.addEventListener('touchstart',e=>{start=e.changedTouches.length?{x:e.changedTouches[0].clientX,y:e.changedTouches[0].clientY}:null},{passive:true});
   paper.addEventListener('touchend',e=>{if(!start||!e.changedTouches.length)return;const t=e.changedTouches[0],dx=t.clientX-start.x,dy=t.clientY-start.y;start=null;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.25)recitationNavigate(dx>0?1:-1)},{passive:true});
-  const bar=document.createElement('div');bar.id='recitationPageNav';bar.hidden=true;bar.style.cssText='position:absolute;inset-inline:0;bottom:4px;display:flex;justify-content:center;gap:10px;pointer-events:none;z-index:3;bottom:40px';
-  const mk=(label,delta,text)=>{const b=document.createElement('button');b.type='button';b.textContent=text;b.setAttribute('aria-label',label);b.style.cssText='pointer-events:auto;min-height:40px;padding:0 16px;border-radius:999px;border:1px solid rgba(212,175,55,.45);background:rgba(13,31,60,.9);color:#f0e9d6;font-size:14px';b.addEventListener('click',()=>recitationNavigate(delta));return b};
-  bar.append(mk('الصفحة السابقة',-1,'‹ السابقة'),mk('الصفحة التالية',1,'التالية ›'));
-  if(getComputedStyle(paper).position==='static')paper.style.position='relative';
-  paper.append(bar);
-  new MutationObserver(()=>{bar.hidden=!document.body.classList.contains('recitation-session-paused')}).observe(document.body,{attributes:true,attributeFilter:['class']});
+  paper.style.touchAction='pan-y';const canvasHost=paper.querySelector('#liveRecitationText');if(canvasHost)canvasHost.style.touchAction='pan-y';
 }
 setupRecitationNav();
 function focusRecitedVerse(surah,ayah){revealRecitedAyah(surah,ayah);return true;}
