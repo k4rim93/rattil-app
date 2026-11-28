@@ -71,6 +71,7 @@ let appUpdating=false,recitationStarting=false;
 let recitationStopping=false,micLevel=0,micLevelFrame=0;
 let asrWorker=null,asrReady=false,reciteCatalog=[],reciteVerseCache=new Map(),activeReciteSurah=0,activeReciteMode='follow',reciteRange={from:1,to:10},liveAudioContext=null,liveMediaStream=null,liveSource=null,liveProcessor=null,liveSamples=new Float32Array(0),liveSampleCount=0,liveCurrentVerse=null,pendingWordProgress=[],pendingRecitationMisses=new Set(),rescoreUnavailable=false,recitationLastConfirmedIndex=-1,recitationWordStates=new Map(),recitationWordExpiry=new Map(),recitationTokenMaps=new Map(),currentRecitationSession=null,recitationSessionCancelled=false,recitationRequest=0,pendingReciteSurah=0,pendingReciteLoad=null,recitationSvgPage=0,recitationPreview=false,recitationSvgRequest=0,recitationQvpPage=null,recitationQvpGeometry=null,recitationQvpWordData=null,recitationRenderRequest=0,recitationRenderTimer=null,recitationActiveWordKey='',recitationTrackingKey='';
 let heardTranscript='',heardBackfillDone=false,heardBackfillTarget=null;
+let recitationPaused=false,recitationPauseReason='',wakeLockSentinel=null;
 function showEngineSetup(message='نزّل محرك التسميع المجاني مرة واحدة للبدء.'){document.getElementById('engineSetupPanel').hidden=false;document.getElementById('loadAsr').scrollIntoView({behavior:'smooth',block:'center'});announce(message);}
 document.getElementById('followFeatureStart').addEventListener('click',()=>{if(!asrReady){showEngineSetup(readStore('rattil-asr-installed')==='true'?'المحرك المحفوظ قيد التجهيز. انتظر لحظات.':'نزّل محرك التسميع المجاني مرة واحدة للبدء.');return;}document.getElementById('startFollow').click()});
 document.getElementById('reviewFeatureStart').addEventListener('click',()=>{if(!asrReady){showEngineSetup(readStore('rattil-asr-installed')==='true'?'المحرك المحفوظ قيد التجهيز. انتظر لحظات.':'نزّل محرك التسميع المجاني مرة واحدة للبدء.');return;}loadRecitationCatalog();const dialog=document.getElementById('recitationSetupDialog');if(!dialog.open)dialog.showModal();});
@@ -412,12 +413,12 @@ async function startSelectedReview(){const number=Number(document.getElementById
 document.getElementById('loadAsr').addEventListener('click',loadAsr);
 document.getElementById('startFollow').addEventListener('click',async()=>{activeReciteMode='follow';setAwaitingMatch(true);{const pr=document.getElementById('perfReadout');if(pr)pr.hidden=true;const ar=document.getElementById('asrResult');if(ar)ar.textContent='التعرف على الآية والكلمات تقريبي وقد يخطئ.'}activeReciteSurah=0;recitationPreview=false;document.getElementById('toggleReciteText').textContent='معاينة';document.getElementById('toggleReciteText').setAttribute('aria-pressed','false');if(asrWorker){asrWorker.postMessage({type:'set_mode',mode:'tracking'});asrWorker.postMessage({type:'set_expected',passage:null});}document.getElementById('recitationSurahName').textContent='اتبع قراءتك';const pageTask=showRecitationPage(Number(readStore('rattil-page','42'))||42,{reveal:[]});document.getElementById('recitationSurahMeta').textContent='الآيات مخفية · ستظهر مع تقدّم قراءتك';document.getElementById('recitationStartLabel').textContent='ابدأ من أي مكان';const recordingTask=startLiveRecording();await Promise.all([pageTask,recordingTask]);});
 document.getElementById('startReview').addEventListener('click',startSelectedReview);
-document.getElementById('startRec').addEventListener('click',()=>activeReciteMode==='review'?startSelectedReview():startLiveRecording());
+document.getElementById('startRec').addEventListener('click',()=>recitationPaused?resumePausedRecording():(activeReciteMode==='review'?startSelectedReview():startLiveRecording()));
 document.getElementById('stopRec').addEventListener('click',stopLiveRecording);
 function enterRecitationSessionView(){recitationSessionCancelled=false;document.getElementById('recitationSetupDialog').close();document.body.classList.add('recitation-session-active');document.getElementById('startFollow').disabled=true;document.getElementById('startReview').disabled=true;document.getElementById('recitationReader').hidden=false;document.querySelector('.recitation-controls').hidden=false;document.getElementById('recitationWaiting').hidden=false;window.scrollTo({top:0,behavior:'instant'});}
 document.getElementById('startFollow').addEventListener('click',enterRecitationSessionView,{capture:true});
 document.getElementById('startReview').addEventListener('click',event=>{const from=Number(document.getElementById('reviewFrom').value),to=Number(document.getElementById('reviewTo').value),entry=reciteCatalog.find(item=>item.number===Number(document.getElementById('reviewSurah').value));if(entry&&Number.isInteger(from)&&Number.isInteger(to)&&from>=1&&to>=from&&to<=entry.numberOfAyahs)enterRecitationSessionView();},{capture:true});
-document.getElementById('exitRecitation').addEventListener('click',async()=>{recitationSessionCancelled=true;if(liveAudioContext)await stopLiveRecording();document.body.classList.remove('recitation-session-active','recitation-session-paused');document.getElementById('recitationReader').hidden=true;document.querySelector('.recitation-controls').hidden=true;document.getElementById('startFollow').disabled=!asrReady;document.getElementById('startReview').disabled=!asrReady;});
+document.getElementById('exitRecitation').addEventListener('click',async()=>{recitationSessionCancelled=true;if(liveAudioContext||recitationPaused)await stopLiveRecording();releaseWakeLock();recitationPaused=false;document.body.classList.remove('recitation-session-active','recitation-session-paused');document.getElementById('recitationReader').hidden=true;document.querySelector('.recitation-controls').hidden=true;document.getElementById('startFollow').disabled=!asrReady;document.getElementById('startReview').disabled=!asrReady;});
 document.getElementById('toggleReciteText').addEventListener('click',event=>{recitationPreview=!recitationPreview;if(recitationPreview&&currentRecitationSession)currentRecitationSession.previews=(currentRecitationSession.previews||0)+1;const button=event.currentTarget;button.textContent=recitationPreview?'إخفاء':'معاينة';button.setAttribute('aria-pressed',String(recitationPreview));drawRecitationQvpPage();document.getElementById('recitationWaiting').hidden=recitationPreview||Boolean(liveCurrentVerse);});
 window.addEventListener('resize',drawRecitationQvpPage,{passive:true});
 document.querySelectorAll('[data-correction-action]').forEach(button=>button.addEventListener('click',()=>{if(asrWorker)asrWorker.postMessage({type:'correction_action',action:button.dataset.correctionAction});}));
@@ -426,7 +427,7 @@ async function loadAsr(){const button=document.getElementById('loadAsr');button.
 async function clearAsrCache(){if(liveAudioContext){asrStatus('أوقف التسميع أولًا قبل حذف المحرك.');return;}stopAsrWorker();writeStore('rattil-asr-installed','false');document.getElementById('engineSetupPanel').hidden=false;try{const request=indexedDB.open('rattil-zipformer-assets',1),db=await new Promise((resolve,reject)=>{request.onupgradeneeded=()=>request.result.createObjectStore('assets');request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error)});await new Promise((resolve,reject)=>{const tx=db.transaction('assets','readwrite');tx.objectStore('assets').clear();tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});db.close();document.getElementById('loadAsr').textContent='تحميل المحرك';document.getElementById('loadAsr').disabled=false;document.getElementById('startFollow').disabled=true;document.getElementById('startReview').disabled=true;asrStatus('حُذف محرك التسميع من هذا الجهاز.');}catch(error){asrStatus('تعذر حذف الملفات المحفوظة: '+error.message);}}
 document.getElementById('clearAsrCache').addEventListener('click',clearAsrCache);
 function sendAudioChunk(samples,sentAt=Date.now(),owned=false){if(!asrWorker||!asrReady||!samples.length)return;const copy=owned?samples:samples.slice();asrWorker.postMessage({type:'audio',samples:copy,sentAt,mt:Date.now()},[copy.buffer]);}
-async function startLiveRecording(){if(appUpdating){asrStatus("انتظر اكتمال تحديث النسخة.");return}if(recitationStopping||recitationStarting)return;if(!asrReady||!asrWorker){asrStatus('حمّل محرك التسميع أولًا.');return;}if(!navigator.mediaDevices?.getUserMedia||(!window.AudioContext&&!window.webkitAudioContext)){asrStatus('الميكروفون غير متاح في هذا المتصفح. افتح رتل عبر Safari على HTTPS.');return;}recitationSessionCancelled=false;if(liveAudioContext)return;const continuing=document.body.classList.contains('recitation-session-paused');try{recitationStarting=true;const mediaStream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:false,noiseSuppression:false,autoGainControl:false}});if(recitationSessionCancelled){mediaStream.getTracks().forEach(track=>track.stop());recitationStarting=false;return;}liveMediaStream=mediaStream;const AudioContextClass=window.AudioContext||window.webkitAudioContext;liveAudioContext=new AudioContextClass({latencyHint:'interactive'});await liveAudioContext.resume();if(recitationSessionCancelled||!liveAudioContext){mediaStream.getTracks().forEach(track=>track.stop());recitationStarting=false;return;}liveSource=liveAudioContext.createMediaStreamSource(liveMediaStream);liveSamples=new Float32Array(0);liveSampleCount=0;settledUiEpoch++;latencyStats.start(activeReciteMode);try{diagStart()}catch{}if(!continuing){clearProvisionalSpeech();setAwaitingMatch(activeReciteMode!=='review');liveCurrentVerse=null;pendingWordProgress=[];pendingRecitationMisses.clear();recitationLastConfirmedIndex=-1;recitationWordStates.clear();recitationWordExpiry.clear();recitationTrackingKey='';recitationTokenMaps.clear();heardTranscript='';heardBackfillDone=false;heardBackfillTarget=null}currentRecitationSession={startedAt:Date.now(),mode:activeReciteMode,range:activeReciteMode==='review'?{surah:activeReciteSurah,...reciteRange}:null,words:[],verdicts:{}};document.getElementById('reciteCorrectionPanel').hidden=true;asrWorker.postMessage({type:'reset'});asrWorker.postMessage({type:'set_mode',mode:activeReciteMode==='review'?'correction':'tracking'});if(activeReciteMode==='review')asrWorker.postMessage({type:'set_expected',passage:{surah:activeReciteSurah,ayah:reciteRange.from,ayahEnd:reciteRange.to}});else asrWorker.postMessage({type:'set_expected',passage:null});const captureContext=liveAudioContext,captureSource=liveSource;const capture=await startCapture(captureContext,captureSource,(chunk,at)=>{if(recitationSessionCancelled||captureContext!==liveAudioContext)return;latencyStats.chunk();try{diagChunk(at)}catch{}sendAudioChunk(chunk,at,true)},level=>{if(recitationSessionCancelled||captureContext!==liveAudioContext)return;micLevel=level;diag.bucket(Date.now(),'lvl',level);if(!micLevelFrame)micLevelFrame=requestAnimationFrame(()=>{micLevelFrame=0;document.documentElement.style.setProperty('--mic-level',String(Math.min(1,micLevel*9)));updateReciteWave(micLevel)})});if(recitationSessionCancelled||captureContext!==liveAudioContext){capture.stop();recitationStarting=false;return;}liveProcessor=capture;recitationStarting=false;diag.mark('capture_connected',{kind:capture.kind});document.body.classList.remove('recitation-session-paused');document.getElementById('recitationStartLabel').textContent='ابدأ من أي مكان';document.getElementById('startRec').disabled=true;document.getElementById('startFollow').disabled=true;document.getElementById('startReview').disabled=true;document.getElementById('stopRec').disabled=false;document.getElementById('reciteLiveIndicator').textContent='يستمع الآن';asrStatus('التسميع يعمل محليًا على جهازك.');}catch(error){recitationStarting=false;asrStatus('تعذر فتح الميكروفون: '+(error.message||'تحقق من إذن الميكروفون.'));await stopLiveRecording();}}
+async function startLiveRecording(){if(appUpdating){asrStatus("انتظر اكتمال تحديث النسخة.");return}if(recitationStopping||recitationStarting)return;if(!asrReady||!asrWorker){asrStatus('حمّل محرك التسميع أولًا.');return;}if(!navigator.mediaDevices?.getUserMedia||(!window.AudioContext&&!window.webkitAudioContext)){asrStatus('الميكروفون غير متاح في هذا المتصفح. افتح رتل عبر Safari على HTTPS.');return;}recitationSessionCancelled=false;if(liveAudioContext)return;const continuing=document.body.classList.contains('recitation-session-paused');try{recitationStarting=true;const mediaStream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:false,noiseSuppression:false,autoGainControl:false}});if(recitationSessionCancelled){mediaStream.getTracks().forEach(track=>track.stop());recitationStarting=false;return;}liveMediaStream=mediaStream;guardMicEnd(mediaStream);const AudioContextClass=window.AudioContext||window.webkitAudioContext;liveAudioContext=new AudioContextClass({latencyHint:'interactive'});await liveAudioContext.resume();if(recitationSessionCancelled||!liveAudioContext){mediaStream.getTracks().forEach(track=>track.stop());recitationStarting=false;return;}liveSource=liveAudioContext.createMediaStreamSource(liveMediaStream);liveSamples=new Float32Array(0);liveSampleCount=0;settledUiEpoch++;latencyStats.start(activeReciteMode);try{diagStart()}catch{}if(!continuing){clearProvisionalSpeech();setAwaitingMatch(activeReciteMode!=='review');liveCurrentVerse=null;pendingWordProgress=[];pendingRecitationMisses.clear();recitationLastConfirmedIndex=-1;recitationWordStates.clear();recitationWordExpiry.clear();recitationTrackingKey='';recitationTokenMaps.clear();heardTranscript='';heardBackfillDone=false;heardBackfillTarget=null}currentRecitationSession={startedAt:Date.now(),mode:activeReciteMode,range:activeReciteMode==='review'?{surah:activeReciteSurah,...reciteRange}:null,words:[],verdicts:{}};document.getElementById('reciteCorrectionPanel').hidden=true;asrWorker.postMessage({type:'reset'});asrWorker.postMessage({type:'set_mode',mode:activeReciteMode==='review'?'correction':'tracking'});if(activeReciteMode==='review')asrWorker.postMessage({type:'set_expected',passage:{surah:activeReciteSurah,ayah:reciteRange.from,ayahEnd:reciteRange.to}});else asrWorker.postMessage({type:'set_expected',passage:null});const captureContext=liveAudioContext,captureSource=liveSource;const capture=await startCapture(captureContext,captureSource,(chunk,at)=>{if(recitationSessionCancelled||captureContext!==liveAudioContext)return;latencyStats.chunk();try{diagChunk(at)}catch{}sendAudioChunk(chunk,at,true)},level=>{if(recitationSessionCancelled||captureContext!==liveAudioContext)return;micLevel=level;diag.bucket(Date.now(),'lvl',level);if(!micLevelFrame)micLevelFrame=requestAnimationFrame(()=>{micLevelFrame=0;document.documentElement.style.setProperty('--mic-level',String(Math.min(1,micLevel*9)));updateReciteWave(micLevel)})});if(recitationSessionCancelled||captureContext!==liveAudioContext){capture.stop();recitationStarting=false;return;}liveProcessor=capture;recitationStarting=false;recitationPaused=false;recitationPauseReason='';diag.mark('capture_connected',{kind:capture.kind});document.body.classList.remove('recitation-session-paused');setResumeButtonWide(false);restoreReciteWave();requestWakeLock();document.getElementById('recitationStartLabel').textContent='ابدأ من أي مكان';document.getElementById('startRec').disabled=true;document.getElementById('startFollow').disabled=true;document.getElementById('startReview').disabled=true;document.getElementById('stopRec').disabled=false;document.getElementById('reciteLiveIndicator').textContent='يستمع الآن';asrStatus('التسميع يعمل محليًا على جهازك.');}catch(error){recitationStarting=false;asrStatus('تعذر فتح الميكروفون: '+(error.message||'تحقق من إذن الميكروفون.'));await stopLiveRecording();}}
 const reciteWaveLevels=new Array(12).fill(0);
 function updateReciteWave(level){
   const el=document.getElementById('reciteWave');if(!el)return;
@@ -436,7 +437,112 @@ function updateReciteWave(level){
   const bars=el.querySelectorAll('.bars i');
   bars.forEach((bar,i)=>{const v=reciteWaveLevels[i];bar.style.height=(6+v*44)+'px';bar.style.opacity=v>0.03?'1':'0.3'});
 }
-async function stopLiveRecording(){if(recitationStopping)return;recitationStopping=Boolean(asrWorker&&asrReady);recitationSessionCancelled=true;clearInterval(diagHb);diagHb=0;if(liveProcessor){try{liveProcessor.stop()}catch{}}if(liveSource){try{liveSource.disconnect()}catch{}}if(liveSampleCount)sendAudioChunk(liveSamples.subarray(0,liveSampleCount));liveSamples=new Float32Array(0);liveSampleCount=0;liveMediaStream?.getTracks().forEach(track=>track.stop());if(liveAudioContext){try{await liveAudioContext.close()}catch{}}liveProcessor=liveSource=liveMediaStream=liveAudioContext=null;document.body.classList.add('recitation-session-paused');document.getElementById('startRec').disabled=true;document.getElementById('startFollow').disabled=recitationStopping||!asrReady;document.getElementById('startReview').disabled=recitationStopping||!asrReady;document.getElementById('stopRec').disabled=true;document.getElementById('recitationStartLabel').textContent='استأنف التسميع';document.getElementById('reciteLiveIndicator').textContent='متوقف';document.getElementById('asrResult').textContent='التسميع متوقف. المصحف ونتيجة قراءتك ما زالا ظاهرين.'+(rescoreUnavailable?' تعذّر تمييز الكلمات الخاطئة بالأحمر في هذه الجلسة.':'');document.getElementById('reciteLiveIndicator').textContent='جارٍ حفظ النتيجة…';if(asrWorker&&asrReady)asrWorker.postMessage({type:'stop'});else{const {session:finishedSession}=finalizeRecitationSession();if(finishedSession&&finishedSession.words.length)openSessionSummary(finishedSession);document.getElementById('startRec').disabled=!asrReady;}asrStatus('أُوقف الميكروفون؛ يمكنك مراجعة الصفحة أو استئناف التسميع.');}
+async function stopLiveRecording(){if(recitationStopping)return;recitationStopping=Boolean(asrWorker&&asrReady);recitationSessionCancelled=true;recitationPaused=false;recitationPauseReason='';releaseWakeLock();clearInterval(diagHb);diagHb=0;if(liveProcessor){try{liveProcessor.stop()}catch{}}if(liveSource){try{liveSource.disconnect()}catch{}}if(liveSampleCount)sendAudioChunk(liveSamples.subarray(0,liveSampleCount));liveSamples=new Float32Array(0);liveSampleCount=0;liveMediaStream?.getTracks().forEach(track=>track.stop());if(liveAudioContext){try{await liveAudioContext.close()}catch{}}liveProcessor=liveSource=liveMediaStream=liveAudioContext=null;document.body.classList.add('recitation-session-paused');document.getElementById('startRec').disabled=true;document.getElementById('startFollow').disabled=recitationStopping||!asrReady;document.getElementById('startReview').disabled=recitationStopping||!asrReady;document.getElementById('stopRec').disabled=true;document.getElementById('recitationStartLabel').textContent='استأنف التسميع';document.getElementById('reciteLiveIndicator').textContent='متوقف';document.getElementById('asrResult').textContent='التسميع متوقف. المصحف ونتيجة قراءتك ما زالا ظاهرين.'+(rescoreUnavailable?' تعذّر تمييز الكلمات الخاطئة بالأحمر في هذه الجلسة.':'');document.getElementById('reciteLiveIndicator').textContent='جارٍ حفظ النتيجة…';if(asrWorker&&asrReady)asrWorker.postMessage({type:'stop'});else{const {session:finishedSession}=finalizeRecitationSession();if(finishedSession&&finishedSession.words.length)openSessionSummary(finishedSession);document.getElementById('startRec').disabled=!asrReady;}asrStatus('أُوقف الميكروفون؛ يمكنك مراجعة الصفحة أو استئناف التسميع.');}
+// --- screen lock / background: pause the session instead of ending it --------
+// iOS suspends the microphone when the screen locks or the app leaves the
+// foreground. The session must survive that: capture stops, while the session,
+// the recognized words and the engine state stay. An explicit resume re-acquires
+// the mic and continues from the same place; only an explicit stop finishes the
+// session and opens the summary.
+function guardMicEnd(stream){try{stream?.getAudioTracks?.().forEach(track=>track.addEventListener?.('ended',()=>{if(liveAudioContext)pauseLiveRecording('track_ended')}))}catch{}}
+function releaseWakeLock(){const sentinel=wakeLockSentinel;wakeLockSentinel=null;try{sentinel?.release?.()}catch{}}
+async function requestWakeLock(){
+  try{
+    if(!navigator.wakeLock?.request||wakeLockSentinel)return;
+    if(document.visibilityState!=='visible'||!liveAudioContext)return;
+    if(!document.body.classList.contains('recitation-session-active'))return;
+    const sentinel=await navigator.wakeLock.request('screen');
+    if(!liveAudioContext){try{sentinel?.release?.()}catch{}return}
+    wakeLockSentinel=sentinel;
+    sentinel.addEventListener?.('release',()=>{if(wakeLockSentinel===sentinel)wakeLockSentinel=null});
+  }catch{}
+}
+function setResumeButtonWide(wide){
+  const button=document.getElementById('startRec'),label=document.getElementById('recitationStartLabel');
+  if(!button||!label)return;
+  if(wide){
+    button.style.display='flex';button.style.alignItems='center';button.style.justifyContent='center';button.style.gap='8px';
+    button.style.width='auto';button.style.height='auto';button.style.minHeight='54px';button.style.paddingInline='20px';button.style.paddingBlock='12px';
+    button.style.borderRadius='999px';
+    label.style.display='inline';label.style.fontSize='15px';label.style.fontWeight='700';
+  }else{
+    for(const prop of ['display','alignItems','justifyContent','gap','width','height','minHeight','paddingInline','paddingBlock','borderRadius'])button.style[prop]='';
+    label.style.display='';label.style.fontSize='';label.style.fontWeight='';
+  }
+}
+function hideReciteWave(){const wave=document.getElementById('reciteWave');if(wave){wave.hidden=true;wave.style.display='none'}}
+function restoreReciteWave(){const wave=document.getElementById('reciteWave');if(wave)wave.style.display=''}
+function showPausedAffordance(){
+  if(!recitationPaused)return;
+  document.body.classList.add('recitation-session-paused');
+  const startRec=document.getElementById('startRec');
+  if(startRec){startRec.disabled=!asrReady;startRec.hidden=false}
+  document.getElementById('recitationStartLabel').textContent='استئناف التسميع';
+  setResumeButtonWide(true);hideReciteWave();
+  const stop=document.getElementById('stopRec');if(stop)stop.disabled=false;
+  const follow=document.getElementById('startFollow'),review=document.getElementById('startReview');
+  if(follow)follow.disabled=true;
+  if(review)review.disabled=true;
+  const indicator=document.getElementById('reciteLiveIndicator');
+  if(indicator)indicator.textContent='متوقف مؤقتًا';
+}
+function pauseLiveRecording(reason='hidden'){
+  if(recitationPaused||recitationStopping||!liveAudioContext)return false;
+  recitationPaused=true;recitationPauseReason=reason;
+  if(liveProcessor){try{liveProcessor.stop()}catch{}}
+  if(liveSource){try{liveSource.disconnect()}catch{}}
+  if(liveSampleCount){try{sendAudioChunk(liveSamples.subarray(0,liveSampleCount))}catch{}}
+  liveSamples=new Float32Array(0);liveSampleCount=0;
+  try{liveMediaStream?.getTracks().forEach(track=>track.stop())}catch{}
+  const context=liveAudioContext;
+  liveProcessor=liveSource=liveMediaStream=liveAudioContext=null;
+  if(context){try{context.close()}catch{}}
+  releaseWakeLock();
+  clearProvisionalSpeech();
+  hideReciteWave();
+  showPausedAffordance();
+  document.getElementById('asrResult').textContent='الميكروفون وقف لما الشاشة اتقفلت أو خرجت من التطبيق. جلسة التسميع ونتيجتها محفوظة زي ما هي؛ اضغط «استئناف التسميع» تكمل من نفس المكان، أو «إيقاف» لو خلصت.';
+  asrStatus('الجلسة متوقفة مؤقتًا. اضغط استئناف التسميع لما ترجع.');
+  try{diag.mark('paused',{reason})}catch{}
+  return true;
+}
+async function resumePausedRecording(){
+  if(recitationStarting||recitationStopping)return;
+  if(!recitationPaused){await startLiveRecording();return}
+  if(!asrReady||!asrWorker){asrStatus('حمّل محرك التسميع أولًا.');return}
+  if(liveAudioContext)return;
+  if(!navigator.mediaDevices?.getUserMedia||(!window.AudioContext&&!window.webkitAudioContext)){asrStatus('الميكروفون غير متاح في هذا المتصفح. افتح رتل عبر Safari على HTTPS.');return}
+  recitationStarting=true;
+  try{
+    const mediaStream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+    if(!recitationPaused||recitationSessionCancelled){mediaStream.getTracks().forEach(track=>track.stop());recitationStarting=false;return}
+    liveMediaStream=mediaStream;guardMicEnd(mediaStream);
+    const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+    liveAudioContext=new AudioContextClass({latencyHint:'interactive'});
+    await liveAudioContext.resume();
+    if(recitationSessionCancelled||!liveAudioContext){mediaStream.getTracks().forEach(track=>track.stop());liveAudioContext=null;recitationStarting=false;return}
+    liveSource=liveAudioContext.createMediaStreamSource(liveMediaStream);
+    liveSamples=new Float32Array(0);liveSampleCount=0;
+    const captureContext=liveAudioContext,captureSource=liveSource;
+    const capture=await startCapture(captureContext,captureSource,(chunk,at)=>{if(recitationSessionCancelled||captureContext!==liveAudioContext)return;latencyStats.chunk();try{diagChunk(at)}catch{}sendAudioChunk(chunk,at,true)},level=>{if(recitationSessionCancelled||captureContext!==liveAudioContext)return;micLevel=level;diag.bucket(Date.now(),'lvl',level);if(!micLevelFrame)micLevelFrame=requestAnimationFrame(()=>{micLevelFrame=0;document.documentElement.style.setProperty('--mic-level',String(Math.min(1,micLevel*9)));updateReciteWave(micLevel)})});
+    if(captureContext!==liveAudioContext){capture.stop();recitationStarting=false;return}
+    liveProcessor=capture;recitationStarting=false;recitationPaused=false;recitationPauseReason='';
+    document.body.classList.remove('recitation-session-paused');
+    setResumeButtonWide(false);restoreReciteWave();
+    document.getElementById('recitationStartLabel').textContent='ابدأ من أي مكان';
+    document.getElementById('startRec').disabled=true;
+    document.getElementById('stopRec').disabled=false;
+    document.getElementById('reciteLiveIndicator').textContent='يستمع الآن';
+    document.getElementById('asrResult').textContent='رجعت التسميع من نفس المكان. التعرّف تقريبي وقد يخطئ.';
+    asrStatus('التسميع يعمل محليًا على جهازك.');
+    requestWakeLock();
+    try{diag.mark('capture_resumed',{kind:capture.kind})}catch{}
+  }catch(error){
+    recitationStarting=false;
+    if(!liveAudioContext)showPausedAffordance();
+    asrStatus('تعذر فتح الميكروفون: '+(error.message||'تحقق من إذن الميكروفون.'));
+  }
+}
 function focusRecitedVerse(surah,ayah){revealRecitedAyah(surah,ayah);return true;}
 function setAwaitingMatch(on){document.querySelector('.recitation-mushaf-paper')?.classList.toggle('awaiting-match',Boolean(on));const wait=document.getElementById('recitationWaiting');if(on&&wait){wait.hidden=false;wait.classList.remove('hearing');const s=wait.querySelector('strong');if(s)s.textContent='ابدأ القراءة من أي موضع'}}
 function showProvisionalSpeech(text){if(activeReciteMode==='review')return;const box=document.getElementById('provisionalSpeech'),out=document.getElementById('provisionalSpeechText');if(!box||!out)return;const clean=String(text||'').replace(/[\u06E6\u0640]{2,}/g,'\u06E6').trim();if(!clean)return;out.textContent=clean.length>70?'…'+clean.slice(-70):clean;box.hidden=false}
@@ -824,8 +930,9 @@ renderRecitationHistory();renderProgress();renderMistakesLog();
 // diagnosing a finished session never requires recording a new one.
 try{renderDiagPanel()}catch{}
 
-window.addEventListener('pagehide',()=>{if(liveAudioContext)stopLiveRecording();});
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&liveAudioContext)stopLiveRecording();});
+window.addEventListener('pagehide',()=>{if(liveAudioContext)pauseLiveRecording('pagehide')});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){if(liveAudioContext)pauseLiveRecording('hidden');return}if(recitationPaused)showPausedAffordance();else requestWakeLock()});
+window.addEventListener('pageshow',()=>{if(recitationPaused)showPausedAffordance()});
 
 installAppUpdate({button:document.getElementById('refreshApp'),status:document.getElementById('refreshAppStatus'),setApplying:value=>appUpdating=value,announce:text=>{document.getElementById('refreshAppStatus').textContent=text},isBusy:()=>Boolean(recitationStarting||liveMediaStream||liveAudioContext||recitationStopping||currentRecitationSession||settledUiTasks.size)});
 
